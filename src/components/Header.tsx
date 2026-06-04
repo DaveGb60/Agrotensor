@@ -1,4 +1,4 @@
-import { Leaf, Menu, Trash2, Sun, Moon, Home, Phone, Mail, Heart, Banknote, Copy, MessageCircle, Cloud } from 'lucide-react';
+import { Leaf, Menu, Trash2, Sun, Moon, Home, Phone, Mail, Heart, MessageCircle, Cloud, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from '@/hooks/useTheme';
@@ -9,7 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { toast } from 'sonner';
+import { POLAR_DONATION_URL } from '@/lib/polarConfig';
 
 interface HeaderProps {
   onMenuClick?: () => void;
