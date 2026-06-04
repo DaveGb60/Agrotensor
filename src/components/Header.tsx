@@ -1,4 +1,4 @@
-import { Leaf, Menu, Trash2, Sun, Moon, Home, Phone, Mail, Heart, Banknote, Copy, MessageCircle } from 'lucide-react';
+import { Leaf, Menu, Trash2, Sun, Moon, Home, Phone, Mail, Heart, Banknote, Copy, MessageCircle, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from '@/hooks/useTheme';
@@ -22,6 +22,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const navItems = [
     { label: 'Projects', path: '/', icon: Home },
+    { label: 'Cloud Backup', path: '/cloud', icon: Cloud },
     { label: 'Trash', path: '/trash', icon: Trash2 },
   ];
 
