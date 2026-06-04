@@ -14,7 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cloud_backups: {
+        Row: {
+          cloud_id: string
+          created_at: string
+          id: string
+          project_count: number
+          record_count: number
+        }
+        Insert: {
+          cloud_id: string
+          created_at?: string
+          id?: string
+          project_count?: number
+          record_count?: number
+        }
+        Update: {
+          cloud_id?: string
+          created_at?: string
+          id?: string
+          project_count?: number
+          record_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_backups_cloud_id_fkey"
+            columns: ["cloud_id"]
+            isOneToOne: false
+            referencedRelation: "cloud_identities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cloud_identities: {
+        Row: {
+          created_at: string
+          id: string
+          last_seen_at: string
+          recovery_hash: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          recovery_hash: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          recovery_hash?: string
+        }
+        Relationships: []
+      }
+      cloud_projects: {
+        Row: {
+          cloud_id: string
+          payload: Json
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          cloud_id: string
+          payload: Json
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          cloud_id?: string
+          payload?: Json
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_projects_cloud_id_fkey"
+            columns: ["cloud_id"]
+            isOneToOne: false
+            referencedRelation: "cloud_identities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cloud_records: {
+        Row: {
+          cloud_id: string
+          fingerprint: string
+          payload: Json
+          project_id: string
+          record_id: string
+          updated_at: string
+        }
+        Insert: {
+          cloud_id: string
+          fingerprint: string
+          payload: Json
+          project_id: string
+          record_id: string
+          updated_at?: string
+        }
+        Update: {
+          cloud_id?: string
+          fingerprint?: string
+          payload?: Json
+          project_id?: string
+          record_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_records_cloud_id_fkey"
+            columns: ["cloud_id"]
+            isOneToOne: false
+            referencedRelation: "cloud_identities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
