@@ -131,6 +131,42 @@ export type Database = {
           },
         ]
       }
+      sync_shares: {
+        Row: {
+          claim_count: number
+          created_at: string
+          expires_at: string
+          id: string
+          project_count: number
+          projects: Json
+          record_count: number
+          records: Json
+          share_code: string
+        }
+        Insert: {
+          claim_count?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          project_count?: number
+          projects?: Json
+          record_count?: number
+          records?: Json
+          share_code: string
+        }
+        Update: {
+          claim_count?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          project_count?: number
+          projects?: Json
+          record_count?: number
+          records?: Json
+          share_code?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
