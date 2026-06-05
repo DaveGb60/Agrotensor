@@ -7,7 +7,7 @@ import { DelayedRevenueRecordTable } from '@/components/DelayedRevenueRecordTabl
 import { MonthlySummary } from '@/components/MonthlySummary';
 import { ProjectDetailsSection } from '@/components/ProjectDetailsSection';
 import { ShareDialog } from '@/components/ShareDialog';
-import { ImportDialog } from '@/components/ImportDialog';
+
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
 import { SyncShareDialog } from '@/components/SyncShareDialog';
@@ -48,7 +48,7 @@ import {
   generateId,
 } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { Plus, ArrowLeft, Leaf, Database, Lock, Download, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw } from 'lucide-react';
+import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -61,7 +61,7 @@ const Index = () => {
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [shareProject, setShareProject] = useState<{ project: FarmProject; records: FarmRecord[] } | null>(null);
-  const [isImportOpen, setIsImportOpen] = useState(false);
+  
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
   const [isSyncOpen, setIsSyncOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<'details' | 'components'>('details');
@@ -623,10 +623,6 @@ const Index = () => {
                 <Share2 className="h-4 w-4 mr-2" />
                 Sync
               </Button>
-              <Button variant="outline" onClick={() => setIsImportOpen(true)}>
-                <Download className="h-4 w-4 mr-2" />
-                Import
-              </Button>
               <Button variant="hero" onClick={() => setIsCreateOpen(true)}>
                 <Plus className="h-4 w-4" />
                 New Project
@@ -651,10 +647,6 @@ const Index = () => {
                 <Button variant="outline" onClick={() => setIsSyncOpen(true)}>
                   <Share2 className="h-4 w-4 mr-2" />
                   Sync with Device
-                </Button>
-                <Button variant="outline" onClick={() => setIsImportOpen(true)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Import Project
                 </Button>
                 <Button variant="hero" onClick={() => setIsCreateOpen(true)}>
                   <Plus className="h-4 w-4" />
@@ -693,11 +685,6 @@ const Index = () => {
         onSubmit={handleCreateProject}
       />
 
-      <ImportDialog
-        open={isImportOpen}
-        onOpenChange={setIsImportOpen}
-        onImportComplete={loadProjects}
-      />
 
       <SyncShareDialog
         open={isSyncOpen}
