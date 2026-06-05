@@ -648,10 +648,6 @@ const Index = () => {
                   <Share2 className="h-4 w-4 mr-2" />
                   Sync with Device
                 </Button>
-                <Button variant="outline" onClick={() => setIsImportOpen(true)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Import Project
-                </Button>
                 <Button variant="hero" onClick={() => setIsCreateOpen(true)}>
                   <Plus className="h-4 w-4" />
                   Create First Project
