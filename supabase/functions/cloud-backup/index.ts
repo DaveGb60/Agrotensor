@@ -113,17 +113,16 @@ Deno.serve(async (req) => {
 
       const { data, error } = await supabase
         .from('sync_shares')
-        .select('projects, records, expires_at')
+        .select('projects, records, expires_at, claim_count')
         .eq('share_code', normalized)
         .maybeSingle();
       if (error) return json({ error: error.message }, 500);
       if (!data) return json({ error: 'Invalid share code' }, 404);
       if (new Date(data.expires_at) < new Date()) return json({ error: 'Share code expired' }, 410);
 
-      await supabase.rpc; // no-op: keep service simple
       await supabase
         .from('sync_shares')
-        .update({ claim_count: (await supabase.from('sync_shares').select('claim_count').eq('share_code', normalized).single()).data?.claim_count + 1 || 1 })
+        .update({ claim_count: (data.claim_count ?? 0) + 1 })
         .eq('share_code', normalized);
 
       return json({ projects: data.projects, records: data.records });

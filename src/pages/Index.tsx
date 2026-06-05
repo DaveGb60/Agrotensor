@@ -10,8 +10,7 @@ import { ShareDialog } from '@/components/ShareDialog';
 import { ImportDialog } from '@/components/ImportDialog';
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
-import { P2PSyncDialog } from '@/components/P2PSyncDialog';
-import { BluetoothSyncDialog } from '@/components/BluetoothSyncDialog';
+import { SyncShareDialog } from '@/components/SyncShareDialog';
 import { ColumnManagerDropdown, CustomColumn, ColumnType } from '@/components/ColumnManagerDropdown';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -49,7 +48,7 @@ import {
   generateId,
 } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { Plus, ArrowLeft, Leaf, Database, Lock, Download, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, Wifi, RefreshCw, Bluetooth } from 'lucide-react';
+import { Plus, ArrowLeft, Leaf, Database, Lock, Download, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -64,8 +63,7 @@ const Index = () => {
   const [shareProject, setShareProject] = useState<{ project: FarmProject; records: FarmRecord[] } | null>(null);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
-  const [isP2PSyncOpen, setIsP2PSyncOpen] = useState(false);
-  const [isBluetoothSyncOpen, setIsBluetoothSyncOpen] = useState(false);
+  const [isSyncOpen, setIsSyncOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<'details' | 'components'>('details');
   const [customColumnTypes, setCustomColumnTypes] = useState<Record<string, ColumnType>>({});
   const { toast } = useToast();
@@ -621,8 +619,8 @@ const Index = () => {
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <h2 className="font-serif text-xl font-semibold">Your Projects</h2>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsBluetoothSyncOpen(true)}>
-                <Bluetooth className="h-4 w-4 mr-2" />
+              <Button variant="outline" onClick={() => setIsSyncOpen(true)}>
+                <Share2 className="h-4 w-4 mr-2" />
                 Sync
               </Button>
               <Button variant="outline" onClick={() => setIsImportOpen(true)}>
@@ -650,8 +648,8 @@ const Index = () => {
                 Create your first farm project to start tracking records.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button variant="outline" onClick={() => setIsBluetoothSyncOpen(true)}>
-                  <Bluetooth className="h-4 w-4 mr-2" />
+                <Button variant="outline" onClick={() => setIsSyncOpen(true)}>
+                  <Share2 className="h-4 w-4 mr-2" />
                   Sync with Device
                 </Button>
                 <Button variant="outline" onClick={() => setIsImportOpen(true)}>
@@ -701,16 +699,9 @@ const Index = () => {
         onImportComplete={loadProjects}
       />
 
-      <P2PSyncDialog
-        open={isP2PSyncOpen}
-        onOpenChange={setIsP2PSyncOpen}
-        projects={projects}
-        onSyncComplete={loadProjects}
-      />
-
-      <BluetoothSyncDialog
-        open={isBluetoothSyncOpen}
-        onOpenChange={setIsBluetoothSyncOpen}
+      <SyncShareDialog
+        open={isSyncOpen}
+        onOpenChange={setIsSyncOpen}
         projects={projects}
         onSyncComplete={loadProjects}
       />
