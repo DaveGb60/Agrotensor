@@ -48,7 +48,7 @@ import {
   generateId,
 } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { Plus, ArrowLeft, Leaf, Database, Lock, Download, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw } from 'lucide-react';
+import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
