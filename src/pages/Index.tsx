@@ -61,7 +61,7 @@ const Index = () => {
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [shareProject, setShareProject] = useState<{ project: FarmProject; records: FarmRecord[] } | null>(null);
-  const [isImportOpen, setIsImportOpen] = useState(false);
+  
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
   const [isSyncOpen, setIsSyncOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<'details' | 'components'>('details');
