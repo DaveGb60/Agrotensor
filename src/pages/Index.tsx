@@ -685,11 +685,6 @@ const Index = () => {
         onSubmit={handleCreateProject}
       />
 
-      <ImportDialog
-        open={isImportOpen}
-        onOpenChange={setIsImportOpen}
-        onImportComplete={loadProjects}
-      />
 
       <SyncShareDialog
         open={isSyncOpen}
