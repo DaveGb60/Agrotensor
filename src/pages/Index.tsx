@@ -7,7 +7,7 @@ import { DelayedRevenueRecordTable } from '@/components/DelayedRevenueRecordTabl
 import { MonthlySummary } from '@/components/MonthlySummary';
 import { ProjectDetailsSection } from '@/components/ProjectDetailsSection';
 import { ShareDialog } from '@/components/ShareDialog';
-import { ImportDialog } from '@/components/ImportDialog';
+
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
 import { SyncShareDialog } from '@/components/SyncShareDialog';
