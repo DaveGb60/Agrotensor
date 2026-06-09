@@ -74,8 +74,8 @@ function getVault(): VaultBlob | null {
 async function derivePrfOutput(credentialId: Uint8Array, salt: Uint8Array): Promise<ArrayBuffer> {
   const assertion = (await navigator.credentials.get({
     publicKey: {
-      challenge: crypto.getRandomValues(new Uint8Array(32)),
-      allowCredentials: [{ id: credentialId, type: 'public-key' }],
+      challenge: crypto.getRandomValues(new Uint8Array(32)) as BufferSource,
+      allowCredentials: [{ id: credentialId as BufferSource, type: 'public-key' }],
       userVerification: 'required',
       timeout: 60_000,
       extensions: { prf: { eval: { first: salt } } } as any,
