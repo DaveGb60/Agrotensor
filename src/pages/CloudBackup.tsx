@@ -18,7 +18,6 @@ import {
   getCloudStatus,
   getStoredIdentity,
   restoreFromCloud,
-  storeIdentity,
   verifyAndStoreIdentity,
 } from '@/lib/cloudBackup';
 import {
