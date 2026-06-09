@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Cloud, CloudUpload, CloudDownload, Copy, KeyRound, LogOut, Loader2, ShieldCheck } from 'lucide-react';
+import { Cloud, CloudUpload, CloudDownload, Copy, KeyRound, LogOut, Loader2, ShieldCheck, Fingerprint, Lock } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,8 +18,16 @@ import {
   getCloudStatus,
   getStoredIdentity,
   restoreFromCloud,
+  storeIdentity,
   verifyAndStoreIdentity,
 } from '@/lib/cloudBackup';
+import {
+  createVault,
+  unlockVault,
+  hasVault,
+  clearVault,
+  isPlatformAuthenticatorAvailable,
+} from '@/lib/webauthnVault';
 
 export default function CloudBackup() {
   const [identity, setIdentity] = useState<CloudIdentity | null>(null);
@@ -29,12 +37,21 @@ export default function CloudBackup() {
   const [showNewIdentity, setShowNewIdentity] = useState<CloudIdentity | null>(null);
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [tokenInput, setTokenInput] = useState('');
+  const [vaultPresent, setVaultPresent] = useState(false);
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
 
   useEffect(() => {
-    const stored = getStoredIdentity();
-    if (stored) {
-      setIdentity(stored);
-      refreshStatus(stored);
+    setVaultPresent(hasVault());
+    isPlatformAuthenticatorAvailable().then(setBioAvailable);
+
+    // Only auto-load if there is no vault (legacy plain identity).
+    if (!hasVault()) {
+      const stored = getStoredIdentity();
+      if (stored) {
+        setIdentity(stored);
+        refreshStatus(stored);
+      }
     }
   }, []);
 
@@ -50,6 +67,17 @@ export default function CloudBackup() {
     }
   }
 
+  async function protectWithBiometrics(id: CloudIdentity, silent = false) {
+    try {
+      await createVault(id);
+      clearIdentity(); // remove plaintext copy
+      setVaultPresent(true);
+      if (!silent) toast.success('Cloud ID protected with device biometrics');
+    } catch (e) {
+      toast.error(`Biometric protection failed: ${(e as Error).message}`);
+    }
+  }
+
   async function handleCreate() {
     try {
       setLoading(true);
@@ -57,11 +85,28 @@ export default function CloudBackup() {
       setIdentity(id);
       setShowNewIdentity(id);
       await refreshStatus(id);
+      // Offer biometric protection automatically when supported
+      if (bioAvailable) {
+        await protectWithBiometrics(id, true);
+      }
       toast.success('Cloud identity created');
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleUnlock() {
+    try {
+      setUnlocking(true);
+      const id = await unlockVault();
+      setIdentity(id);
+      await refreshStatus(id);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setUnlocking(false);
     }
   }
 
@@ -78,6 +123,9 @@ export default function CloudBackup() {
       setStatus(s);
       setShowRestoreDialog(false);
       setTokenInput('');
+      if (bioAvailable) {
+        await protectWithBiometrics(parsed, true);
+      }
       toast.success('Cloud identity restored');
     } catch (e) {
       toast.error((e as Error).message);
@@ -118,8 +166,10 @@ export default function CloudBackup() {
 
   function handleSignOut() {
     clearIdentity();
+    clearVault();
     setIdentity(null);
     setStatus(null);
+    setVaultPresent(false);
     toast.success('Signed out of Cloud Backup');
   }
 
@@ -142,12 +192,35 @@ export default function CloudBackup() {
           </div>
         </div>
 
-        {!identity ? (
+        {!identity && vaultPresent && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Lock className="h-4 w-4" /> Cloud ID locked
+              </CardTitle>
+              <CardDescription>
+                Your Cloud ID is protected by this device's biometrics. Unlock to back up or restore.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button className="w-full gap-2" onClick={handleUnlock} disabled={unlocking}>
+                {unlocking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Fingerprint className="h-4 w-4" />}
+                Unlock with biometrics
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="w-full text-muted-foreground">
+                Forget this device
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {!identity && !vaultPresent && (
           <Card>
             <CardHeader>
               <CardTitle>Get started</CardTitle>
               <CardDescription>
                 Create a Cloud ID to back up your data, or use an existing Cloud ID to restore data on this device.
+                {bioAvailable && ' Your Cloud ID will be protected by this device\'s biometrics so you don\'t have to store it yourself.'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -161,12 +234,21 @@ export default function CloudBackup() {
               </Button>
             </CardContent>
           </Card>
-        ) : (
+        )}
+
+        {identity && (
           <>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Your Cloud Identity</CardTitle>
-                <CardDescription>Keep this ID safe — you'll need it to restore data on other devices.</CardDescription>
+                <CardTitle className="text-base flex items-center gap-2">
+                  Your Cloud Identity
+                  {vaultPresent && <Lock className="h-3.5 w-3.5 text-primary" />}
+                </CardTitle>
+                <CardDescription>
+                  {vaultPresent
+                    ? 'Protected on this device with biometrics. Reveal the ID only to set up another device.'
+                    : 'Keep this ID safe — you\'ll need it to restore data on other devices.'}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -179,6 +261,17 @@ export default function CloudBackup() {
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
+                {!vaultPresent && bioAvailable && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => protectWithBiometrics(identity)}
+                  >
+                    <Fingerprint className="h-4 w-4" />
+                    Protect with biometrics
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2 text-muted-foreground">
                   <LogOut className="h-4 w-4" />
                   Sign out of Cloud
@@ -232,8 +325,9 @@ export default function CloudBackup() {
           <DialogHeader>
             <DialogTitle>Save your Cloud ID</DialogTitle>
             <DialogDescription>
-              This is the only way to access your backup from another device. Copy and store it somewhere safe — it
-              cannot be recovered if lost.
+              {bioAvailable
+                ? 'Your Cloud ID is stored on this device and unlocked with biometrics. To use it on another device, copy it once and keep it somewhere safe — it cannot be recovered if lost.'
+                : 'This is the only way to access your backup from another device. Copy and store it somewhere safe — it cannot be recovered if lost.'}
             </DialogDescription>
           </DialogHeader>
           {showNewIdentity && (
@@ -262,7 +356,10 @@ export default function CloudBackup() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Use Existing Cloud ID</DialogTitle>
-            <DialogDescription>Paste the Cloud ID you saved from another device.</DialogDescription>
+            <DialogDescription>
+              Paste the Cloud ID you saved from another device.
+              {bioAvailable && ' It will then be sealed in this device\'s biometric vault.'}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="cloud-id" className="text-xs">Cloud ID</Label>
