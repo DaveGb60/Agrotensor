@@ -176,6 +176,6 @@ export async function unlockVault(): Promise<CloudIdentity> {
   const prfOutput = await derivePrfOutput(credentialId, salt);
   const aesKey = await deriveAesKey(prfOutput);
 
-  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, aesKey, ciphertext);
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv as BufferSource }, aesKey, ciphertext as BufferSource);
   return JSON.parse(new TextDecoder().decode(plaintext)) as CloudIdentity;
 }
