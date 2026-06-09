@@ -1,4 +1,4 @@
-import { Leaf, Menu, Trash2, Sun, Moon, Home, Phone, Mail, Heart, MessageCircle, Cloud, ExternalLink } from 'lucide-react';
+import { Leaf, Menu, Trash2, Sun, Moon, Home, Phone, Mail, Heart, MessageCircle, Cloud, ExternalLink, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from '@/hooks/useTheme';
@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { POLAR_DONATION_URL } from '@/lib/polarConfig';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -19,11 +20,13 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAdmin } = useAdminAuth();
 
   const navItems = [
     { label: 'Projects', path: '/', icon: Home },
     { label: 'Cloud Backup', path: '/cloud', icon: Cloud },
     { label: 'Trash', path: '/trash', icon: Trash2 },
+    ...(isAdmin ? [{ label: 'Admin', path: '/admin', icon: Shield }] : []),
   ];
 
   const ContactInfo = () => (
