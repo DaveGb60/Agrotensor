@@ -48,27 +48,6 @@ function getClientIp(req: Request): string | null {
   if (xf) return xf.split(',')[0].trim();
   return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || null;
 }
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader) return null;
-  const userClient = createClient(SUPABASE_URL, ANON_KEY, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const { data, error } = await userClient.auth.getUser();
-  if (error || !data.user) return null;
-  // fetch role
-  const { data: roles } = await admin
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', data.user.id);
-  const roleSet = new Set((roles || []).map((r: { role: string }) => r.role));
-  if (roleSet.size === 0) return null;
-  return {
-    id: data.user.id,
-    email: data.user.email,
-    isMaster: roleSet.has('master'),
-    isAdmin: roleSet.has('master') || roleSet.has('admin'),
-  };
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
