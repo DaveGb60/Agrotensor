@@ -423,6 +423,61 @@ export default function Admin() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="devices">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2"><Smartphone className="h-5 w-5" /> My Devices</CardTitle>
+                <CardDescription>
+                  Devices that have signed into your admin account. Only one device/IP can hold the active session at a time — signing in elsewhere automatically signs out the previous device.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {activeSession && (
+                  <div className="rounded-md border bg-muted/40 p-3 text-sm">
+                    <div className="font-medium mb-1">Active session</div>
+                    <div className="text-muted-foreground text-xs">
+                      Device <span className="font-mono">{activeSession.device_id.slice(0, 8)}…</span>
+                      {activeSession.ip ? ` · IP ${activeSession.ip}` : ''} · since {new Date(activeSession.claimed_at).toLocaleString()}
+                    </div>
+                  </div>
+                )}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Device</TableHead>
+                      <TableHead>Browser</TableHead>
+                      <TableHead>Last IP</TableHead>
+                      <TableHead>Last seen</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {devices.map((d) => (
+                      <TableRow key={d.id}>
+                        <TableCell className="font-mono text-xs">
+                          {d.device_id.slice(0, 8)}…
+                          {d.device_id === currentDeviceId && <Badge variant="secondary" className="ml-2">This device</Badge>}
+                          {activeSession?.device_id === d.device_id && <Badge className="ml-2">Active</Badge>}
+                        </TableCell>
+                        <TableCell className="text-xs max-w-[260px] truncate" title={d.user_agent || ''}>{d.user_agent || '—'}</TableCell>
+                        <TableCell className="text-xs">{d.ip || '—'}</TableCell>
+                        <TableCell className="text-xs">{new Date(d.last_seen_at).toLocaleString()}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => handleRevokeDevice(d.device_id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {!devices.length && (
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">No devices recorded yet</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </main>
     </div>
