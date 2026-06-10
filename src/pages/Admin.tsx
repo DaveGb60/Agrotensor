@@ -228,6 +228,7 @@ export default function Admin() {
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="shares">Active Shares</TabsTrigger>
             <TabsTrigger value="admins">Admins</TabsTrigger>
+            <TabsTrigger value="devices">My Devices</TabsTrigger>
           </TabsList>
 
           <TabsContent value="backups">
