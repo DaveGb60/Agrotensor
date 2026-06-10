@@ -175,6 +175,22 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
+    if (action === 'record-session-ip') {
+      const ip = getClientIp(req);
+      const deviceId = String(payload.device_id || '');
+      if (!deviceId) return json({ error: 'device_id required' }, 400);
+      await admin
+        .from('admin_active_session')
+        .update({ ip, last_seen_at: new Date().toISOString() })
+        .eq('user_id', caller.id);
+      await admin
+        .from('admin_devices')
+        .update({ ip, last_seen_at: new Date().toISOString() })
+        .eq('user_id', caller.id)
+        .eq('device_id', deviceId);
+      return json({ ok: true, ip });
+    }
+
     return json({ error: 'Unknown action' }, 400);
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
