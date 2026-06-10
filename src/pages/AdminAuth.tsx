@@ -8,13 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/Header';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, Shield } from 'lucide-react';
+import { Loader2, Shield, Mail } from 'lucide-react';
 
 export default function AdminAuth() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [magicSent, setMagicSent] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -44,6 +45,23 @@ export default function AdminAuth() {
     toast({ title: 'Account created', description: 'You can now sign in. Admin access is granted by the master.' });
   }
 
+  async function handleMagicLink(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    // Single-use magic link; Supabase invalidates the token once consumed.
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: `${window.location.origin}/admin`,
+      },
+    });
+    setLoading(false);
+    if (error) return toast({ title: 'Could not send link', description: error.message, variant: 'destructive' });
+    setMagicSent(true);
+    toast({ title: 'Magic link sent', description: 'Check your email. The link works once and expires after use.' });
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -54,14 +72,18 @@ export default function AdminAuth() {
               <Shield className="h-6 w-6 text-primary" />
             </div>
             <CardTitle>Admin Access</CardTitle>
-            <CardDescription>Sign in or create an account. Admin rights are assigned by the master admin.</CardDescription>
+            <CardDescription>
+              Use password on your usual device, or email a single-use magic link to sign in from a new one. Only one device can be signed in at a time.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin">
-              <TabsList className="grid grid-cols-2 w-full">
+              <TabsList className="grid grid-cols-3 w-full">
                 <TabsTrigger value="signin">Sign in</TabsTrigger>
+                <TabsTrigger value="magic">Magic link</TabsTrigger>
                 <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
+
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-3 pt-4">
                   <div>
@@ -78,6 +100,23 @@ export default function AdminAuth() {
                   </Button>
                 </form>
               </TabsContent>
+
+              <TabsContent value="magic">
+                <form onSubmit={handleMagicLink} className="space-y-3 pt-4">
+                  <div>
+                    <Label htmlFor="magic-email">Admin email</Label>
+                    <Input id="magic-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading || magicSent}>
+                    {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+                    {magicSent ? 'Link sent — check email' : 'Email me a sign-in link'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    The link expires after first use and signs out any other active admin session.
+                  </p>
+                </form>
+              </TabsContent>
+
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-3 pt-4">
                   <div>
