@@ -21,7 +21,33 @@ function json(body: unknown, status = 200) {
   });
 }
 
-async function getCaller(req: Request) {
+async function getCaller(req: Request, requireAdmin = true) {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return null;
+  const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data, error } = await userClient.auth.getUser();
+  if (error || !data.user) return null;
+  const { data: roles } = await admin
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', data.user.id);
+  const roleSet = new Set((roles || []).map((r: { role: string }) => r.role));
+  if (requireAdmin && roleSet.size === 0) return null;
+  return {
+    id: data.user.id,
+    email: data.user.email,
+    isMaster: roleSet.has('master'),
+    isAdmin: roleSet.has('master') || roleSet.has('admin'),
+  };
+}
+
+function getClientIp(req: Request): string | null {
+  const xf = req.headers.get('x-forwarded-for');
+  if (xf) return xf.split(',')[0].trim();
+  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || null;
+}
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) return null;
   const userClient = createClient(SUPABASE_URL, ANON_KEY, {
