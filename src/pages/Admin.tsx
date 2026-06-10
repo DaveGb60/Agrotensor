@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Loader2, Shield, Users, Cloud, Database, Share2, LogOut, UserPlus, Trash2, RefreshCw, Crown, KeyRound } from 'lucide-react';
+import { Loader2, Shield, Users, Cloud, Database, Share2, LogOut, UserPlus, Trash2, RefreshCw, Crown, KeyRound, Smartphone } from 'lucide-react';
+import { getDeviceId } from '@/lib/adminDevice';
 
 interface Stats {
   counts: { identities: number; backups: number; projects: number; records: number; shares: number };
@@ -35,6 +36,24 @@ interface Identity {
   last_backup_at: string | null;
 }
 
+interface DeviceRow {
+  id: string;
+  device_id: string;
+  label: string | null;
+  user_agent: string | null;
+  ip: string | null;
+  first_seen_at: string;
+  last_seen_at: string;
+}
+
+interface ActiveSession {
+  device_id: string;
+  ip: string | null;
+  user_agent: string | null;
+  claimed_at: string;
+  last_seen_at: string;
+}
+
 export default function Admin() {
   const navigate = useNavigate();
   const auth = useAdminAuth();
@@ -43,6 +62,9 @@ export default function Admin() {
   const [identities, setIdentities] = useState<Identity[]>([]);
   const [loading, setLoading] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [devices, setDevices] = useState<DeviceRow[]>([]);
+  const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
+  const currentDeviceId = getDeviceId();
 
   const callAdmin = useCallback(async (action: string, body: Record<string, unknown> = {}) => {
     const { data, error } = await supabase.functions.invoke('admin', { body: { action, ...body } });
@@ -50,6 +72,16 @@ export default function Admin() {
     if (data?.error) throw new Error(data.error);
     return data;
   }, []);
+
+  const loadDevices = useCallback(async () => {
+    if (!auth.user) return;
+    const [{ data: devs }, { data: act }] = await Promise.all([
+      supabase.from('admin_devices').select('*').eq('user_id', auth.user.id).order('last_seen_at', { ascending: false }),
+      supabase.from('admin_active_session').select('device_id, ip, user_agent, claimed_at, last_seen_at').eq('user_id', auth.user.id).maybeSingle(),
+    ]);
+    setDevices((devs as DeviceRow[]) || []);
+    setActiveSession((act as ActiveSession) || null);
+  }, [auth.user]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -62,12 +94,21 @@ export default function Admin() {
       setStats(s);
       setAdmins(a.admins || []);
       setIdentities(i.identities || []);
+      await loadDevices();
     } catch (e) {
       toast({ title: 'Failed to load', description: (e as Error).message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
-  }, [callAdmin]);
+  }, [callAdmin, loadDevices]);
+
+  async function handleRevokeDevice(deviceId: string) {
+    if (!confirm('Forget this device? You will need to sign in again from it.')) return;
+    const { error } = await supabase.rpc('revoke_admin_device', { p_device_id: deviceId });
+    if (error) return toast({ title: 'Could not revoke', description: error.message, variant: 'destructive' });
+    toast({ title: 'Device removed' });
+    await loadDevices();
+  }
 
   useEffect(() => {
     if (auth.loading) return;
@@ -187,6 +228,7 @@ export default function Admin() {
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="shares">Active Shares</TabsTrigger>
             <TabsTrigger value="admins">Admins</TabsTrigger>
+            <TabsTrigger value="devices">My Devices</TabsTrigger>
           </TabsList>
 
           <TabsContent value="backups">
@@ -378,6 +420,61 @@ export default function Admin() {
                     </p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="devices">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2"><Smartphone className="h-5 w-5" /> My Devices</CardTitle>
+                <CardDescription>
+                  Devices that have signed into your admin account. Only one device/IP can hold the active session at a time — signing in elsewhere automatically signs out the previous device.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {activeSession && (
+                  <div className="rounded-md border bg-muted/40 p-3 text-sm">
+                    <div className="font-medium mb-1">Active session</div>
+                    <div className="text-muted-foreground text-xs">
+                      Device <span className="font-mono">{activeSession.device_id.slice(0, 8)}…</span>
+                      {activeSession.ip ? ` · IP ${activeSession.ip}` : ''} · since {new Date(activeSession.claimed_at).toLocaleString()}
+                    </div>
+                  </div>
+                )}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Device</TableHead>
+                      <TableHead>Browser</TableHead>
+                      <TableHead>Last IP</TableHead>
+                      <TableHead>Last seen</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {devices.map((d) => (
+                      <TableRow key={d.id}>
+                        <TableCell className="font-mono text-xs">
+                          {d.device_id.slice(0, 8)}…
+                          {d.device_id === currentDeviceId && <Badge variant="secondary" className="ml-2">This device</Badge>}
+                          {activeSession?.device_id === d.device_id && <Badge className="ml-2">Active</Badge>}
+                        </TableCell>
+                        <TableCell className="text-xs max-w-[260px] truncate" title={d.user_agent || ''}>{d.user_agent || '—'}</TableCell>
+                        <TableCell className="text-xs">{d.ip || '—'}</TableCell>
+                        <TableCell className="text-xs">{new Date(d.last_seen_at).toLocaleString()}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => handleRevokeDevice(d.device_id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {!devices.length && (
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">No devices recorded yet</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>

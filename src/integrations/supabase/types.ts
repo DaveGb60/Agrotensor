@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_active_session: {
+        Row: {
+          claimed_at: string
+          device_id: string
+          ip: string | null
+          last_seen_at: string
+          session_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          device_id: string
+          ip?: string | null
+          last_seen_at?: string
+          session_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          device_id?: string
+          ip?: string | null
+          last_seen_at?: string
+          session_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_devices: {
+        Row: {
+          device_id: string
+          first_seen_at: string
+          id: string
+          ip: string | null
+          label: string | null
+          last_seen_at: string
+          trusted: boolean
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          device_id: string
+          first_seen_at?: string
+          id?: string
+          ip?: string | null
+          label?: string | null
+          last_seen_at?: string
+          trusted?: boolean
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          device_id?: string
+          first_seen_at?: string
+          id?: string
+          ip?: string | null
+          label?: string | null
+          last_seen_at?: string
+          trusted?: boolean
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       cloud_backups: {
         Row: {
           cloud_id: string
@@ -199,6 +265,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_admin_session: {
+        Args: {
+          p_device_id: string
+          p_ip: string
+          p_session_id: string
+          p_user_agent: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -207,6 +282,12 @@ export type Database = {
         Returns: boolean
       }
       is_any_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_device_trusted: { Args: { p_device_id: string }; Returns: boolean }
+      revoke_admin_device: { Args: { p_device_id: string }; Returns: undefined }
+      validate_admin_session: {
+        Args: { p_session_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "master" | "admin"
