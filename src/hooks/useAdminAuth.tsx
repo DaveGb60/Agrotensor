@@ -76,10 +76,16 @@ export function useAdminAuth(): AdminAuthState & { refresh: () => Promise<void> 
         const { error } = await supabase.rpc('claim_admin_session', {
           p_session_id: sessionId,
           p_device_id: deviceId,
-          p_ip: null, // recorded server-side via heartbeat below if needed
+          p_ip: null,
           p_user_agent: describeDevice(),
         });
-        if (!error) sessionValid = true;
+        if (!error) {
+          sessionValid = true;
+          // Capture real client IP server-side
+          supabase.functions.invoke('admin', {
+            body: { action: 'record-session-ip', device_id: deviceId },
+          }).catch(() => { /* non-fatal */ });
+        }
       } finally {
         claimingRef.current = false;
       }
