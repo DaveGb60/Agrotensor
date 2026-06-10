@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Loader2, Shield, Users, Cloud, Database, Share2, LogOut, UserPlus, Trash2, RefreshCw, Crown, KeyRound } from 'lucide-react';
+import { Loader2, Shield, Users, Cloud, Database, Share2, LogOut, UserPlus, Trash2, RefreshCw, Crown, KeyRound, Smartphone } from 'lucide-react';
+import { getDeviceId } from '@/lib/adminDevice';
 
 interface Stats {
   counts: { identities: number; backups: number; projects: number; records: number; shares: number };
@@ -35,6 +36,24 @@ interface Identity {
   last_backup_at: string | null;
 }
 
+interface DeviceRow {
+  id: string;
+  device_id: string;
+  label: string | null;
+  user_agent: string | null;
+  ip: string | null;
+  first_seen_at: string;
+  last_seen_at: string;
+}
+
+interface ActiveSession {
+  device_id: string;
+  ip: string | null;
+  user_agent: string | null;
+  claimed_at: string;
+  last_seen_at: string;
+}
+
 export default function Admin() {
   const navigate = useNavigate();
   const auth = useAdminAuth();
@@ -43,6 +62,9 @@ export default function Admin() {
   const [identities, setIdentities] = useState<Identity[]>([]);
   const [loading, setLoading] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [devices, setDevices] = useState<DeviceRow[]>([]);
+  const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
+  const currentDeviceId = getDeviceId();
 
   const callAdmin = useCallback(async (action: string, body: Record<string, unknown> = {}) => {
     const { data, error } = await supabase.functions.invoke('admin', { body: { action, ...body } });
@@ -50,6 +72,16 @@ export default function Admin() {
     if (data?.error) throw new Error(data.error);
     return data;
   }, []);
+
+  const loadDevices = useCallback(async () => {
+    if (!auth.user) return;
+    const [{ data: devs }, { data: act }] = await Promise.all([
+      supabase.from('admin_devices').select('*').eq('user_id', auth.user.id).order('last_seen_at', { ascending: false }),
+      supabase.from('admin_active_session').select('device_id, ip, user_agent, claimed_at, last_seen_at').eq('user_id', auth.user.id).maybeSingle(),
+    ]);
+    setDevices((devs as DeviceRow[]) || []);
+    setActiveSession((act as ActiveSession) || null);
+  }, [auth.user]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -62,12 +94,21 @@ export default function Admin() {
       setStats(s);
       setAdmins(a.admins || []);
       setIdentities(i.identities || []);
+      await loadDevices();
     } catch (e) {
       toast({ title: 'Failed to load', description: (e as Error).message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
-  }, [callAdmin]);
+  }, [callAdmin, loadDevices]);
+
+  async function handleRevokeDevice(deviceId: string) {
+    if (!confirm('Forget this device? You will need to sign in again from it.')) return;
+    const { error } = await supabase.rpc('revoke_admin_device', { p_device_id: deviceId });
+    if (error) return toast({ title: 'Could not revoke', description: error.message, variant: 'destructive' });
+    toast({ title: 'Device removed' });
+    await loadDevices();
+  }
 
   useEffect(() => {
     if (auth.loading) return;
