@@ -20,13 +20,14 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin } = useAdminAuth();
+  const { isAdmin, loading: adminLoading, session: adminSession } = useAdminAuth();
+  const showAdminLink = !adminLoading && !!adminSession && isAdmin;
 
   const navItems = [
     { label: 'Projects', path: '/', icon: Home },
     { label: 'Cloud Backup', path: '/cloud', icon: Cloud },
     { label: 'Trash', path: '/trash', icon: Trash2 },
-    ...(isAdmin ? [{ label: 'Admin', path: '/admin', icon: Shield }] : []),
+    ...(showAdminLink ? [{ label: 'Admin', path: '/admin', icon: Shield }] : []),
   ];
 
   const ContactInfo = () => (
