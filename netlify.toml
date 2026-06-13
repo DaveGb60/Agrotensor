@@ -1,7 +1,7 @@
 [build]
-  command = "npm run build"
+  command = "npm install --include=dev && npm run build"
   publish = "dist"
-  environment = { NODE_VERSION = "20" }
+  environment = { NODE_VERSION = "22", NPM_FLAGS = "--include=dev" }
 
 [[redirects]]
   from = "/*"
@@ -9,15 +9,15 @@
   status = 200
 
 [context.production]
-  command = "npm run build"
+  command = "npm install --include=dev && npm run build"
   publish = "dist"
 
 [context.deploy-preview]
-  command = "npm run build"
+  command = "npm install --include=dev && npm run build"
   publish = "dist"
 
 [context.branch-deploy]
-  command = "npm run build"
+  command = "npm install --include=dev && npm run build"
   publish = "dist"
 
 # Headers for PWA support
