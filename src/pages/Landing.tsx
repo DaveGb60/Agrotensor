@@ -11,15 +11,18 @@ const Landing = () => {
     <div className="min-h-screen">
       {/* Hero Section with Background */}
       <header 
-        className="relative"
+        className="relative overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(rgba(8,18,8,0.35),rgba(8,18,8,0.12)), url('/assets/landing/hero_wide.svg')`,
+          backgroundImage: `linear-gradient(135deg, rgba(61,107,79,0.95) 0%, rgba(28,59,38,0.98) 100%), url('/assets/landing/brand-hero-2.jpg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
       >
-        <LandingNav />
-        <HeroSection />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-green-900/95"></div>
+        <div className="relative z-10">
+          <LandingNav />
+          <HeroSection />
+        </div>
       </header>
 
       {/* Main Content */}

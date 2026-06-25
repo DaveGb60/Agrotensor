@@ -1,66 +1,84 @@
 import { Button } from '@/components/ui/button';
-import { Database, Lock, RefreshCw, Leaf } from 'lucide-react';
+import { Database, Lock, RefreshCw, Leaf, CheckCircle } from 'lucide-react';
 
 const HeroSection = () => {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8 pb-20">
-      <div className="flex flex-wrap items-center gap-10">
-        <div className="flex-1 min-w-[300px]">
-          <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full mb-6">
+    <div className="max-w-6xl mx-auto px-6 py-16 pb-24">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="space-y-6">
+          <div className="inline-flex items-center gap-2 bg-white/15 px-4 py-2 rounded-full border border-white/20 backdrop-blur-sm">
             <Leaf className="h-4 w-4 text-green-200" />
-            <span className="text-white font-bold">Run Your Farm. Grow Your Business.</span>
+            <span className="text-white font-semibold">Run Your Farm. Grow Your Business.</span>
           </div>
           
-          <h1 className="font-serif text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
             One platform to manage every part of your farm operations from anywhere.
           </h1>
           
-          <p className="text-white/90 text-lg mb-6">
+          <p className="text-white/90 text-lg md:text-xl leading-relaxed">
             Organize your data, monitor operations, analyze insights and grow profit — FarmDesk is your farm's digital office, built for farmers and farm teams.
           </p>
           
-          <div className="flex flex-wrap gap-3 mb-6">
-            <span className="bg-white/10 px-3 py-1.5 rounded-full font-bold text-white">Free</span>
-            <span className="bg-white/10 px-3 py-1.5 rounded-full font-bold text-white">Offline-first</span>
-            <span className="bg-white/10 px-3 py-1.5 rounded-full font-bold text-white">End-to-end encrypted</span>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-full text-white font-semibold">
+              <CheckCircle className="h-4 w-4 text-green-300" />
+              Free
+            </div>
+            <div className="flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-full text-white font-semibold">
+              <CheckCircle className="h-4 w-4 text-green-300" />
+              Offline-first
+            </div>
+            <div className="flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-full text-white font-semibold">
+              <CheckCircle className="h-4 w-4 text-green-300" />
+              End-to-end encrypted
+            </div>
           </div>
           
-          <div className="flex flex-wrap gap-4 mb-8">
-            <Button variant="hero" size="lg" asChild>
+          <div className="flex flex-wrap gap-4 pt-2">
+            <Button variant="hero" size="lg" asChild className="text-lg">
               <a href="/">Get started — it's free</a>
             </Button>
             <Button variant="default" size="lg" className="bg-transparent border-2 border-white/30 text-white hover:bg-white/10 hover:text-white" asChild>
-              <a href="/">Request a demo</a>
+              <a href="#features">Explore features</a>
             </Button>
           </div>
           
-          <div className="flex flex-wrap gap-6 text-white/85">
-            <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+            <div className="flex items-center gap-2 text-white/90">
               <Database className="h-5 w-5" />
-              <span>Organize your data</span>
+              <span className="text-sm">Organize your data</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-white/90">
               <Lock className="h-5 w-5" />
-              <span>Monitor every operation</span>
+              <span className="text-sm">Monitor every operation</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-white/90">
               <RefreshCw className="h-5 w-5" />
-              <span>Analyze real insights</span>
+              <span className="text-sm">Analyze real insights</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-white/90">
               <Leaf className="h-5 w-5" />
-              <span>Grow your profit</span>
+              <span className="text-sm">Grow your profit</span>
             </div>
           </div>
         </div>
         
-        <div className="flex-1 min-w-[300px] flex justify-center">
-          <div className="w-full max-w-[420px] rounded-xl shadow-elevated overflow-hidden">
-            <img 
-              src="/assets/landing/brand-hero-1.jpg" 
-              alt="FarmDesk dashboard preview" 
-              className="w-full object-cover"
-            />
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="w-full max-w-md rounded-2xl shadow-elevated overflow-hidden border-4 border-white/30">
+              <img 
+                src="/assets/landing/brand-hero-3.jpg" 
+                alt="FarmDesk dashboard" 
+                className="w-full h-auto object-cover"
+              />
+            </div>
+            <div className="absolute -bottom-4 -left-4 w-24 h-24 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
+              <img 
+                src="/assets/landing/brand-hero-4.jpg" 
+                alt="FarmDesk mobile" 
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>
