@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
-  <rect width="100%" height="100%" fill="#e8f7ea" rx="12"/>
-  <g transform="translate(18,18)">
-    <rect x="0" y="0" width="120" height="120" rx="12" fill="#7fbf2f"/>
-    <circle cx="200" cy="60" r="48" fill="#2f7a2f" opacity="0.9"/>
-  </g>
-</svg>

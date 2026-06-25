@@ -1,27 +1,29 @@
+import { Sparkles, Shield, Zap, Users, TrendingUp } from 'lucide-react';
+
 const ValuesSection = () => {
   const values = [
     { 
-      icon: '/assets/landing/value-simplicity.svg', 
+      icon: Sparkles, 
       title: 'Simplicity', 
       desc: 'Easy to use, easy to adopt.' 
     },
     { 
-      icon: '/assets/landing/value-trust.svg', 
+      icon: Shield, 
       title: 'Trust', 
       desc: 'Your data is secure and yours.' 
     },
     { 
-      icon: '/assets/landing/value-innovation.svg', 
+      icon: Zap, 
       title: 'Innovation', 
       desc: 'Technology that solves real farm problems.' 
     },
     { 
-      icon: '/assets/landing/value-innovation.svg', 
+      icon: Users, 
       title: 'Collaboration', 
       desc: 'Built for teams, partners, and communities.' 
     },
     { 
-      icon: '/assets/landing/value-simplicity.svg', 
+      icon: TrendingUp, 
       title: 'Growth', 
       desc: 'Insights today, better harvests tomorrow.' 
     },
@@ -40,11 +42,7 @@ const ValuesSection = () => {
               key={idx}
               className="bg-white p-5 rounded-xl shadow-card flex gap-3 items-center hover:shadow-elevated transition-shadow"
             >
-              <img 
-                src={value.icon} 
-                alt={value.title} 
-                className="h-9 flex-shrink-0"
-              />
+              <value.icon className="h-9 w-9 flex-shrink-0 text-primary" />
               <div>
                 <strong className="block mb-1">{value.title}</strong>
                 <p className="text-muted-foreground text-sm">{value.desc}</p>
