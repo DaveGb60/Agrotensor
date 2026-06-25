@@ -6,8 +6,8 @@
 
 import { CloudIdentity } from './cloudBackup';
 
-const VAULT_KEY = 'farmdeck-cloud-vault';
-const RP_NAME = 'Farmdeck Cloud';
+const VAULT_KEY = 'farmdesk-cloud-vault';
+const RP_NAME = 'FarmDesk Cloud';
 
 interface VaultBlob {
   credentialId: string; // base64url
@@ -94,7 +94,7 @@ async function deriveAesKey(prfOutput: ArrayBuffer): Promise<CryptoKey> {
     {
       name: 'HKDF',
       hash: 'SHA-256',
-      salt: new TextEncoder().encode('farmdeck-cloud-vault'),
+      salt: new TextEncoder().encode('farmdesk-cloud-vault'),
       info: new TextEncoder().encode('aes-gcm-256'),
     },
     hkdfKey,
@@ -122,7 +122,7 @@ export async function createVault(identity: CloudIdentity): Promise<void> {
       user: {
         id: userId,
         name: `cloud-${identity.cloudId.slice(0, 8)}`,
-        displayName: 'Farmdeck Cloud Vault',
+        displayName: 'FarmDesk Cloud Vault',
       },
       pubKeyCredParams: [
         { type: 'public-key', alg: -7 },   // ES256
