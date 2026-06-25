@@ -1,10 +1,10 @@
-// File Sync Module for FarmDeck
+// File Sync Module for FarmDesk
 // Handles file-based data import/export and sharing
 
 import { FarmProject, FarmRecord, getProject, importProject, importRecord, getRecordsByProject } from './db';
 
 export interface SyncData {
-  type: 'farmdeck-sync';
+  type: 'farmdesk-sync';
   version: '1.0';
   timestamp: string;
   project: FarmProject;
@@ -22,7 +22,7 @@ export interface SyncResult {
 // Create sync data package
 export function createSyncData(project: FarmProject, records: FarmRecord[]): SyncData {
   return {
-    type: 'farmdeck-sync',
+    type: 'farmdesk-sync',
     version: '1.0',
     timestamp: new Date().toISOString(),
     project,
@@ -35,7 +35,7 @@ export function validateSyncData(data: unknown): data is SyncData {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
   return (
-    d.type === 'farmdeck-sync' &&
+    d.type === 'farmdesk-sync' &&
     d.version === '1.0' &&
     typeof d.project === 'object' &&
     d.project !== null &&
@@ -215,7 +215,7 @@ export function downloadJSON(project: FarmProject, records: FarmRecord[]): void 
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `farmdeck-${project.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.json`;
+  a.download = `farmdesk-${project.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -230,11 +230,11 @@ export async function shareViaWebShare(project: FarmProject, records: FarmRecord
   
   const json = exportToJSON(project, records);
   const blob = new Blob([json], { type: 'application/json' });
-  const file = new File([blob], `farmdeck-${project.title}.json`, { type: 'application/json' });
+  const file = new File([blob], `farmdesk-${project.title}.json`, { type: 'application/json' });
   
   try {
     await navigator.share({
-      title: `FarmDeck: ${project.title}`,
+      title: `FarmDesk: ${project.title}`,
       text: `Farm project data - ${records.length} records`,
       files: [file],
     });
@@ -264,7 +264,7 @@ export function generateShareableLink(project: FarmProject, records: FarmRecord[
 } {
   const data = exportToJSON(project, records);
   return {
-    title: `FarmDeck: ${project.title}`,
+    title: `FarmDesk: ${project.title}`,
     text: `Farm project with ${records.length} records`,
     data,
   };

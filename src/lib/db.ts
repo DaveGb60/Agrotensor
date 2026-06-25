@@ -1,4 +1,4 @@
-// IndexedDB wrapper for FarmDeck local storage
+// IndexedDB wrapper for FarmDesk local storage
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 // Input item for project details
@@ -105,7 +105,7 @@ export interface MonthlyAggregation {
   recordCount: number;
 }
 
-interface FarmDeckDB extends DBSchema {
+interface FarmDeskDB extends DBSchema {
   projects: {
     key: string;
     value: FarmProject;
@@ -122,12 +122,12 @@ interface FarmDeckDB extends DBSchema {
   };
 }
 
-let dbInstance: IDBPDatabase<FarmDeckDB> | null = null;
+let dbInstance: IDBPDatabase<FarmDeskDB> | null = null;
 
-export async function getDB(): Promise<IDBPDatabase<FarmDeckDB>> {
+export async function getDB(): Promise<IDBPDatabase<FarmDeskDB>> {
   if (dbInstance) return dbInstance;
 
-  dbInstance = await openDB<FarmDeckDB>('farmdeck-db', 1, {
+  dbInstance = await openDB<FarmDeskDB>('farmdesk-db', 1, {
     upgrade(db) {
       // Projects store
       const projectStore = db.createObjectStore('projects', { keyPath: 'id' });
