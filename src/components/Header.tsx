@@ -72,7 +72,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <img 
-            src="/assets/landing/logo-new-1.png" 
+            src="/assets/landing/brand-hero-1.jpg" 
             alt="FarmDesk Logo" 
             className="w-10 h-10 rounded-xl object-contain cursor-pointer"
             onClick={() => navigate('/')}

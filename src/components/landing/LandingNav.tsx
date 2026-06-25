@@ -5,7 +5,7 @@ const LandingNav = () => {
     <nav className="flex items-center justify-between max-w-6xl mx-auto px-6 py-8">
       <div className="flex items-center gap-3">
         <img 
-          src="/assets/landing/logo-new-1.png" 
+          src="/assets/landing/brand-hero-1.jpg" 
           alt="FarmDesk Logo" 
           className="h-12 w-12 rounded-xl object-contain"
         />
