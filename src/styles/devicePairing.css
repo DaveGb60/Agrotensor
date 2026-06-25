@@ -1,0 +1,5 @@
+.fd-pair{background:#f7f9f6;padding:16px;border-radius:10px;max-width:360px}
+.fd-pair__code{font-family:monospace;font-size:28px;padding:12px 16px;border-radius:8px;background:#fff;margin:12px 0;display:inline-block}
+.fd-pair__actions button{margin-right:8px}
+.fd-btn{background:#2f7a2f;color:#fff;padding:8px 12px;border-radius:8px;border:0;font-weight:700}
+.fd-btn--alt{background:transparent;border:2px solid #cfe8c9;color:#2f7a2f}

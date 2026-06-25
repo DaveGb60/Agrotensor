@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FarmDesk — Your Farm's Digital Office</title>
+  <meta name="description" content="FarmDesk: Organize, monitor, analyze and grow your farm operations with one simple platform.">
+  <meta property="og:title" content="FarmDesk — Your Farm's Digital Office">
+  <meta property="og:description" content="FarmDesk helps farmers organize data, monitor operations, analyze insights and grow profitable, sustainable farms.">
+  <meta property="og:image" content="https://farmdeck.vercel.app/assets/landing/hero_wide.svg">
+  <meta property="og:type" content="website">
+  <style>
+    :root{--green:#2f7a2f;--accent:#7fbf2f;--muted:#6b6b6b;--bg:#ffffff;--card:#f7f9f6}
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin:0; color:#123; background:var(--bg)}
+    header{background:linear-gradient(rgba(10,20,10,0.35),rgba(10,20,10,0.15)), url('https://farmdeck.vercel.app/assets/landing/hero_wide.svg') center/cover no-repeat; padding:64px 20px 120px; color:white}
+    .container{max-width:1100px;margin:0 auto}
+    .nav{display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo img{height:52px}
+    nav a{color:rgba(255,255,255,0.92);text-decoration:none;margin-left:18px;font-weight:600}
+    .hero{display:flex;flex-wrap:wrap;align-items:center;gap:30px;padding-top:40px}
+    .hero-left{flex:1 1 420px}
+    .eyebrow{display:inline-block;background:rgba(255,255,255,0.08);padding:6px 12px;border-radius:999px;font-weight:700;color:#eaf7ea;margin-bottom:18px}
+    h1{font-size:38px;line-height:1.05;margin:0 0 12px}
+    p.lead{color:rgba(255,255,255,0.92);font-size:18px;margin:0 0 18px}
+    .badge{margin-top:10px;display:flex;gap:10px;align-items:center}
+    .badge span{background:rgba(255,255,255,0.08);padding:6px 10px;border-radius:999px;font-weight:700}
+    .cta{display:flex;gap:12px;margin-top:18px}
+    .btn{background:var(--green);color:white;padding:12px 18px;border-radius:10px;border:0;font-weight:700;text-decoration:none}
+    .btn.alt{background:transparent;border:2px solid rgba(255,255,255,0.18)}
+    .hero-right{flex:0 1 420px;display:flex;justify-content:center}
+    .mock{width:100%;max-width:420px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);overflow:hidden}
+    section.features{padding:60px 20px;background:linear-gradient(180deg,#ffffff,#f6fbf5)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;max-width:1100px;margin:0 auto}
+    .card{background:var(--card);padding:24px;border-radius:12px;box-shadow:0 6px 18px rgba(12,30,12,0.06)}
+    .card h3{margin:0 0 8px;color:var(--green)}
+    .philosophy{background:#0b3c0b;color:white;padding:40px 20px}
+    .philosophy .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;max-width:1100px;margin:0 auto}
+    .values{padding:40px 20px;max-width:1100px;margin:0 auto}
+    .values-list{display:flex;flex-wrap:wrap;gap:18px}
+    .value{flex:1 1 150px;background:white;border-radius:10px;padding:18px;display:flex;gap:12px;align-items:center;box-shadow:0 6px 18px rgba(12,30,12,0.05)}
+    .value img{height:36px}
+    .ftu{padding:40px 20px;background:#ffffff}
+    .ftu .steps{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start}
+    .ftu ol{padding-left:18px}
+    .ftu .gallery{display:flex;flex-wrap:wrap;gap:10px}
+    .ftu .gallery img{width:72px;height:72px;border-radius:12px;object-fit:cover}
+    .security{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px}
+    footer{padding:28px 20px;text-align:center;color:var(--muted)}
+    @media(min-width:900px){h1{font-size:48px}} 
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="nav">
+        <div class="logo">
+          <img src="/assets/landing/logo.svg" alt="FarmDesk logo (Image 1)">
+          <div style="font-weight:800;font-size:18px">FarmDesk</div>
+        </div>
+        <nav>
+          <a href="#features">Features</a>
+          <a href="#philosophy">Philosophy</a>
+          <a href="#first-use">First use</a>
+          <a href="#contact">Contact</a>
+          <a class="btn" href="/app">Open App</a>
+        </nav>
+      </div>
+
+      <div class="hero">
+        <div class="hero-left">
+          <div class="eyebrow">Run Your Farm. Grow Your Business.</div>
+          <h1>One platform to manage every part of your farm operations from anywhere.</h1>
+          <p class="lead">Organize your data, monitor operations, analyze insights and grow profit — FarmDesk is your farm's digital office, built for farmers and farm teams.</p>
+          <div class="badge">
+            <span>Free</span>
+            <span>Offline-first</span>
+            <span>End-to-end encrypted backups</span>
+          </div>
+          <div class="cta">
+            <a class="btn" href="/signup">Get started — it's free</a>
+            <a class="btn alt" href="/demo">Request a demo</a>
+          </div>
+
+          <div style="margin-top:22px;color:rgba(255,255,255,0.85);font-size:15px;display:flex;gap:18px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px"><img src="/assets/landing/value-simplicity.svg" alt="Organize icon" style="height:22px"> Organize your data</div>
+            <div style="display:flex;align-items:center;gap:8px"><img src="/assets/landing/value-trust.svg" alt="Monitor icon" style="height:22px"> Monitor every operation</div>
+            <div style="display:flex;align-items:center;gap:8px"><img src="/assets/landing/value-innovation.svg" alt="Analyze icon" style="height:22px"> Analyze real insights</div>
+            <div style="display:flex;align-items:center;gap:8px"><img src="/assets/landing/value-simplicity.svg" alt="Grow icon" style="height:22px"> Grow your profit</div>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <div class="mock">
+            <img src="/assets/landing/dashboard_preview.svg" alt="FarmDesk dashboard preview (Image 6)" style="width:100%;display:block">
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="features" class="features">
+    <div class="container">
+      <h2 style="text-align:center;color:var(--green);margin:0 0 18px">What FarmDesk helps you do</h2>
+      <div class="grid">
+        <div class="card"><h3>Manage Livestock & Crops</h3><p>Track animals, breeding, treatments, and crop cycles in one place so nothing slips through the cracks.</p></div>
+        <div class="card"><h3>Finance & Inventory</h3><p>Control costs, record purchases, manage inventory and forecast profitability with clear reports.</p></div>
+        <div class="card"><h3>Analytics & Reporting</h3><p>Turn field data into actionable insights — improve yields and reduce waste with smart analytics.</p></div>
+        <div class="card"><h3>Team & Tasks</h3><p>Coordinate crews, assign tasks and keep communication organized across your farm operations.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="philosophy" class="philosophy">
+    <div class="container">
+      <h2 style="text-align:center;margin:0 0 22px">Our purpose, vision, mission, and promise</h2>
+      <div class="cols">
+        <div style="padding:16px;border-right:1px solid rgba(255,255,255,0.06)"><h4 style="margin:0 0 8px">Our Purpose</h4><p style="margin:0;color:rgba(255,255,255,0.9)">Empowering farmers with data and tools to build productive, profitable and sustainable farms.</p></div>
+        <div style="padding:16px;border-right:1px solid rgba(255,255,255,0.06)"><h4 style="margin:0 0 8px">Our Vision</h4><p style="margin:0;color:rgba(255,255,255,0.9)">A world where every farmer, anywhere, can thrive through knowledge and technology.</p></div>
+        <div style="padding:16px;border-right:1px solid rgba(255,255,255,0.06)"><h4 style="margin:0 0 8px">Our Mission</h4><p style="margin:0;color:rgba(255,255,255,0.9)">Deliver simple, reliable and intelligent digital solutions that transform how farms are managed.</p></div>
+        <div style="padding:16px"><h4 style="margin:0 0 8px">Our Promise</h4><p style="margin:0;color:rgba(255,255,255,0.9)">Your farm, your data, our technology — together for a better future.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="first-use" class="ftu">
+    <div class="container">
+      <h2 style="color:var(--green);text-align:center;margin-bottom:18px">First time using FarmDesk — quick start</h2>
+      <div class="steps">
+        <div>
+          <ol>
+            <li><strong>Install & open</strong> — Download FarmDesk on your device and open the app. No signup required to explore.</li>
+            <li><strong>Create your farm</strong> — Add your farm name and basic details. This creates a local database on your device.</li>
+            <li><strong>Work offline</strong> — Enter livestock, crop, and financial records even without internet. FarmDesk is offline-first and fast.</li>
+            <li><strong>Back up securely</strong> — Create encrypted backups stored locally or to your preferred cloud (end-to-end encryption protects your data).</li>
+            <li><strong>Sync devices</strong> — Connect other devices with a secure pairing code to keep teams in sync. Syncs are encrypted and tamper-evident.</li>
+            <li><strong>Invite your team</strong> — Add users and set roles for the right level of access across the farm.</li>
+            <li><strong>Get insights</strong> — Access financial summaries, productivity reports, and tamper-proof activity logs to support decision-making.</li>
+          </ol>
+
+          <div style="margin-top:18px">
+            <h4 style="margin:0 0 8px">Why people love FarmDesk</h4>
+            <ul>
+              <li>Completely free to start — core features remain free.</li>
+              <li>Offline-first: work on the field without network coverage.</li>
+              <li>End-to-end encrypted backups and device sync for privacy and safety.</li>
+              <li>Tamper-proof records with audit trails for accountability.</li>
+              <li>Classic, easy-to-use interface designed for touch devices.</li>
+            </ul>
+          </div>
+        </div>
+
+        <aside>
+          <div style="background:#f7f9f6;padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(12,30,12,0.04)">
+            <h4 style="margin:0 0 8px">Security & sync</h4>
+            <div class="security">
+              <div style="padding:12px;background:white;border-radius:8px">End-to-end encrypted backups</div>
+              <div style="padding:12px;background:white;border-radius:8px">Device pairing & secure sync</div>
+              <div style="padding:12px;background:white;border-radius:8px">Tamper-evident audit logs</div>
+            </div>
+            <h4 style="margin:18px 0 8px">Quick gallery</h4>
+            <div class="gallery">
+              <img src="/assets/landing/ftu_1.svg" alt="seedling (Image 5)">
+              <img src="/assets/landing/ftu_2.svg" alt="farmer with tablet (Image 5)">
+              <img src="/assets/landing/ftu_3.svg" alt="livestock (Image 5)">
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="values">
+    <div class="container">
+      <h2 style="color:var(--green);text-align:center;margin-bottom:18px">Brand values</h2>
+      <div class="values-list">
+        <div class="value"><img src="/assets/landing/value-simplicity.svg" alt="Simplicity"><div><strong>Simplicity</strong><div style="color:var(--muted);font-size:13px">Easy to use, easy to adopt.</div></div></div>
+        <div class="value"><img src="/assets/landing/value-trust.svg" alt="Trust"><div><strong>Trust</strong><div style="color:var(--muted);font-size:13px">Your data is secure and yours.</div></div></div>
+        <div class="value"><img src="/assets/landing/value-innovation.svg" alt="Innovation"><div><strong>Innovation</strong><div style="color:var(--muted);font-size:13px">Technology that solves real farm problems.</div></div></div>
+        <div class="value"><img src="/assets/landing/value-innovation.svg" alt="Collaboration"><div><strong>Collaboration</strong><div style="color:var(--muted);font-size:13px">Built for teams, partners, and communities.</div></div></div>
+        <div class="value"><img src="/assets/landing/value-simplicity.svg" alt="Growth"><div><strong>Growth</strong><div style="color:var(--muted);font-size:13px">Insights today, better harvests tomorrow.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p style="margin:8px 0 4px">© FarmDesk — Your Farm's Digital Office</p>
+      <p id="contact" style="margin:0">Contact: <a href="mailto:hello@farmdesk.example">hello@farmdesk.example</a></p>
+    </div>
+  </footer>
+</body>
+</html>

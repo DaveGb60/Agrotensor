@@ -1,0 +1,9 @@
+.fd-onboard{position:fixed;inset:0;background:rgba(4,8,6,0.55);display:flex;align-items:center;justify-content:center;z-index:1200}
+.fd-onboard__panel{width:min(820px,95%);background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(2,8,4,0.5);overflow:hidden}
+.fd-onboard__header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #eef5ee}
+.fd-onboard__content{padding:22px}
+.fd-onboard__footer{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #eef5ee}
+.fd-onboard__close{background:transparent;border:0;font-size:18px}
+.fd-onboard__actions .fd-btn{margin-left:10px}
+.fd-btn{background:#2f7a2f;color:#fff;padding:8px 12px;border-radius:8px;border:0;font-weight:700}
+.fd-btn--alt{background:transparent;border:2px solid #cfe8c9;color:#2f7a2f}
