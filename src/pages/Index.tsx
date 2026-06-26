@@ -7,6 +7,8 @@ import { DelayedRevenueRecordTable } from '@/components/DelayedRevenueRecordTabl
 import { MonthlySummary } from '@/components/MonthlySummary';
 import { ProjectDetailsSection } from '@/components/ProjectDetailsSection';
 import { ShareDialog } from '@/components/ShareDialog';
+import { BreedingProjectDetails } from '@/components/BreedingProjectDetails';
+import { LivestockRecordManager } from '@/components/LivestockRecordManager';
 
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
@@ -32,6 +34,7 @@ import {
   MonthlyAggregation,
   ProjectDetails,
   RecordType,
+  ProjectType,
   getAllProjects,
   createProject,
   deleteProject,
