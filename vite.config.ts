@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
       injectRegister: null,
       devOptions: { enabled: false },
       filename: "sw.js",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
+      includeAssets: ["favicon.ico", "favicon.svg", "favicon-16x16.png", "favicon-32x32.png", "favicon-48x48.png", "apple-touch-icon.png"],
       manifest: {
         name: "FarmDesk - Offline Farm Records",
         short_name: "FarmDesk",
@@ -31,6 +31,10 @@ export default defineConfig(({ mode }) => ({
         scope: "/",
         start_url: "/",
         icons: [
+          { src: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+          { src: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+          { src: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+          { src: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
           { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
           { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
           {
