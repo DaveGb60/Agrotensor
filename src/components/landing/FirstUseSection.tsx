@@ -65,8 +65,8 @@ const FirstUseSection = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-1">
-            <Card className="shadow-card h-full">
+          <div className="lg:col-span-1 space-y-4">
+            <Card className="shadow-card">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <svg className="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,7 +75,7 @@ const FirstUseSection = () => {
                   Security & sync
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 gap-3">
                   <div className="p-4 bg-green-50 rounded-xl text-center">
                     <div className="font-semibold text-primary mb-1">End-to-end encrypted backups</div>
@@ -87,27 +87,15 @@ const FirstUseSection = () => {
                     <div className="font-semibold text-primary mb-1">Tamper-evident audit trails</div>
                   </div>
                 </div>
-                
-                <h4 className="font-bold">Quick gallery</h4>
-                <div className="flex flex-wrap gap-3">
-                  <img 
-                    src="/assets/landing/brand-feature-1.jpg" 
-                    alt="FarmDesk feature" 
-                    className="w-20 h-20 rounded-xl object-cover shadow-card hover:shadow-elevated transition-all duration-300"
-                  />
-                  <img 
-                    src="/assets/landing/brand-feature-2.jpg" 
-                    alt="FarmDesk feature" 
-                    className="w-20 h-20 rounded-xl object-cover shadow-card hover:shadow-elevated transition-all duration-300"
-                  />
-                  <img 
-                    src="/assets/landing/brand-feature-3.jpg" 
-                    alt="FarmDesk feature" 
-                    className="w-20 h-20 rounded-xl object-cover shadow-card hover:shadow-elevated transition-all duration-300"
-                  />
-                </div>
               </CardContent>
             </Card>
+            <div className="rounded-xl overflow-hidden shadow-card">
+              <img 
+                src="/assets/landing/brand-feature-1.jpg" 
+                alt="FarmDesk in use" 
+                className="w-full h-48 object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>
