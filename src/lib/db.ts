@@ -37,22 +37,36 @@ export function getMonthsBetween(startDate: string, endDate: string): string[] {
   return months;
 }
 
-// Project Details (Section 1) - editable until project is completed
+export type ProjectType = 'produce' | 'breeding';
+
+// Project Details for Produce Projects
 export interface ProjectDetails {
   capital: number;
-  capitalDate?: string; // YYYY-MM-DD - when capital was invested
+  capitalDate?: string;
   totalItemCount: number;
   costs: number;
-  costsDate?: string; // YYYY-MM-DD - when general costs were incurred
+  costsDate?: string;
   estimatedRevenue: number;
   inputs: InputItem[];
   challengesSummary: string;
   customDetails: Record<string, string | number>;
-  notes?: string; // Project notes with formatting
+  notes?: string;
+}
+
+// Project Details for Breeding Projects
+export interface BreedingProjectDetails {
+  breed?: string;
+  herdSize?: number;
+  breedingGoal?: string;
+  capitalInvestment?: number;
+  requiredInputs?: string;
+  totalCosts?: number;
+  operationalChallenges?: string;
+  estimatedRevenue?: number;
+  notes?: string;
 }
 
 export type ColumnType = 'text' | 'number' | 'cash_inflow' | 'cash_outflow';
-
 export type RecordType = 'standard' | 'delayed_revenue';
 
 export interface FarmProject {
@@ -61,15 +75,107 @@ export interface FarmProject {
   startDate: string;
   createdAt: string;
   updatedAt: string;
+  projectType: ProjectType;
   customColumns: string[];
   customColumnTypes: Record<string, ColumnType>;
-  recordType: RecordType; // 'standard' = immediate revenue, 'delayed_revenue' = batch sales
+  recordType: RecordType;
   isCompleted: boolean;
   completedAt?: string;
-  details: ProjectDetails;
-  // Soft delete fields
+  details: ProjectDetails | BreedingProjectDetails;
   deletedAt?: string;
   isDeleted?: boolean;
+}
+
+export type AnimalSex = 'male' | 'female';
+export type PregnancyStatus = 'not_pregnant' | 'pregnant' | 'calved';
+export type HealthStatus = 'healthy' | 'sick' | 'under_treatment' | 'deceased';
+
+export interface MatingRecord {
+  id: string;
+  animalId: string;
+  mateId: string;
+  date: string;
+  notes?: string;
+  isLocked: boolean;
+  lockedAt?: string;
+}
+
+export interface PregnancyRecord {
+  id: string;
+  animalId: string;
+  matingRecordId?: string;
+  startDate: string;
+  expectedDeliveryDate?: string;
+  actualDeliveryDate?: string;
+  status: PregnancyStatus;
+  notes?: string;
+  isLocked: boolean;
+  lockedAt?: string;
+}
+
+export interface BirthRecord {
+  id: string;
+  motherId: string;
+  fatherId?: string;
+  birthDate: string;
+  offspringIds: string[];
+  notes?: string;
+  isLocked: boolean;
+  lockedAt?: string;
+}
+
+export interface DeathRecord {
+  id: string;
+  animalId: string;
+  deathDate: string;
+  cause?: string;
+  notes?: string;
+  isLocked: boolean;
+  lockedAt?: string;
+}
+
+export interface SaleRecord {
+  id: string;
+  animalId: string;
+  saleDate: string;
+  price?: number;
+  buyer?: string;
+  notes?: string;
+  isLocked: boolean;
+  lockedAt?: string;
+}
+
+export interface TreatmentRecord {
+  id: string;
+  animalId: string;
+  date: string;
+  treatment?: string;
+  veterinarian?: string;
+  notes?: string;
+  isLocked: boolean;
+  lockedAt?: string;
+}
+
+export interface FarmAnimal {
+  id: string;
+  projectId: string;
+  animalId: string;
+  sex: AnimalSex;
+  age?: string;
+  breed?: string;
+  healthStatus: HealthStatus;
+  motherId?: string;
+  fatherId?: string;
+  createdAt: string;
+  updatedAt: string;
+  isLocked: boolean;
+  lockedAt?: string;
+  matingHistory: MatingRecord[];
+  pregnancyHistory: PregnancyRecord[];
+  birthRecords: BirthRecord[];
+  deathRecords: DeathRecord[];
+  saleRecords: SaleRecord[];
+  treatmentHistory: TreatmentRecord[];
 }
 
 export interface FarmRecord {
@@ -120,6 +226,16 @@ interface FarmDeskDB extends DBSchema {
       'by-project-date': [string, string];
     };
   };
+  animals: {
+    key: string;
+    value: FarmAnimal;
+    indexes: { 
+      'by-project': string;
+      'by-animalId': string;
+      'by-mother': string;
+      'by-father': string;
+    };
+  };
 }
 
 let dbInstance: IDBPDatabase<FarmDeskDB> | null = null;
@@ -127,17 +243,28 @@ let dbInstance: IDBPDatabase<FarmDeskDB> | null = null;
 export async function getDB(): Promise<IDBPDatabase<FarmDeskDB>> {
   if (dbInstance) return dbInstance;
 
-  dbInstance = await openDB<FarmDeskDB>('farmdesk-db', 1, {
-    upgrade(db) {
-      // Projects store
-      const projectStore = db.createObjectStore('projects', { keyPath: 'id' });
-      projectStore.createIndex('by-title', 'title');
+  dbInstance = await openDB<FarmDeskDB>('farmdesk-db', 2, {
+    upgrade(db, oldVersion) {
+      if (oldVersion < 1) {
+        // Projects store
+        const projectStore = db.createObjectStore('projects', { keyPath: 'id' });
+        projectStore.createIndex('by-title', 'title');
 
-      // Records store
-      const recordStore = db.createObjectStore('records', { keyPath: 'id' });
-      recordStore.createIndex('by-project', 'projectId');
-      recordStore.createIndex('by-date', 'date');
-      recordStore.createIndex('by-project-date', ['projectId', 'date']);
+        // Records store
+        const recordStore = db.createObjectStore('records', { keyPath: 'id' });
+        recordStore.createIndex('by-project', 'projectId');
+        recordStore.createIndex('by-date', 'date');
+        recordStore.createIndex('by-project-date', ['projectId', 'date']);
+      }
+
+      if (oldVersion < 2) {
+        // Animals store for breeding projects
+        const animalStore = db.createObjectStore('animals', { keyPath: 'id' });
+        animalStore.createIndex('by-project', 'projectId');
+        animalStore.createIndex('by-animalId', 'animalId');
+        animalStore.createIndex('by-mother', 'motherId');
+        animalStore.createIndex('by-father', 'fatherId');
+      }
     },
   });
 
@@ -149,7 +276,7 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Default project details
+// Default project details (Produce)
 export function createDefaultProjectDetails(): ProjectDetails {
   return {
     capital: 0,
@@ -162,8 +289,20 @@ export function createDefaultProjectDetails(): ProjectDetails {
   };
 }
 
+// Default breeding project details
+export function createDefaultBreedingProjectDetails(): BreedingProjectDetails {
+  return {};
+}
+
 // Project operations
-export async function createProject(title: string, startDate: string, customColumns: string[] = [], existingId?: string, recordType: RecordType = 'standard'): Promise<FarmProject> {
+export async function createProject(
+  title: string, 
+  startDate: string, 
+  customColumns: string[] = [], 
+  existingId?: string, 
+  recordType: RecordType = 'standard', 
+  projectType: ProjectType = 'produce'
+): Promise<FarmProject> {
   const db = await getDB();
   const now = new Date().toISOString();
   const project: FarmProject = {
@@ -172,14 +311,123 @@ export async function createProject(title: string, startDate: string, customColu
     startDate,
     createdAt: now,
     updatedAt: now,
+    projectType,
     customColumns,
     customColumnTypes: {},
     recordType,
     isCompleted: false,
-    details: createDefaultProjectDetails(),
+    details: projectType === 'produce' ? createDefaultProjectDetails() : createDefaultBreedingProjectDetails(),
   };
   await db.put('projects', project);
   return project;
+}
+
+// Animal operations
+export async function createAnimal(projectId: string, data: Omit<FarmAnimal, 'id' | 'projectId' | 'createdAt' | 'updatedAt' | 'isLocked' | 'lockedAt'>): Promise<FarmAnimal> {
+  const db = await getDB();
+  const now = new Date().toISOString();
+  const animal: FarmAnimal = {
+    id: generateId(),
+    projectId,
+    ...data,
+    createdAt: now,
+    updatedAt: now,
+    isLocked: false,
+    matingHistory: [],
+    pregnancyHistory: [],
+    birthRecords: [],
+    deathRecords: [],
+    saleRecords: [],
+    treatmentHistory: [],
+  };
+  await db.put('animals', animal);
+  return animal;
+}
+
+export async function getAnimalsByProject(projectId: string): Promise<FarmAnimal[]> {
+  const db = await getDB();
+  return db.getAllFromIndex('animals', 'by-project', projectId);
+}
+
+export async function getAnimal(id: string): Promise<FarmAnimal | undefined> {
+  const db = await getDB();
+  return db.get('animals', id);
+}
+
+export async function updateAnimal(animal: FarmAnimal): Promise<void> {
+  const db = await getDB();
+  if (animal.isLocked) {
+    throw new Error('Cannot update a locked animal');
+  }
+  animal.updatedAt = new Date().toISOString();
+  await db.put('animals', animal);
+}
+
+export async function lockAnimal(id: string): Promise<void> {
+  const db = await getDB();
+  const animal = await db.get('animals', id);
+  if (!animal) throw new Error('Animal not found');
+  animal.isLocked = true;
+  animal.lockedAt = new Date().toISOString();
+  animal.updatedAt = new Date().toISOString();
+  await db.put('animals', animal);
+}
+
+export async function deleteAnimal(id: string): Promise<void> {
+  const db = await getDB();
+  const animal = await db.get('animals', id);
+  if (animal?.isLocked) {
+    throw new Error('Cannot delete a locked animal');
+  }
+  await db.delete('animals', id);
+}
+
+// Lineage tracking helpers
+export async function getAnimalOffspring(animalId: string): Promise<FarmAnimal[]> {
+  const db = await getDB();
+  const allAnimals = await db.getAll('animals');
+  return allAnimals.filter(a => a.motherId === animalId || a.fatherId === animalId);
+}
+
+export async function getAnimalLineage(animalId: string): Promise<{ ancestors: FarmAnimal[], descendants: FarmAnimal[] }> {
+  const db = await getDB();
+  const allAnimals = await db.getAll('animals');
+  
+  // Get ancestors
+  const ancestors: FarmAnimal[] = [];
+  const getAncestors = (id: string) => {
+    const animal = allAnimals.find(a => a.id === id);
+    if (animal) {
+      if (animal.motherId) {
+        const mother = allAnimals.find(a => a.id === animal.motherId);
+        if (mother) {
+          ancestors.push(mother);
+          getAncestors(mother.id);
+        }
+      }
+      if (animal.fatherId) {
+        const father = allAnimals.find(a => a.id === animal.fatherId);
+        if (father) {
+          ancestors.push(father);
+          getAncestors(father.id);
+        }
+      }
+    }
+  };
+  getAncestors(animalId);
+
+  // Get descendants
+  const descendants: FarmAnimal[] = [];
+  const getDescendants = (id: string) => {
+    const offspring = allAnimals.filter(a => a.motherId === id || a.fatherId === id);
+    for (const child of offspring) {
+      descendants.push(child);
+      getDescendants(child.id);
+    }
+  };
+  getDescendants(animalId);
+
+  return { ancestors, descendants };
 }
 
 // Import a full project with its original ID (for syncing)
@@ -244,31 +492,41 @@ export async function importRecord(record: FarmRecord): Promise<FarmRecord> {
 export async function getAllProjects(): Promise<FarmProject[]> {
   const db = await getDB();
   const projects = await db.getAll('projects');
-  // Filter out deleted projects and ensure backward compatibility
   return projects
     .filter(p => !p.isDeleted)
-    .map(p => ({
-      ...p,
-      isCompleted: p.isCompleted ?? false,
-      details: p.details ?? createDefaultProjectDetails(),
-      customColumnTypes: p.customColumnTypes ?? {},
-      recordType: p.recordType ?? 'standard',
-    }));
+    .map(p => {
+      const projectType = (p as any).projectType || 'produce';
+      return {
+        ...p,
+        projectType,
+        isCompleted: p.isCompleted ?? false,
+        details: projectType === 'produce' 
+          ? (p.details ?? createDefaultProjectDetails()) 
+          : (p.details ?? createDefaultBreedingProjectDetails()),
+        customColumnTypes: p.customColumnTypes ?? {},
+        recordType: p.recordType ?? 'standard',
+      };
+    });
 }
 
-// Get only deleted projects (for trash)
 export async function getDeletedProjects(): Promise<FarmProject[]> {
   const db = await getDB();
   const projects = await db.getAll('projects');
   return projects
     .filter(p => p.isDeleted)
-    .map(p => ({
-      ...p,
-      isCompleted: p.isCompleted ?? false,
-      details: p.details ?? createDefaultProjectDetails(),
-      customColumnTypes: p.customColumnTypes ?? {},
-      recordType: p.recordType ?? 'standard',
-    }))
+    .map(p => {
+      const projectType = (p as any).projectType || 'produce';
+      return {
+        ...p,
+        projectType,
+        isCompleted: p.isCompleted ?? false,
+        details: projectType === 'produce' 
+          ? (p.details ?? createDefaultProjectDetails()) 
+          : (p.details ?? createDefaultBreedingProjectDetails()),
+        customColumnTypes: p.customColumnTypes ?? {},
+        recordType: p.recordType ?? 'standard',
+      };
+    })
     .sort((a, b) => new Date(b.deletedAt!).getTime() - new Date(a.deletedAt!).getTime());
 }
 
@@ -276,11 +534,14 @@ export async function getProject(id: string): Promise<FarmProject | undefined> {
   const db = await getDB();
   const project = await db.get('projects', id);
   if (!project) return undefined;
-  // Ensure backward compatibility for projects without new fields
+  const projectType = (project as any).projectType || 'produce';
   return {
     ...project,
+    projectType,
     isCompleted: project.isCompleted ?? false,
-    details: project.details ?? createDefaultProjectDetails(),
+    details: projectType === 'produce' 
+      ? (project.details ?? createDefaultProjectDetails()) 
+      : (project.details ?? createDefaultBreedingProjectDetails()),
     customColumnTypes: project.customColumnTypes ?? {},
     recordType: project.recordType ?? 'standard',
   };

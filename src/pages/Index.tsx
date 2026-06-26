@@ -111,9 +111,9 @@ const Index = () => {
     }
   };
 
-  const handleCreateProject = async (title: string, startDate: string, customColumns: string[]) => {
+  const handleCreateProject = async (title: string, startDate: string, customColumns: string[], projectType: ProjectType = 'produce') => {
     try {
-      const newProject = await createProject(title, startDate, customColumns);
+      const newProject = await createProject(title, startDate, customColumns, undefined, 'standard', projectType);
       setProjects([newProject, ...projects]);
       setRecordCounts({ ...recordCounts, [newProject.id]: 0 });
       toast({ title: 'Project created successfully' });
@@ -398,17 +398,21 @@ const Index = () => {
               </Button>
               <div>
                 <h2 className="font-serif text-2xl font-semibold">{selectedProject.title}</h2>
-                <p className="text-sm text-muted-foreground font-mono">ID: {selectedProject.id.slice(0, 8)}</p>
+                <p className="text-sm text-muted-foreground font-mono">
+                  {selectedProject.projectType === 'breeding' ? 'Breeding Project' : 'Produce Project'} • ID: {selectedProject.id.slice(0, 8)}
+                </p>
               </div>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsPDFExportOpen(true)}
-              >
-                <FileDown className="h-4 w-4 mr-2" />
-                Export PDF
-              </Button>
+              {selectedProject.projectType === 'produce' && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPDFExportOpen(true)}
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Export PDF
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => setShareProject({ project: selectedProject, records })}
@@ -419,84 +423,91 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Dual Section Tabs */}
-          <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as 'details' | 'components')} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-md">
-              <TabsTrigger value="details" className="gap-2">
-                <ClipboardList className="h-4 w-4" />
-                Project Details
-              </TabsTrigger>
-              <TabsTrigger value="components" className="gap-2">
-                <Table2 className="h-4 w-4" />
-                Records
-              </TabsTrigger>
-            </TabsList>
+          {/* Breeding Project UI */}
+          {selectedProject.projectType === 'breeding' ? (
+            <div className="space-y-6">
+              <BreedingProjectDetails project={selectedProject} onUpdate={loadProjects} />
+              <LivestockRecordManager project={selectedProject} />
+            </div>
+          ) : (
+            /* Produce Project UI */
+            <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as 'details' | 'components')} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 max-w-md">
+                <TabsTrigger value="details" className="gap-2">
+                  <ClipboardList className="h-4 w-4" />
+                  Project Details
+                </TabsTrigger>
+                <TabsTrigger value="components" className="gap-2">
+                  <Table2 className="h-4 w-4" />
+                  Records
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Section 1: Project Main Details */}
-            <TabsContent value="details" className="space-y-6 mt-6">
-              <ProjectDetailsSection
-                project={selectedProject}
-                onUpdateDetails={handleUpdateProjectDetails}
-                onCompleteProject={handleCompleteProject}
-              />
-              <NotesEditor
-                notes={selectedProject.details.notes || ''}
-                onChange={(notes) => handleUpdateProjectDetails({ ...selectedProject.details, notes })}
-                readOnly={selectedProject.isCompleted}
-              />
-              <MonthlySummary 
-                aggregations={aggregations} 
-                projectDetails={selectedProject.details} 
-                isCompleted={selectedProject.isCompleted}
-              />
-            </TabsContent>
+              {/* Section 1: Project Main Details */}
+              <TabsContent value="details" className="space-y-6 mt-6">
+                <ProjectDetailsSection
+                  project={selectedProject}
+                  onUpdateDetails={handleUpdateProjectDetails}
+                  onCompleteProject={handleCompleteProject}
+                />
+                <NotesEditor
+                  notes={selectedProject.details.notes || ''}
+                  onChange={(notes) => handleUpdateProjectDetails({ ...selectedProject.details, notes })}
+                  readOnly={selectedProject.isCompleted}
+                />
+                <MonthlySummary 
+                  aggregations={aggregations} 
+                  projectDetails={selectedProject.details} 
+                  isCompleted={selectedProject.isCompleted}
+                />
+              </TabsContent>
 
-            {/* Section 2: Project Records */}
-            <TabsContent value="components" className="space-y-6 mt-6">
-              <div>
-                <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-serif text-lg font-semibold">Project Records</h3>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-7 px-2" disabled={selectedProject.isCompleted}>
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="bg-popover z-50 w-72">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuItem 
-                              onClick={() => handleChangeRecordType('standard')}
-                              className={cn(
-                                "flex flex-col items-start gap-1 py-3",
-                                selectedProject.recordType === 'standard' && 'bg-accent'
-                              )}
-                            >
-                              <div className="flex items-center gap-2">
-                                <Zap className="h-4 w-4" />
-                                <span className="font-medium">Standard (Immediate Revenue)</span>
-                              </div>
-                              <span className="text-xs text-muted-foreground ml-6">
-                                Revenue recorded when production occurs
-                              </span>
-                            </DropdownMenuItem>
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="max-w-xs">
-                            <p className="text-sm">
-                              <strong>Standard Records:</strong> Use when revenue is received immediately upon production or harvest. Ideal for direct sales, daily market sales, or products sold on-the-spot.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuItem 
-                              onClick={() => handleChangeRecordType('delayed_revenue')}
-                              className={cn(
-                                "flex flex-col items-start gap-1 py-3",
-                                selectedProject.recordType === 'delayed_revenue' && 'bg-accent'
-                              )}
-                            >
+              {/* Section 2: Project Records */}
+              <TabsContent value="components" className="space-y-6 mt-6">
+                <div>
+                  <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-serif text-lg font-semibold">Project Records</h3>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-7 px-2" disabled={selectedProject.isCompleted}>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="bg-popover z-50 w-72">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuItem 
+                                onClick={() => handleChangeRecordType('standard')}
+                                className={cn(
+                                  "flex flex-col items-start gap-1 py-3",
+                                  selectedProject.recordType === 'standard' && 'bg-accent'
+                                )}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Zap className="h-4 w-4" />
+                                  <span className="font-medium">Standard (Immediate Revenue)</span>
+                                </div>
+                                <span className="text-xs text-muted-foreground ml-6">
+                                  Revenue recorded when production occurs
+                                </span>
+                              </DropdownMenuItem>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs">
+                              <p className="text-sm">
+                                <strong>Standard Records:</strong> Use when revenue is received immediately upon production or harvest. Ideal for direct sales, daily market sales, or products sold on-the-spot.
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuItem 
+                                onClick={() => handleChangeRecordType('delayed_revenue')}
+                                className={cn(
+                                  "flex flex-col items-start gap-1 py-3",
+                                  selectedProject.recordType === 'delayed_revenue' && 'bg-accent'
+                                )}
+                              >
                               <div className="flex items-center gap-2">
                                 <Package className="h-4 w-4" />
                                 <span className="font-medium">Delayed Revenue (Batch Sales)</span>
@@ -557,6 +568,7 @@ const Index = () => {
               </div>
             </TabsContent>
           </Tabs>
+          )}
         </main>
 
         {shareProject && (
