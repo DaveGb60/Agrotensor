@@ -52,7 +52,7 @@ const FeaturesSection = () => {
               </div>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <features[0].icon className="h-8 w-8 text-primary" />
+                  {(() => { const Icon = features[0].icon; return <Icon className="h-8 w-8 text-primary" />; })()}
                   <CardTitle className="text-primary font-serif">{features[0].title}</CardTitle>
                 </div>
               </CardHeader>
@@ -76,7 +76,7 @@ const FeaturesSection = () => {
               </div>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <features[1].icon className="h-8 w-8 text-primary" />
+                  {(() => { const Icon = features[1].icon; return <Icon className="h-8 w-8 text-primary" />; })()}
                   <CardTitle className="text-primary font-serif">{features[1].title}</CardTitle>
                 </div>
               </CardHeader>
@@ -93,7 +93,7 @@ const FeaturesSection = () => {
             >
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <features[2].icon className="h-8 w-8 text-primary" />
+                  {(() => { const Icon = features[2].icon; return <Icon className="h-8 w-8 text-primary" />; })()}
                   <CardTitle className="text-primary font-serif">{features[2].title}</CardTitle>
                 </div>
               </CardHeader>
@@ -108,7 +108,7 @@ const FeaturesSection = () => {
             >
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <features[3].icon className="h-8 w-8 text-primary" />
+                  {(() => { const Icon = features[3].icon; return <Icon className="h-8 w-8 text-primary" />; })()}
                   <CardTitle className="text-primary font-serif">{features[3].title}</CardTitle>
                 </div>
               </CardHeader>
