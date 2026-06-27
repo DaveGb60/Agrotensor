@@ -9,6 +9,8 @@ import { ProjectDetailsSection } from '@/components/ProjectDetailsSection';
 import { ShareDialog } from '@/components/ShareDialog';
 import { BreedingProjectDetails } from '@/components/BreedingProjectDetails';
 import { LivestockRecordManager } from '@/components/LivestockRecordManager';
+import { BreedingDashboard } from '@/components/breeding/BreedingDashboard';
+import { BreedingMonthlySummary } from '@/components/breeding/BreedingMonthlySummary';
 
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
@@ -48,6 +50,9 @@ import {
   updateProjectDetails,
   completeProject,
   updateProject,
+  BreedingProjectDetails as BreedingDetailsType,
+  getAnimalsByProject,
+  FarmAnimal,
   generateId,
 } from '@/lib/db';
 import { cn } from '@/lib/utils';
@@ -63,7 +68,8 @@ const Index = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [shareProject, setShareProject] = useState<{ project: FarmProject; records: FarmRecord[] } | null>(null);
+  const [shareProject, setShareProject] = useState<{ project: FarmProject; records: FarmRecord[]; animals: FarmAnimal[] } | null>(null);
+  const [breedingRefreshKey, setBreedingRefreshKey] = useState(0);
   
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
   const [isSyncOpen, setIsSyncOpen] = useState(false);
@@ -92,8 +98,13 @@ const Index = () => {
       // Get record counts for each project
       const counts: Record<string, number> = {};
       for (const project of allProjects) {
-        const projectRecords = await getRecordsByProject(project.id);
-        counts[project.id] = projectRecords.length;
+        if (project.projectType === 'breeding') {
+          const animals = await getAnimalsByProject(project.id);
+          counts[project.id] = animals.length;
+        } else {
+          const projectRecords = await getRecordsByProject(project.id);
+          counts[project.id] = projectRecords.length;
+        }
       }
       setRecordCounts(counts);
     } catch (error) {
@@ -153,7 +164,8 @@ const Index = () => {
     const project = await getProject(id);
     if (project) {
       const projectRecords = await getRecordsByProject(id);
-      setShareProject({ project, records: projectRecords });
+      const animals = project.projectType === 'breeding' ? await getAnimalsByProject(id) : [];
+      setShareProject({ project, records: projectRecords, animals });
     }
   };
 
@@ -418,7 +430,10 @@ const Index = () => {
               )}
               <Button
                 variant="outline"
-                onClick={() => setShareProject({ project: selectedProject, records })}
+                onClick={async () => {
+                  const animals = await getAnimalsByProject(selectedProject.id);
+                  setShareProject({ project: selectedProject, records, animals });
+                }}
               >
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
@@ -429,8 +444,22 @@ const Index = () => {
           {/* Breeding Project UI */}
           {selectedProject.projectType === 'breeding' ? (
             <div className="space-y-6">
-              <BreedingProjectDetails project={selectedProject} onUpdate={loadProjects} />
-              <LivestockRecordManager project={selectedProject} />
+              <BreedingDashboard project={selectedProject} refreshKey={breedingRefreshKey} />
+              <BreedingProjectDetails project={selectedProject} onUpdate={() => { loadProjects(); setBreedingRefreshKey((k) => k + 1); }} />
+              <NotesEditor
+                notes={(selectedProject.details as BreedingDetailsType).notes || ''}
+                onChange={async (notes) => {
+                  const updated = {
+                    ...selectedProject,
+                    details: { ...selectedProject.details, notes },
+                  };
+                  await updateProject(updated);
+                  setSelectedProject(updated);
+                }}
+                readOnly={selectedProject.isCompleted}
+              />
+              <BreedingMonthlySummary project={selectedProject} refreshKey={breedingRefreshKey} />
+              <LivestockRecordManager project={selectedProject} onAnimalsChange={() => setBreedingRefreshKey((k) => k + 1)} />
             </div>
           ) : (
             /* Produce Project UI */
@@ -580,6 +609,7 @@ const Index = () => {
             onOpenChange={() => setShareProject(null)}
             project={shareProject.project}
             records={shareProject.records}
+            animals={shareProject.animals}
           />
         )}
 

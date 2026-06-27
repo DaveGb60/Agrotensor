@@ -5,10 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   getAllProjects,
   getRecordsByProject,
+  getAnimalsByProject,
   importProject,
   importRecord,
+  importAnimal,
   FarmProject,
   FarmRecord,
+  FarmAnimal,
 } from './db';
 import { generateRecordFingerprint } from './fileSync';
 
@@ -94,10 +97,15 @@ export async function backupToCloud(identity: CloudIdentity) {
   const activeProjects = projects.filter((p) => !p.isDeleted);
 
   const allRecords: (FarmRecord & { fingerprint: string })[] = [];
+  const allAnimals: FarmAnimal[] = [];
   for (const project of activeProjects) {
     const records = await getRecordsByProject(project.id);
     for (const r of records) {
       allRecords.push({ ...r, fingerprint: generateRecordFingerprint(r) });
+    }
+    if (project.projectType === 'breeding') {
+      const animals = await getAnimalsByProject(project.id);
+      allAnimals.push(...animals);
     }
   }
 
@@ -106,12 +114,14 @@ export async function backupToCloud(identity: CloudIdentity) {
     recovery_code: identity.recoveryCode,
     projects: activeProjects,
     records: allRecords,
+    animals: allAnimals,
   });
 }
 
 export interface RestoreResult {
   importedProjects: number;
   importedRecords: number;
+  importedAnimals: number;
   skippedRecords: number;
 }
 
@@ -123,6 +133,7 @@ export async function restoreFromCloud(identity: CloudIdentity): Promise<Restore
 
   const projects: FarmProject[] = data.projects || [];
   const records: FarmRecord[] = data.records || [];
+  const animals: FarmAnimal[] = data.animals || [];
 
   // Build fingerprint set of local records to dedupe
   const localFingerprints = new Set<string>();
@@ -153,5 +164,15 @@ export async function restoreFromCloud(identity: CloudIdentity): Promise<Restore
     localFingerprints.add(key);
   }
 
-  return { importedProjects, importedRecords, skippedRecords };
+  let importedAnimals = 0;
+  for (const animal of animals) {
+    try {
+      await importAnimal(animal);
+      importedAnimals++;
+    } catch {
+      // skip locked or invalid
+    }
+  }
+
+  return { importedProjects, importedRecords, importedAnimals, skippedRecords };
 }

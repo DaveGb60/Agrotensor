@@ -53,6 +53,14 @@ export interface ProjectDetails {
   notes?: string;
 }
 
+export interface BreedingCostItem {
+  id: string;
+  label: string;
+  amount: number;
+  date?: string;
+  category: 'feed' | 'veterinary' | 'equipment' | 'other';
+}
+
 // Project Details for Breeding Projects
 export interface BreedingProjectDetails {
   breed?: string;
@@ -61,8 +69,11 @@ export interface BreedingProjectDetails {
   capitalInvestment?: number;
   requiredInputs?: string;
   totalCosts?: number;
+  operationalCosts?: BreedingCostItem[];
   operationalChallenges?: string;
   estimatedRevenue?: number;
+  breedingSeasonStart?: string;
+  breedingSeasonEnd?: string;
   notes?: string;
 }
 
@@ -89,6 +100,7 @@ export interface FarmProject {
 export type AnimalSex = 'male' | 'female';
 export type PregnancyStatus = 'not_pregnant' | 'pregnant' | 'calved';
 export type HealthStatus = 'healthy' | 'sick' | 'under_treatment' | 'deceased';
+export type AnimalStatus = 'active' | 'sold' | 'deceased' | 'archived';
 
 export interface MatingRecord {
   id: string;
@@ -151,6 +163,7 @@ export interface TreatmentRecord {
   date: string;
   treatment?: string;
   veterinarian?: string;
+  cost?: number;
   notes?: string;
   isLocked: boolean;
   lockedAt?: string;
@@ -162,8 +175,12 @@ export interface FarmAnimal {
   animalId: string;
   sex: AnimalSex;
   age?: string;
+  birthDate?: string;
   breed?: string;
   healthStatus: HealthStatus;
+  currentStatus?: AnimalStatus;
+  acquisitionCost?: number;
+  notes?: string;
   motherId?: string;
   fatherId?: string;
   createdAt: string;
@@ -176,6 +193,13 @@ export interface FarmAnimal {
   deathRecords: DeathRecord[];
   saleRecords: SaleRecord[];
   treatmentHistory: TreatmentRecord[];
+}
+
+export interface OffspringInput {
+  animalId: string;
+  sex: AnimalSex;
+  breed?: string;
+  healthStatus?: HealthStatus;
 }
 
 export interface FarmRecord {
@@ -234,7 +258,21 @@ interface FarmDeskDB extends DBSchema {
       'by-animalId': string;
       'by-mother': string;
       'by-father': string;
+      'by-status': AnimalStatus;
     };
+  };
+}
+
+export function normalizeAnimal(animal: FarmAnimal): FarmAnimal {
+  return {
+    ...animal,
+    currentStatus: animal.currentStatus ?? 'active',
+    matingHistory: animal.matingHistory ?? [],
+    pregnancyHistory: animal.pregnancyHistory ?? [],
+    birthRecords: animal.birthRecords ?? [],
+    deathRecords: animal.deathRecords ?? [],
+    saleRecords: animal.saleRecords ?? [],
+    treatmentHistory: animal.treatmentHistory ?? [],
   };
 }
 
@@ -243,14 +281,12 @@ let dbInstance: IDBPDatabase<FarmDeskDB> | null = null;
 export async function getDB(): Promise<IDBPDatabase<FarmDeskDB>> {
   if (dbInstance) return dbInstance;
 
-  dbInstance = await openDB<FarmDeskDB>('farmdesk-db', 2, {
-    upgrade(db, oldVersion) {
+  dbInstance = await openDB<FarmDeskDB>('farmdesk-db', 3, {
+    upgrade(db, oldVersion, _newVersion, transaction) {
       if (oldVersion < 1) {
-        // Projects store
         const projectStore = db.createObjectStore('projects', { keyPath: 'id' });
         projectStore.createIndex('by-title', 'title');
 
-        // Records store
         const recordStore = db.createObjectStore('records', { keyPath: 'id' });
         recordStore.createIndex('by-project', 'projectId');
         recordStore.createIndex('by-date', 'date');
@@ -258,12 +294,24 @@ export async function getDB(): Promise<IDBPDatabase<FarmDeskDB>> {
       }
 
       if (oldVersion < 2) {
-        // Animals store for breeding projects
         const animalStore = db.createObjectStore('animals', { keyPath: 'id' });
         animalStore.createIndex('by-project', 'projectId');
         animalStore.createIndex('by-animalId', 'animalId');
         animalStore.createIndex('by-mother', 'motherId');
         animalStore.createIndex('by-father', 'fatherId');
+      }
+
+      if (oldVersion < 3) {
+        const animalStore = transaction.objectStore('animals');
+        if (!animalStore.indexNames.contains('by-status')) {
+          animalStore.createIndex('by-status', 'currentStatus');
+        }
+        animalStore.openCursor().then(function migrate(cursor) {
+          if (!cursor) return;
+          const animal = normalizeAnimal(cursor.value as FarmAnimal);
+          cursor.update(animal);
+          return cursor.continue().then(migrate);
+        });
       }
     },
   });
@@ -323,13 +371,24 @@ export async function createProject(
 }
 
 // Animal operations
-export async function createAnimal(projectId: string, data: Omit<FarmAnimal, 'id' | 'projectId' | 'createdAt' | 'updatedAt' | 'isLocked' | 'lockedAt'>): Promise<FarmAnimal> {
+export async function isAnimalTagUnique(projectId: string, animalTag: string, excludeId?: string): Promise<boolean> {
+  const animals = await getAnimalsByProject(projectId);
+  return !animals.some((a) => a.animalId === animalTag && a.id !== excludeId);
+}
+
+export async function createAnimal(projectId: string, data: Omit<FarmAnimal, 'id' | 'projectId' | 'createdAt' | 'updatedAt' | 'isLocked' | 'lockedAt' | 'matingHistory' | 'pregnancyHistory' | 'birthRecords' | 'deathRecords' | 'saleRecords' | 'treatmentHistory'>): Promise<FarmAnimal> {
   const db = await getDB();
+  const unique = await isAnimalTagUnique(projectId, data.animalId);
+  if (!unique) {
+    throw new Error(`Animal ID "${data.animalId}" already exists in this project`);
+  }
+
   const now = new Date().toISOString();
-  const animal: FarmAnimal = {
+  const animal: FarmAnimal = normalizeAnimal({
     id: generateId(),
     projectId,
     ...data,
+    currentStatus: data.currentStatus ?? 'active',
     createdAt: now,
     updatedAt: now,
     isLocked: false,
@@ -339,19 +398,34 @@ export async function createAnimal(projectId: string, data: Omit<FarmAnimal, 'id
     deathRecords: [],
     saleRecords: [],
     treatmentHistory: [],
-  };
+  });
   await db.put('animals', animal);
   return animal;
 }
 
+export async function importAnimal(animal: FarmAnimal): Promise<FarmAnimal> {
+  const db = await getDB();
+  const existing = await db.get('animals', animal.id);
+  if (existing?.isLocked) return existing;
+
+  const imported = normalizeAnimal({
+    ...animal,
+    updatedAt: new Date().toISOString(),
+  });
+  await db.put('animals', imported);
+  return imported;
+}
+
 export async function getAnimalsByProject(projectId: string): Promise<FarmAnimal[]> {
   const db = await getDB();
-  return db.getAllFromIndex('animals', 'by-project', projectId);
+  const animals = await db.getAllFromIndex('animals', 'by-project', projectId);
+  return animals.map(normalizeAnimal);
 }
 
 export async function getAnimal(id: string): Promise<FarmAnimal | undefined> {
   const db = await getDB();
-  return db.get('animals', id);
+  const animal = await db.get('animals', id);
+  return animal ? normalizeAnimal(animal) : undefined;
 }
 
 export async function updateAnimal(animal: FarmAnimal): Promise<void> {
@@ -359,8 +433,12 @@ export async function updateAnimal(animal: FarmAnimal): Promise<void> {
   if (animal.isLocked) {
     throw new Error('Cannot update a locked animal');
   }
+  const unique = await isAnimalTagUnique(animal.projectId, animal.animalId, animal.id);
+  if (!unique) {
+    throw new Error(`Animal ID "${animal.animalId}" already exists in this project`);
+  }
   animal.updatedAt = new Date().toISOString();
-  await db.put('animals', animal);
+  await db.put('animals', normalizeAnimal(animal));
 }
 
 export async function lockAnimal(id: string): Promise<void> {
@@ -383,43 +461,45 @@ export async function deleteAnimal(id: string): Promise<void> {
 }
 
 // Lineage tracking helpers
-export async function getAnimalOffspring(animalId: string): Promise<FarmAnimal[]> {
+export async function getAnimalOffspring(animalId: string, projectId?: string): Promise<FarmAnimal[]> {
   const db = await getDB();
-  const allAnimals = await db.getAll('animals');
-  return allAnimals.filter(a => a.motherId === animalId || a.fatherId === animalId);
+  const allAnimals = projectId
+    ? await db.getAllFromIndex('animals', 'by-project', projectId)
+    : await db.getAll('animals');
+  return allAnimals
+    .map(normalizeAnimal)
+    .filter((a) => a.motherId === animalId || a.fatherId === animalId);
 }
 
-export async function getAnimalLineage(animalId: string): Promise<{ ancestors: FarmAnimal[], descendants: FarmAnimal[] }> {
+export async function getAnimalLineage(animalId: string, projectId?: string): Promise<{ ancestors: FarmAnimal[], descendants: FarmAnimal[] }> {
   const db = await getDB();
-  const allAnimals = await db.getAll('animals');
-  
-  // Get ancestors
+  const animal = await db.get('animals', animalId);
+  if (!animal) return { ancestors: [], descendants: [] };
+
+  const scopedProjectId = projectId ?? animal.projectId;
+  const allAnimals = (await db.getAllFromIndex('animals', 'by-project', scopedProjectId)).map(normalizeAnimal);
+  const animalMap = new Map(allAnimals.map((a) => [a.id, a]));
+
   const ancestors: FarmAnimal[] = [];
+  const seen = new Set<string>();
   const getAncestors = (id: string) => {
-    const animal = allAnimals.find(a => a.id === id);
-    if (animal) {
-      if (animal.motherId) {
-        const mother = allAnimals.find(a => a.id === animal.motherId);
-        if (mother) {
-          ancestors.push(mother);
-          getAncestors(mother.id);
-        }
-      }
-      if (animal.fatherId) {
-        const father = allAnimals.find(a => a.id === animal.fatherId);
-        if (father) {
-          ancestors.push(father);
-          getAncestors(father.id);
-        }
+    const current = animalMap.get(id);
+    if (!current) return;
+    for (const parentId of [current.motherId, current.fatherId]) {
+      if (!parentId || seen.has(parentId)) continue;
+      const parent = animalMap.get(parentId);
+      if (parent) {
+        seen.add(parentId);
+        ancestors.push(parent);
+        getAncestors(parentId);
       }
     }
   };
   getAncestors(animalId);
 
-  // Get descendants
   const descendants: FarmAnimal[] = [];
   const getDescendants = (id: string) => {
-    const offspring = allAnimals.filter(a => a.motherId === id || a.fatherId === id);
+    const offspring = allAnimals.filter((a) => a.motherId === id || a.fatherId === id);
     for (const child of offspring) {
       descendants.push(child);
       getDescendants(child.id);
@@ -428,6 +508,58 @@ export async function getAnimalLineage(animalId: string): Promise<{ ancestors: F
   getDescendants(animalId);
 
   return { ancestors, descendants };
+}
+
+export async function recordBirthWithOffspring(
+  projectId: string,
+  motherInternalId: string,
+  birthData: { birthDate: string; notes?: string },
+  offspringInputs: OffspringInput[],
+  fatherInternalId?: string
+): Promise<{ birthRecord: BirthRecord; offspring: FarmAnimal[]; updatedMother: FarmAnimal }> {
+  const db = await getDB();
+  const mother = await db.get('animals', motherInternalId);
+  if (!mother) throw new Error('Mother not found');
+  if (mother.isLocked) throw new Error('Cannot add birth record to a locked animal');
+  if (mother.projectId !== projectId) throw new Error('Animal does not belong to this project');
+
+  const createdOffspring: FarmAnimal[] = [];
+  const offspringTags: string[] = [];
+
+  for (const input of offspringInputs) {
+    if (!input.animalId.trim()) continue;
+    const offspring = await createAnimal(projectId, {
+      animalId: input.animalId.trim(),
+      sex: input.sex,
+      breed: input.breed || mother.breed,
+      healthStatus: input.healthStatus || 'healthy',
+      birthDate: birthData.birthDate,
+      motherId: motherInternalId,
+      fatherId: fatherInternalId,
+      currentStatus: 'active',
+    });
+    createdOffspring.push(offspring);
+    offspringTags.push(offspring.animalId);
+  }
+
+  const birthRecord: BirthRecord = {
+    id: generateId(),
+    motherId: motherInternalId,
+    fatherId: fatherInternalId,
+    birthDate: birthData.birthDate,
+    offspringIds: offspringTags,
+    notes: birthData.notes,
+    isLocked: false,
+  };
+
+  const updatedMother = normalizeAnimal({
+    ...mother,
+    birthRecords: [...(mother.birthRecords || []), birthRecord],
+    updatedAt: new Date().toISOString(),
+  });
+  await db.put('animals', updatedMother);
+
+  return { birthRecord, offspring: createdOffspring, updatedMother };
 }
 
 // Import a full project with its original ID (for syncing)
@@ -577,13 +709,17 @@ export async function restoreProject(id: string): Promise<void> {
   await db.put('projects', project);
 }
 
-// Permanently delete project and all its records
+// Permanently delete project and all its records and animals
 export async function permanentlyDeleteProject(id: string): Promise<void> {
   const db = await getDB();
   const records = await getRecordsByProject(id);
-  const tx = db.transaction(['projects', 'records'], 'readwrite');
+  const animals = await getAnimalsByProject(id);
+  const tx = db.transaction(['projects', 'records', 'animals'], 'readwrite');
   for (const record of records) {
     await tx.objectStore('records').delete(record.id);
+  }
+  for (const animal of animals) {
+    await tx.objectStore('animals').delete(animal.id);
   }
   await tx.objectStore('projects').delete(id);
   await tx.done;
