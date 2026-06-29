@@ -5,7 +5,7 @@ import useLocalStorage from '../hooks/useLocalStorage';
 const STEPS = [
   {
     title: 'Install & open',
-    body: 'Download FarmDesk on your device and open the app. No signup required to explore.'
+    body: 'Download AgroTensor on your device and open the app. No signup required to explore.'
   },
   { title: 'Create your farm', body: "Add your farm name and basic details. This creates a local database on your device." },
   { title: 'Work offline', body: 'Enter livestock, crop, and financial records even without internet. Changes sync when online.' },
@@ -16,16 +16,16 @@ const STEPS = [
 ];
 
 const OnboardingModal: React.FC = () => {
-  const [seen, setSeen] = useLocalStorage<boolean>('farmdesk_seen_onboard', false);
+  const [seen, setSeen] = useLocalStorage<boolean>('agrotensor_seen_onboard', false);
   const [index, setIndex] = React.useState(0);
 
   if (seen) return null;
 
   return (
-    <div className="fd-onboard" role="dialog" aria-modal="true" aria-label="Welcome to FarmDesk">
+    <div className="fd-onboard" role="dialog" aria-modal="true" aria-label="Welcome to AgroTensor">
       <div className="fd-onboard__panel">
         <header className="fd-onboard__header">
-          <h2>Welcome to FarmDesk</h2>
+          <h2>Welcome to AgroTensor</h2>
           <button className="fd-onboard__close" onClick={() => setSeen(true)} aria-label="Close">✕</button>
         </header>
 

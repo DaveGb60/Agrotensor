@@ -52,7 +52,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const DonateInfo = () => (
     <div className="space-y-3">
-      <h4 className="font-medium text-sm text-foreground">Support FarmDesk</h4>
+      <h4 className="font-medium text-sm text-foreground">Support AgroTensor</h4>
       <p className="text-sm text-muted-foreground">
         Send a tip or donation via card, M-Pesa, mobile money, bank transfer, or USSD. Secured by Paystack.
       </p>
@@ -72,13 +72,13 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <img 
-            src="/assets/landing/brand-hero-1.jpg" 
-            alt="FarmDesk Logo" 
+            src="/assets/landing/logo.png" 
+            alt="AgroTensor Logo" 
             className="w-10 h-10 rounded-xl object-contain cursor-pointer"
             onClick={() => navigate('/')}
           />
           <div className="cursor-pointer" onClick={() => navigate('/')}>
-            <h1 className="font-serif text-xl font-semibold text-foreground">FarmDesk</h1>
+            <h1 className="font-serif text-xl font-semibold text-foreground">AgroTensor</h1>
             <p className="text-xs text-muted-foreground">Offline Farm Records</p>
           </div>
         </div>

@@ -6,11 +6,11 @@ const LandingFooter = () => {
           <div>
             <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
               <img 
-                src="/assets/landing/brand-hero-1.jpg" 
-                alt="FarmDesk" 
+                src="/assets/landing/logo.png" 
+                alt="AgroTensor" 
                 className="h-8 w-8 rounded-lg object-contain" 
               />
-              FarmDesk
+              AgroTensor
             </h3>
             <p className="text-white/80 text-sm">
               Your farm's digital office — offline-first, secure, and simple.
@@ -45,7 +45,7 @@ const LandingFooter = () => {
         
         <div className="border-t border-white/10 pt-6 text-center">
           <p className="text-white/80 text-sm">
-            © {new Date().getFullYear()} FarmDesk — Your Farm's Digital Office
+            © {new Date().getFullYear()} AgroTensor — Your Farm's Digital Office
           </p>
         </div>
       </div>

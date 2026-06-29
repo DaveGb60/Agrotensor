@@ -637,7 +637,7 @@ const Index = () => {
             <Leaf className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Welcome to FarmDeck
+            Welcome to AgroTensor
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto mb-6">
             Your offline farm records platform. Track projects, operations, and finances—all stored securely on your device.

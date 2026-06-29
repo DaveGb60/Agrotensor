@@ -25,7 +25,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  doc.text('FarmDeck', 14, 20);
+  doc.text('AgroTensor', 14, 20);
   
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
@@ -340,7 +340,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      `FarmDeck | Page ${i} of ${pageCount}`,
+      `AgroTensor | Page ${i} of ${pageCount}`,
       doc.internal.pageSize.width / 2,
       doc.internal.pageSize.height - 10,
       { align: 'center' }
@@ -350,7 +350,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
   // Generate filename
   const dateStr = format(new Date(), 'yyyy-MM-dd');
   const monthStr = selectedMonth ? `-${selectedMonth}` : '';
-  const filename = `FarmDeck_${project.title.replace(/\s+/g, '_')}${monthStr}_${dateStr}.pdf`;
+  const filename = `AgroTensor_${project.title.replace(/\s+/g, '_')}${monthStr}_${dateStr}.pdf`;
   
   doc.save(filename);
 }

@@ -1,10 +1,10 @@
-// File Sync Module for FarmDesk
+// File Sync Module for AgroTensor
 // Handles file-based data import/export and sharing
 
 import { FarmProject, FarmRecord, FarmAnimal, getProject, importProject, importRecord, importAnimal, getRecordsByProject, getAnimalsByProject } from './db';
 
 export interface SyncDataV1 {
-  type: 'farmdesk-sync';
+  type: 'agrotensor-sync';
   version: '1.0';
   timestamp: string;
   project: FarmProject;
@@ -29,7 +29,7 @@ export interface SyncResult {
 // Create sync data package
 export function createSyncData(project: FarmProject, records: FarmRecord[], animals: FarmAnimal[] = []): SyncDataV2 {
   return {
-    type: 'farmdesk-sync',
+    type: 'agrotensor-sync',
     version: '2.0',
     timestamp: new Date().toISOString(),
     project,
@@ -44,7 +44,7 @@ export function validateSyncData(data: unknown): data is SyncData {
   const d = data as Record<string, unknown>;
   const validVersion = d.version === '1.0' || d.version === '2.0';
   return (
-    d.type === 'farmdesk-sync' &&
+    d.type === 'agrotensor-sync' &&
     validVersion &&
     typeof d.project === 'object' &&
     d.project !== null &&
@@ -241,7 +241,7 @@ export function downloadJSON(project: FarmProject, records: FarmRecord[], animal
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `farmdesk-${project.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.json`;
+  a.download = `agrotensor-${project.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -256,12 +256,12 @@ export async function shareViaWebShare(project: FarmProject, records: FarmRecord
   
   const json = exportToJSON(project, records, animals);
   const blob = new Blob([json], { type: 'application/json' });
-  const file = new File([blob], `farmdesk-${project.title}.json`, { type: 'application/json' });
+  const file = new File([blob], `agrotensor-${project.title}.json`, { type: 'application/json' });
   
   try {
     await navigator.share({
-      title: `FarmDesk: ${project.title}`,
-      text: `Farm project data - ${records.length} records${animals.length ? `, ${animals.length} animals` : ''}`,
+      title: `AgroTensor: ${project.title}`,
+      text: `AgroTensor project data - ${records.length} records${animals.length ? `, ${animals.length} animals` : ''}`,
       files: [file],
     });
     return true;
@@ -290,7 +290,7 @@ export function generateShareableLink(project: FarmProject, records: FarmRecord[
 } {
   const data = exportToJSON(project, records, animals);
   return {
-    title: `FarmDesk: ${project.title}`,
+      title: `AgroTensor: ${project.title}`,
     text: `Farm project with ${records.length} records${animals.length ? ` and ${animals.length} animals` : ''}`,
     data,
   };

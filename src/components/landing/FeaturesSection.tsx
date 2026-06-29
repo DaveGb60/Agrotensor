@@ -31,7 +31,7 @@ const FeaturesSection = () => {
     <section id="features" className="py-16 px-6 bg-gradient-to-b from-white to-green-50">
       <div className="max-w-6xl mx-auto">
         <h2 className="font-serif text-3xl font-bold text-center text-primary mb-4">
-          What FarmDesk helps you do
+          What AgroTensor helps you do
         </h2>
         <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
           Comprehensive tools designed specifically for farmers to run operations smarter, not harder.

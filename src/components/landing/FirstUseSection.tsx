@@ -2,9 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const FirstUseSection = () => {
   const steps = [
-    'Install & open — Download FarmDesk on your device and open the app. No signup required to explore.',
+    'Install & open — Download AgroTensor on your device and open the app. No signup required to explore.',
     'Create your farm — Add your farm name and basic details. This creates a local database on your device.',
-    'Work offline — Enter livestock, crop, and financial records even without internet. FarmDesk is offline-first and fast.',
+    'Work offline — Enter livestock, crop, and financial records even without internet. AgroTensor is offline-first and fast.',
     'Back up securely — Create encrypted backups stored locally or to your preferred cloud (end-to-end encryption protects your data).',
     'Sync devices — Connect other devices with a secure pairing code to keep teams in sync. Syncs are encrypted and tamper-evident.',
     'Invite your team — Add users and set roles for the right level of access across the farm.',
@@ -23,7 +23,7 @@ const FirstUseSection = () => {
     <section id="first-use" className="py-16 px-6 bg-white">
       <div className="max-w-6xl mx-auto">
         <h2 className="font-serif text-3xl font-bold text-center text-primary mb-4">
-          First time using FarmDesk — quick start
+          First time using AgroTensor — quick start
         </h2>
         <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
           Get up and running in minutes with our simple guided process.
@@ -50,7 +50,7 @@ const FirstUseSection = () => {
                 <svg className="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                Why people love FarmDesk
+                Why people love AgroTensor
               </h4>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {benefits.map((benefit, idx) => (
@@ -92,7 +92,7 @@ const FirstUseSection = () => {
             <div className="rounded-xl overflow-hidden shadow-card">
               <img 
                 src="/assets/landing/brand-feature-1.jpg" 
-                alt="FarmDesk in use" 
+                 alt="AgroTensor in use" 
                 className="w-full h-48 object-cover"
               />
             </div>

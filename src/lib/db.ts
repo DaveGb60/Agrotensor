@@ -1,4 +1,4 @@
-// IndexedDB wrapper for FarmDesk local storage
+// IndexedDB wrapper for AgroTensor local storage
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 // Input item for project details
@@ -235,7 +235,7 @@ export interface MonthlyAggregation {
   recordCount: number;
 }
 
-interface FarmDeskDB extends DBSchema {
+interface AgroTensorDB extends DBSchema {
   projects: {
     key: string;
     value: FarmProject;
@@ -276,12 +276,12 @@ export function normalizeAnimal(animal: FarmAnimal): FarmAnimal {
   };
 }
 
-let dbInstance: IDBPDatabase<FarmDeskDB> | null = null;
+let dbInstance: IDBPDatabase<AgroTensorDB> | null = null;
 
-export async function getDB(): Promise<IDBPDatabase<FarmDeskDB>> {
+export async function getDB(): Promise<IDBPDatabase<AgroTensorDB>> {
   if (dbInstance) return dbInstance;
 
-  dbInstance = await openDB<FarmDeskDB>('farmdesk-db', 3, {
+  dbInstance = await openDB<AgroTensorDB>('agrotensor-db', 3, {
     upgrade(db, oldVersion, _newVersion, transaction) {
       if (oldVersion < 1) {
         const projectStore = db.createObjectStore('projects', { keyPath: 'id' });

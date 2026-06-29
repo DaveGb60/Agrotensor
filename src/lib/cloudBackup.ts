@@ -15,7 +15,7 @@ import {
 } from './db';
 import { generateRecordFingerprint } from './fileSync';
 
-const STORAGE_KEY = 'farmdesk-cloud-identity';
+const STORAGE_KEY = 'agrotensor-cloud-identity';
 
 export interface CloudIdentity {
   cloudId: string;

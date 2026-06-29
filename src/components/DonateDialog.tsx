@@ -113,10 +113,10 @@ export function DonateDialog({ trigger }: DonateDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5 text-primary" />
-            Support FarmDesk
+            Support AgroTensor
           </DialogTitle>
           <DialogDescription>
-            Donations and tips help keep FarmDesk free. Pay securely via card, mobile money, bank
+            Donations and tips help keep AgroTensor free. Pay securely via card, mobile money, bank
             transfer, or USSD — powered by Paystack.
           </DialogDescription>
         </DialogHeader>

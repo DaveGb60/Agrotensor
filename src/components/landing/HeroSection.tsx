@@ -16,7 +16,7 @@ const HeroSection = () => {
           </h1>
           
           <p className="text-white/90 text-lg md:text-xl leading-relaxed">
-            Organize your data, monitor operations, analyze insights and grow profit — FarmDesk is your farm's digital office, built for farmers and farm teams.
+            Organize your data, monitor operations, analyze insights and grow profit — AgroTensor is your farm's digital office, built for farmers and farm teams.
           </p>
           
           <div className="flex flex-wrap gap-3">
@@ -68,14 +68,14 @@ const HeroSection = () => {
             <div className="w-full max-w-md rounded-2xl shadow-elevated overflow-hidden border-4 border-white/30">
               <img 
                 src="/assets/landing/brand-hero-3.jpg" 
-                alt="FarmDesk dashboard" 
+                alt="AgroTensor dashboard" 
                 className="w-full h-auto object-cover"
               />
             </div>
             <div className="absolute -bottom-4 -left-4 w-24 h-24 rounded-xl overflow-hidden border-2 border-white/30 shadow-lg">
               <img 
                 src="/assets/landing/brand-hero-4.jpg" 
-                alt="FarmDesk mobile" 
+                alt="AgroTensor mobile" 
                 className="w-full h-full object-cover"
               />
             </div>

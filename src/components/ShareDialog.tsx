@@ -161,7 +161,7 @@ export function ShareDialog({
             <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
               <li>Download or share the file</li>
               <li>Send to other device (AirDrop, email, messaging)</li>
-              <li>On receiving device, open FarmDeck → Import</li>
+              <li>On receiving device, open AgroTensor → Import</li>
             </ol>
           </div>
         </div>

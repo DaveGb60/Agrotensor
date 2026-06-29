@@ -1,6 +1,6 @@
 ## Cloud Backup Page
 
-Add a dedicated `/cloud` page that gives users a personal cloud backup of their FarmDeck data. Users see it as "Cloud Backup"; under the hood it uses Lovable Cloud (Supabase) with anonymous authentication.
+Add a dedicated `/cloud` page that gives users a personal cloud backup of their AgroTensor data. Users see it as "Cloud Backup"; under the hood it uses Lovable Cloud (Supabase) with anonymous authentication.
 
 ### User experience
 

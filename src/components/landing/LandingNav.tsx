@@ -5,11 +5,11 @@ const LandingNav = () => {
     <nav className="flex items-center justify-between max-w-6xl mx-auto px-6 py-8">
       <div className="flex items-center gap-3">
         <img 
-          src="/assets/landing/brand-hero-1.jpg" 
-          alt="FarmDesk Logo" 
+          src="/assets/landing/logo.png" 
+          alt="AgroTensor Logo" 
           className="h-12 w-12 rounded-xl object-contain"
         />
-        <span className="font-serif text-xl font-bold text-white">FarmDesk</span>
+        <span className="font-serif text-xl font-bold text-white">AgroTensor</span>
       </div>
       
       <div className="hidden md:flex items-center gap-8">

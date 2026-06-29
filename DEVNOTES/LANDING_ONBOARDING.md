@@ -4,7 +4,7 @@ This update adds a lightweight onboarding modal and a simple device pairing UI t
 
 Files added in this change:
 - src/hooks/useLocalStorage.tsx — small hook to persist flags in localStorage
-- src/components/OnboardingModal.tsx — onboarding modal shown once (localStorage key: farmdesk_seen_onboard)
+- src/components/OnboardingModal.tsx — onboarding modal shown once (localStorage key: agrotensor_seen_onboard)
 - src/styles/onboarding.css — styles for the onboarding modal
 - src/components/DevicePairing.tsx — small device pairing UI (generates a one-time 6-digit code and supports copy)
 - src/styles/devicePairing.css — pairing styles

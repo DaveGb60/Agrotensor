@@ -1,10 +1,10 @@
-# 🌾 FarmDesk
+# 🌾 AgroTensor
 
-**FarmDesk** is a comprehensive farm management platform designed to help farmers and agricultural professionals streamline operations, track resources, and optimize farm productivity.
+**AgroTensor** is a comprehensive farm management platform designed to help farmers and agricultural professionals streamline operations, track resources, and optimize farm productivity.
 
 ## 📋 Project Overview
 
-FarmDesk provides a modern, intuitive interface for managing farm operations including:
+AgroTensor provides a modern, intuitive interface for managing farm operations including:
 - Resource tracking and inventory management
 - Task scheduling and workflow management
 - Data visualization and reporting
@@ -41,7 +41,7 @@ The app will be available with hot-reloading enabled for instant preview of your
 
 ## 🛠️ Technology Stack
 
-FarmDesk is built with modern web technologies:
+AgroTensor is built with modern web technologies:
 
 - **Frontend**: React 18 with TypeScript
 - **Build Tool**: Vite
@@ -62,7 +62,7 @@ FarmDesk is built with modern web technologies:
 ## 📝 How to Edit
 
 ### Option 1: Use Lovable
-Visit the [FarmDesk Lovable Project](https://lovable.dev/projects/53410996-a867-482d-8f69-ebe442833ddc) and start prompting. Changes will automatically sync to this repository.
+Visit the [AgroTensor Lovable Project](https://lovable.dev/projects/53410996-a867-482d-8f69-ebe442833ddc) and start prompting. Changes will automatically sync to this repository.
 
 ### Option 2: Local IDE
 Clone the repo and work locally (see Getting Started above). Push your changes and they'll reflect in Lovable.
@@ -84,7 +84,7 @@ Clone the repo and work locally (see Getting Started above). Push your changes a
 ## 🚢 Deployment
 
 ### Deploy with Lovable
-1. Open [FarmDesk on Lovable](https://lovable.dev/projects/53410996-a867-482d-8f69-ebe442833ddc)
+1. Open [AgroTensor on Lovable](https://lovable.dev/projects/53410996-a867-482d-8f69-ebe442833ddc)
 2. Click **Share → Publish**
 
 ### Connect a Custom Domain
