@@ -11,6 +11,9 @@ import { BreedingProjectDetails } from '@/components/BreedingProjectDetails';
 import { LivestockRecordManager } from '@/components/LivestockRecordManager';
 import { BreedingDashboard } from '@/components/breeding/BreedingDashboard';
 import { BreedingMonthlySummary } from '@/components/breeding/BreedingMonthlySummary';
+import { BreedingPDFExportDialog } from '@/components/breeding/BreedingPDFExportDialog';
+import { BreedingTimeline } from '@/components/breeding/BreedingTimeline';
+import { BreedingCalendar } from '@/components/breeding/BreedingCalendar';
 
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
@@ -56,7 +59,7 @@ import {
   generateId,
 } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw } from 'lucide-react';
+import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw, Users, Calendar as CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -70,8 +73,10 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [shareProject, setShareProject] = useState<{ project: FarmProject; records: FarmRecord[]; animals: FarmAnimal[] } | null>(null);
   const [breedingRefreshKey, setBreedingRefreshKey] = useState(0);
+  const [breedingAnimals, setBreedingAnimals] = useState<FarmAnimal[]>([]);
   
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
+  const [isBreedingPDFOpen, setIsBreedingPDFOpen] = useState(false);
   const [isSyncOpen, setIsSyncOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<'details' | 'components'>('details');
   const [customColumnTypes, setCustomColumnTypes] = useState<Record<string, ColumnType>>({});
@@ -88,6 +93,12 @@ const Index = () => {
       loadRecords(selectedProject.id, selectedProject.details, selectedProject.customColumnTypes);
     }
   }, [selectedProject]);
+
+  useEffect(() => {
+    if (selectedProject?.projectType === 'breeding') {
+      getAnimalsByProject(selectedProject.id).then(setBreedingAnimals);
+    }
+  }, [selectedProject, breedingRefreshKey]);
 
   const loadProjects = async () => {
     try {
@@ -428,6 +439,15 @@ const Index = () => {
                   Export PDF
                 </Button>
               )}
+              {selectedProject.projectType === 'breeding' && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsBreedingPDFOpen(true)}
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Export PDF
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={async () => {
@@ -459,7 +479,51 @@ const Index = () => {
                 readOnly={selectedProject.isCompleted}
               />
               <BreedingMonthlySummary project={selectedProject} refreshKey={breedingRefreshKey} />
-              <LivestockRecordManager project={selectedProject} onAnimalsChange={() => setBreedingRefreshKey((k) => k + 1)} />
+
+              <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as 'details' | 'timeline' | 'calendar')} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 max-w-lg">
+                  <TabsTrigger value="details" className="gap-2">
+                    <Users className="h-4 w-4" />
+                    Livestock
+                  </TabsTrigger>
+                  <TabsTrigger value="timeline" className="gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    Timeline
+                  </TabsTrigger>
+                  <TabsTrigger value="calendar" className="gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    Calendar
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="details" className="space-y-6 mt-6">
+                  <LivestockRecordManager project={selectedProject} onAnimalsChange={() => setBreedingRefreshKey((k) => k + 1)} />
+                </TabsContent>
+
+                <TabsContent value="timeline" className="mt-6">
+                  <BreedingTimeline
+                    project={selectedProject}
+                    animals={breedingAnimals}
+                    details={selectedProject.details as BreedingDetailsType}
+                  />
+                </TabsContent>
+
+                <TabsContent value="calendar" className="mt-6">
+                  <BreedingCalendar
+                    project={selectedProject}
+                    animals={breedingAnimals}
+                    details={selectedProject.details as BreedingDetailsType}
+                  />
+                </TabsContent>
+              </Tabs>
+
+              <BreedingPDFExportDialog
+                open={isBreedingPDFOpen}
+                onOpenChange={setIsBreedingPDFOpen}
+                project={selectedProject}
+                animals={breedingAnimals}
+                details={selectedProject.details as BreedingDetailsType}
+              />
             </div>
           ) : (
             /* Produce Project UI */

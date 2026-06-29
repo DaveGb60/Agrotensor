@@ -1,4 +1,4 @@
-import { Trash2, Sun, Moon, Home, Phone, Mail, Heart, ExternalLink, Shield } from 'lucide-react';
+import { Trash2, Sun, Moon, Home, Menu, Heart, ExternalLink, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from '@/hooks/useTheme';
@@ -29,26 +29,6 @@ export function Header({ onMenuClick }: HeaderProps) {
     { label: 'Trash', path: '/trash', icon: Trash2 },
     ...(showAdminLink ? [{ label: 'Admin', path: '/admin', icon: Shield }] : []),
   ];
-
-  const ContactInfo = () => (
-    <div className="space-y-3">
-      <h4 className="font-medium text-sm text-foreground">Contact</h4>
-      <div className="space-y-2 text-sm">
-        <a href="tel:0768974474" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-          <Phone className="h-4 w-4" />
-          0768974474
-        </a>
-        <a href="https://wa.me/254768974474" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-green-600 transition-colors">
-          <Heart className="h-4 w-4" />
-          WhatsApp
-        </a>
-        <a href="mailto:gfibionjoseph@gmail.com" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-          <Mail className="h-4 w-4" />
-          gfibionjoseph@gmail.com
-        </a>
-      </div>
-    </div>
-  );
 
   const DonateInfo = () => (
     <div className="space-y-3">
@@ -102,19 +82,6 @@ export function Header({ onMenuClick }: HeaderProps) {
           ))}
           <div className="w-px h-6 bg-border mx-2" />
           
-          {/* Contact Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <Phone className="h-4 w-4" />
-                Contact
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64">
-              <ContactInfo />
-            </PopoverContent>
-          </Popover>
-
           {/* Donate Popover */}
           <Popover>
             <PopoverTrigger asChild>
@@ -147,7 +114,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden">
-              <Trash2 className="h-5 w-5" />
+              <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-[280px]">
@@ -163,13 +130,6 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {item.label}
                 </Button>
               ))}
-              
-              <div className="h-px bg-border my-4" />
-              
-              {/* Contact Section */}
-              <div className="px-3">
-                <ContactInfo />
-              </div>
               
               <div className="h-px bg-border my-4" />
               
