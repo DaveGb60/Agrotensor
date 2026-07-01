@@ -198,7 +198,7 @@ const Index = () => {
     try {
       await updateRecord(record);
       setRecords(records.map(r => r.id === record.id ? record : r));
-      const aggs = await getMonthlyAggregation(selectedProject!.id, selectedProject?.details, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject!.id, selectedProject?.details as ProjectDetails | undefined, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record updated' });
     } catch (error) {
