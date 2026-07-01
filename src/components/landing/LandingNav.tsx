@@ -26,7 +26,7 @@ const LandingNav = () => {
           Contact
         </a>
         <Button variant="hero" size="sm" asChild>
-          <a href="/">Open App</a>
+          <a href="/app">Open App</a>
         </Button>
       </div>
     </nav>
