@@ -5,33 +5,38 @@ import PhilosophySection from '@/components/landing/PhilosophySection';
 import FirstUseSection from '@/components/landing/FirstUseSection';
 import ValuesSection from '@/components/landing/ValuesSection';
 import LandingFooter from '@/components/landing/Footer';
+import { brand } from '@/components/landing/brandAssets';
 
 const Landing = () => {
   return (
     <div className="min-h-screen">
-      {/* Hero Section with Background */}
-      <header 
+      {/* Hero — deep farm-green with brand pattern */}
+      <header
         className="relative overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(61,107,79,0.95) 0%, rgba(28,59,38,0.98) 100%), url('/assets/landing/brand-hero-2.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundImage: `
+            linear-gradient(135deg, hsl(150 55% 12% / 0.94) 0%, hsl(150 60% 8% / 0.97) 100%),
+            url(${brand.bgPattern})
+          `,
+          backgroundSize: 'cover, 520px auto',
+          backgroundRepeat: 'no-repeat, repeat',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-green-900/95"></div>
+        {/* Warm accent glow */}
+        <div className="absolute -top-32 -right-20 w-[500px] h-[500px] bg-green-500/15 blur-3xl rounded-full pointer-events-none" />
+        <div className="absolute -bottom-32 -left-20 w-[500px] h-[500px] bg-emerald-400/10 blur-3xl rounded-full pointer-events-none" />
+
         <div className="relative z-10">
           <LandingNav />
           <HeroSection />
         </div>
       </header>
 
-      {/* Main Content */}
       <FeaturesSection />
       <PhilosophySection />
       <FirstUseSection />
       <ValuesSection />
 
-      {/* Footer */}
       <LandingFooter />
     </div>
   );
