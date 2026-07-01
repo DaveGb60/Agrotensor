@@ -149,7 +149,7 @@ export function ProjectDetailsSection({
                 {isEditing ? (
                   <>
                     <Button variant="ghost" size="sm" onClick={() => {
-                      setEditData(project.details);
+                      setEditData(project.details as ProjectDetails);
                       setIsEditing(false);
                     }}>
                       Cancel
