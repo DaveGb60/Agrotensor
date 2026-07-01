@@ -34,7 +34,7 @@ export function ProjectDetailsSection({
   onCompleteProject,
 }: ProjectDetailsSectionProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<ProjectDetails>(project.details);
+  const [editData, setEditData] = useState<ProjectDetails>(project.details as ProjectDetails);
   const [newFieldKey, setNewFieldKey] = useState('');
   const [newInputName, setNewInputName] = useState('');
   const [newInputCost, setNewInputCost] = useState('');
