@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   FarmProject,
+  ProjectDetails,
   FarmRecord,
   getDeletedProjects,
   restoreProject,
