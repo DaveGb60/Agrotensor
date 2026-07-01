@@ -6,7 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { FarmAnimal, FarmProject, BreedingProjectDetails } from '@/lib/db';
 import { format, parse } from 'date-fns';
 import { formatCurrency } from '@/lib/breedingFinance';
-import { Heart, Baby, Stethoscope, DollarSign, PawPrint, Skull } from 'lucide-react';
+import { Heart, Baby, Stethoscope, DollarSign, PawPrint, Skull, Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BreedingCalendarProps {
@@ -190,7 +190,7 @@ export function BreedingCalendar({ project, animals, details }: BreedingCalendar
                   const Icon = config.icon;
 
                   return (
-                    <div key={event.id} className={cn("rounded-lg border p-2.5", config.bgColor)}>
+                    <div key={`${event.type}-${event.date.toISOString()}-${event.animalId}-${event.description}`} className={cn("rounded-lg border p-2.5", config.bgColor)}>
                       <div className="flex items-center gap-2 mb-1">
                         <Icon className={cn("h-3.5 w-3.5", config.color)} />
                         <Badge variant="outline" className={cn("text-xs border-0", config.color)}>

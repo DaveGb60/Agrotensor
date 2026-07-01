@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { FarmProject, FarmRecord, MonthlyAggregation, calculateTotalProjectCosts } from './db';
+import { FarmProject, FarmRecord, MonthlyAggregation, ProjectDetails, calculateTotalProjectCosts } from './db';
 import { format, parse } from 'date-fns';
 
 interface PDFExportOptions {
@@ -79,7 +79,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.text('Project Details', 14, yPos);
     yPos += 8;
     
-    const details = project.details;
+    const details = project.details as ProjectDetails;
     const boxWidth = 44;
     const boxHeight = 24;
     const startX = 14;
@@ -176,8 +176,10 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     yPos += 8;
     
     // Calculate totals including project-level costs
-    const totalProjectCosts = project.details ? calculateTotalProjectCosts(project.details) : 0;
-    const capital = project.details?.capital || 0;
+    const produceDetails = project.details as ProjectDetails | undefined;
+    const totalProjectCosts = produceDetails ? calculateTotalProjectCosts(produceDetails) : 0;
+    const capital = produceDetails?.capital || 0;
+
     
     const totals = filteredAggregations.reduce(
       (acc, agg) => ({

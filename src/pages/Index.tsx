@@ -78,7 +78,7 @@ const Index = () => {
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
   const [isBreedingPDFOpen, setIsBreedingPDFOpen] = useState(false);
   const [isSyncOpen, setIsSyncOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<'details' | 'components'>('details');
+  const [activeSection, setActiveSection] = useState<'details' | 'components' | 'timeline' | 'calendar'>('details');
   const [customColumnTypes, setCustomColumnTypes] = useState<Record<string, ColumnType>>({});
   const { toast } = useToast();
 
@@ -90,7 +90,7 @@ const Index = () => {
   // Load records when project is selected
   useEffect(() => {
     if (selectedProject) {
-      loadRecords(selectedProject.id, selectedProject.details, selectedProject.customColumnTypes);
+      loadRecords(selectedProject.id, selectedProject.details as ProjectDetails, selectedProject.customColumnTypes);
     }
   }, [selectedProject]);
 
@@ -186,7 +186,7 @@ const Index = () => {
       const newRecord = await createRecord(selectedProject.id, data);
       setRecords([newRecord, ...records]);
       setRecordCounts({ ...recordCounts, [selectedProject.id]: (recordCounts[selectedProject.id] || 0) + 1 });
-      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record added' });
     } catch (error) {
@@ -198,7 +198,7 @@ const Index = () => {
     try {
       await updateRecord(record);
       setRecords(records.map(r => r.id === record.id ? record : r));
-      const aggs = await getMonthlyAggregation(selectedProject!.id, selectedProject?.details, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject!.id, selectedProject?.details as ProjectDetails | undefined, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record updated' });
     } catch (error) {
@@ -212,7 +212,7 @@ const Index = () => {
       await deleteRecord(id);
       setRecords(records.filter(r => r.id !== id));
       setRecordCounts({ ...recordCounts, [selectedProject.id]: Math.max(0, (recordCounts[selectedProject.id] || 1) - 1) });
-      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record deleted' });
     } catch (error) {
@@ -391,7 +391,7 @@ const Index = () => {
       }
 
       // Reload records
-      await loadRecords(selectedProject.id, selectedProject.details, customColumnTypes);
+      await loadRecords(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
       
       if (remainingToSell > 0) {
         toast({ 
@@ -548,12 +548,12 @@ const Index = () => {
                 />
                 <NotesEditor
                   notes={selectedProject.details.notes || ''}
-                  onChange={(notes) => handleUpdateProjectDetails({ ...selectedProject.details, notes })}
+                  onChange={(notes) => handleUpdateProjectDetails({ ...(selectedProject.details as ProjectDetails), notes })}
                   readOnly={selectedProject.isCompleted}
                 />
                 <MonthlySummary 
                   aggregations={aggregations} 
-                  projectDetails={selectedProject.details} 
+                  projectDetails={selectedProject.details as ProjectDetails} 
                   isCompleted={selectedProject.isCompleted}
                 />
               </TabsContent>
