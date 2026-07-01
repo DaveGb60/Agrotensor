@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { FarmProject, FarmRecord, MonthlyAggregation, calculateTotalProjectCosts } from './db';
+import { FarmProject, FarmRecord, MonthlyAggregation, ProjectDetails, calculateTotalProjectCosts } from './db';
 import { format, parse } from 'date-fns';
 
 interface PDFExportOptions {
