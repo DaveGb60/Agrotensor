@@ -79,7 +79,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.text('Project Details', 14, yPos);
     yPos += 8;
     
-    const details = project.details;
+    const details = project.details as ProjectDetails;
     const boxWidth = 44;
     const boxHeight = 24;
     const startX = 14;
