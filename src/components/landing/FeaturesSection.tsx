@@ -1,125 +1,75 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cog, TrendingUp, Users, Shield } from 'lucide-react';
+import { Sprout, Beef, ClipboardList, LineChart, Package, Wallet, WifiOff, ShieldCheck } from 'lucide-react';
+import PatternBackdrop from './PatternBackdrop';
+import { brand } from './brandAssets';
+
+const features = [
+  { icon: Sprout, title: 'Crop Management', desc: 'Plan, monitor and record every crop activity.' },
+  { icon: Beef, title: 'Livestock Management', desc: 'Track health, breeding and production.' },
+  { icon: ClipboardList, title: 'Farm Records', desc: 'Keep expenses, inventory and notes organized.' },
+  { icon: LineChart, title: 'Reports & Analytics', desc: 'Turn field data into clear insights.' },
+  { icon: Package, title: 'Inventory', desc: 'Know what you have, what to reorder.' },
+  { icon: Wallet, title: 'Expense Tracking', desc: 'Control costs and forecast profitability.' },
+  { icon: WifiOff, title: 'Offline First', desc: 'Work in the field, sync when connected.' },
+  { icon: ShieldCheck, title: 'Secure & Reliable', desc: 'Your data is private, safe and yours.' },
+];
 
 const FeaturesSection = () => {
-  const features = [
-    { 
-      icon: Cog,
-      title: 'Manage Livestock & Crops', 
-      desc: 'Track animals, breeding, treatments, and crop cycles in one place so nothing slips through the cracks.',
-      image: '/assets/landing/brand-feature-2.jpg'
-    },
-    { 
-      icon: TrendingUp,
-      title: 'Finance & Inventory', 
-      desc: 'Control costs, record purchases, manage inventory and forecast profitability with clear reports.',
-      image: '/assets/landing/brand-feature-3.jpg'
-    },
-    { 
-      icon: Shield,
-      title: 'Analytics & Reporting', 
-      desc: 'Turn field data into actionable insights — improve yields and reduce waste with smart analytics.'
-    },
-    { 
-      icon: Users,
-      title: 'Team & Tasks', 
-      desc: 'Coordinate crews, assign tasks and keep communication organized across your farm operations.'
-    },
-  ];
-
   return (
-    <section id="features" className="py-16 px-6 bg-gradient-to-b from-white to-green-50">
+    <PatternBackdrop id="features" variant="light" className="py-20 px-6">
       <div className="max-w-6xl mx-auto">
-        <h2 className="font-serif text-3xl font-bold text-center text-primary mb-4">
-          What AgroTensor helps you do
-        </h2>
-        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-          Comprehensive tools designed specifically for farmers to run operations smarter, not harder.
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* First feature with image */}
-          <div className="flex flex-col gap-4">
-            <Card 
-              className="shadow-card border-0 hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-            >
-              <div className="h-48 overflow-hidden">
-                <img 
-                  src={features[0].image} 
-                  alt="Manage Livestock & Crops" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  {(() => { const Icon = features[0].icon; return <Icon className="h-8 w-8 text-primary" />; })()}
-                  <CardTitle className="text-primary font-serif">{features[0].title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{features[0].desc}</p>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="text-center mb-14">
+          <span className="uppercase tracking-[0.25em] text-xs font-semibold text-primary/70">
+            What We Do
+          </span>
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary mt-2">
+            Every part of your farm, one workspace
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto mt-3">
+            AgroTensor brings crops, livestock, records, and finances together —
+            simple enough for daily use, powerful enough to run the whole operation.
+          </p>
+        </div>
 
-          {/* Second feature with image */}
-          <div className="flex flex-col gap-4">
-            <Card 
-              className="shadow-card border-0 hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+        {/* Feature icon grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
+          {features.map(({ icon: Icon, title, desc }) => (
+            <div
+              key={title}
+              className="group bg-white/85 backdrop-blur-sm border border-primary/10 rounded-2xl p-5 hover:shadow-elevated hover:-translate-y-1 transition-all"
             >
-              <div className="h-48 overflow-hidden">
-                <img 
-                  src={features[1].image} 
-                  alt="Finance & Inventory" 
-                  className="w-full h-full object-cover"
-                />
+              <div className="inline-flex items-center justify-center h-11 w-11 rounded-xl bg-primary/10 text-primary mb-3 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <Icon className="h-5 w-5" />
               </div>
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  {(() => { const Icon = features[1].icon; return <Icon className="h-8 w-8 text-primary" />; })()}
-                  <CardTitle className="text-primary font-serif">{features[1].title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{features[1].desc}</p>
-              </CardContent>
-            </Card>
-          </div>
+              <h3 className="font-serif font-semibold text-primary text-base leading-tight mb-1">
+                {title}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-snug">{desc}</p>
+            </div>
+          ))}
+        </div>
 
-          {/* Third and fourth features */}
-          <div className="flex flex-col gap-4">
-            <Card 
-              className="shadow-card border-0 hover:shadow-elevated transition-all duration-300 hover:-translate-y-1"
-            >
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  {(() => { const Icon = features[2].icon; return <Icon className="h-8 w-8 text-primary" />; })()}
-                  <CardTitle className="text-primary font-serif">{features[2].title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{features[2].desc}</p>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="flex flex-col gap-4">
-            <Card 
-              className="shadow-card border-0 hover:shadow-elevated transition-all duration-300 hover:-translate-y-1"
-            >
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  {(() => { const Icon = features[3].icon; return <Icon className="h-8 w-8 text-primary" />; })()}
-                  <CardTitle className="text-primary font-serif">{features[3].title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{features[3].desc}</p>
-              </CardContent>
-            </Card>
+        {/* Scenes strip — real farm imagery band */}
+        <div className="relative rounded-3xl overflow-hidden shadow-elevated border border-primary/10">
+          <img
+            src={brand.scenesStrip}
+            alt="Crops, farmers, livestock and greenhouse — the scope of AgroTensor"
+            className="w-full h-40 md:h-56 object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/85 via-primary/40 to-transparent" />
+          <div className="absolute inset-0 flex items-center px-6 md:px-12">
+            <div className="max-w-md text-primary-foreground">
+              <p className="text-xs uppercase tracking-[0.2em] font-semibold opacity-80 mb-2">
+                Built for every farm
+              </p>
+              <h3 className="font-serif text-2xl md:text-3xl font-bold leading-tight">
+                Smallholder to enterprise — one tool that grows with you.
+              </h3>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </PatternBackdrop>
   );
 };
 
