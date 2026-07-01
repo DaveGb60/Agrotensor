@@ -548,7 +548,7 @@ const Index = () => {
                 />
                 <NotesEditor
                   notes={selectedProject.details.notes || ''}
-                  onChange={(notes) => handleUpdateProjectDetails({ ...selectedProject.details, notes })}
+                  onChange={(notes) => handleUpdateProjectDetails({ ...(selectedProject.details as ProjectDetails), notes })}
                   readOnly={selectedProject.isCompleted}
                 />
                 <MonthlySummary 
