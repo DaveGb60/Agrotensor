@@ -90,7 +90,7 @@ const Index = () => {
   // Load records when project is selected
   useEffect(() => {
     if (selectedProject) {
-      loadRecords(selectedProject.id, selectedProject.details, selectedProject.customColumnTypes);
+      loadRecords(selectedProject.id, selectedProject.details as ProjectDetails, selectedProject.customColumnTypes);
     }
   }, [selectedProject]);
 
