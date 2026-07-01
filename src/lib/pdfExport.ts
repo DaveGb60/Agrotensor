@@ -176,8 +176,10 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     yPos += 8;
     
     // Calculate totals including project-level costs
-    const totalProjectCosts = project.details ? calculateTotalProjectCosts(project.details) : 0;
-    const capital = project.details?.capital || 0;
+    const produceDetails = project.details as ProjectDetails | undefined;
+    const totalProjectCosts = produceDetails ? calculateTotalProjectCosts(produceDetails) : 0;
+    const capital = produceDetails?.capital || 0;
+
     
     const totals = filteredAggregations.reduce(
       (acc, agg) => ({
