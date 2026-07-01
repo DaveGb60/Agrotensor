@@ -6,7 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { FarmAnimal, FarmProject, BreedingProjectDetails } from '@/lib/db';
 import { format, parse } from 'date-fns';
 import { formatCurrency } from '@/lib/breedingFinance';
-import { Heart, Baby, Stethoscope, DollarSign, PawPrint, Skull } from 'lucide-react';
+import { Heart, Baby, Stethoscope, DollarSign, PawPrint, Skull, Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BreedingCalendarProps {
