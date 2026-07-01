@@ -11,7 +11,7 @@ export interface SyncDataV1 {
   records: FarmRecord[];
 }
 
-export interface SyncDataV2 extends SyncDataV1 {
+export interface SyncDataV2 extends Omit<SyncDataV1, 'version'> {
   version: '2.0';
   animals: FarmAnimal[];
 }
