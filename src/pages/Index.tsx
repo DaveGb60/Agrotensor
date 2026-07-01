@@ -553,7 +553,7 @@ const Index = () => {
                 />
                 <MonthlySummary 
                   aggregations={aggregations} 
-                  projectDetails={selectedProject.details} 
+                  projectDetails={selectedProject.details as ProjectDetails} 
                   isCompleted={selectedProject.isCompleted}
                 />
               </TabsContent>
