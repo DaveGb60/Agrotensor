@@ -186,7 +186,7 @@ const Index = () => {
       const newRecord = await createRecord(selectedProject.id, data);
       setRecords([newRecord, ...records]);
       setRecordCounts({ ...recordCounts, [selectedProject.id]: (recordCounts[selectedProject.id] || 0) + 1 });
-      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record added' });
     } catch (error) {
