@@ -391,7 +391,7 @@ const Index = () => {
       }
 
       // Reload records
-      await loadRecords(selectedProject.id, selectedProject.details, customColumnTypes);
+      await loadRecords(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
       
       if (remainingToSell > 0) {
         toast({ 
