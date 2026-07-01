@@ -212,7 +212,7 @@ const Index = () => {
       await deleteRecord(id);
       setRecords(records.filter(r => r.id !== id));
       setRecordCounts({ ...recordCounts, [selectedProject.id]: Math.max(0, (recordCounts[selectedProject.id] || 1) - 1) });
-      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record deleted' });
     } catch (error) {
