@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -92,7 +91,7 @@ const Trash = () => {
   if (viewingProject) {
     return (
       <div className="min-h-screen bg-gradient-earth">
-        <Header />
+        
         <main className="container px-4 py-6 space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => setViewingProject(null)}>
@@ -180,7 +179,7 @@ const Trash = () => {
 
   return (
     <div className="min-h-screen bg-gradient-earth">
-      <Header />
+      
       <main className="container px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" onClick={() => navigate('/')}>

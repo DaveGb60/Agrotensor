@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
 import { ProjectCard } from '@/components/ProjectCard';
 import { CreateProjectDialog } from '@/components/CreateProjectDialog';
 import { RecordTable } from '@/components/RecordTable';
@@ -415,7 +414,7 @@ const Index = () => {
     return (
       <TooltipProvider delayDuration={300}>
         <div className="min-h-screen bg-gradient-earth">
-          <Header />
+          
           <main className="container px-4 py-6 space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
@@ -692,7 +691,7 @@ const Index = () => {
   // Projects List View
   return (
     <div className="min-h-screen bg-gradient-earth">
-      <Header />
+      
       
       <main className="container px-4 py-8">
         {/* Hero Section */}
