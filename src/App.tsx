@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { AppShell } from "@/components/AppShell";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Trash from "./pages/Trash";
@@ -23,10 +24,10 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/app" element={<Index />} />
-            <Route path="/trash" element={<Trash />} />
-            <Route path="/cloud" element={<CloudBackup />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/app" element={<AppShell><Index /></AppShell>} />
+            <Route path="/trash" element={<AppShell><Trash /></AppShell>} />
+            <Route path="/cloud" element={<AppShell><CloudBackup /></AppShell>} />
+            <Route path="/admin" element={<AppShell><Admin /></AppShell>} />
             <Route path="/admin-auth" element={<AdminAuth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
