@@ -1,9 +1,3 @@
 User-agent: *
-Allow: /
-Allow: /app
-Disallow: /admin
-Disallow: /admin-auth
-Disallow: /cloud
-Disallow: /trash
 
 Sitemap: https://agrotensor.vercel.app/sitemap.xml
