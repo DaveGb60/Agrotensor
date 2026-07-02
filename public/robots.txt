@@ -6,4 +6,4 @@ Disallow: /admin-auth
 Disallow: /cloud
 Disallow: /trash
 
-Sitemap: https://farmdeck.lovable.app/sitemap.xml
+Sitemap: https://agrotensor.vercel.app/sitemap.xml
