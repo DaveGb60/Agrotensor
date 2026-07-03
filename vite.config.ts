@@ -56,14 +56,14 @@ export default defineConfig(({ mode }) => ({
         runtimeCaching: [
           {
             // App navigations: try network first for fresh deploys, then fall
-            // back to the precached app shell so installed apps open offline.
+            // back to offline page if network is unavailable
             urlPattern: ({ request, url }) =>
               request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
             handler: "NetworkFirst",
             options: {
               cacheName: "html-navigations",
               networkTimeoutSeconds: 4,
-              precacheFallback: { fallbackURL: "/index.html" },
+              precacheFallback: { fallbackURL: "/offline.html" },
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
               cacheableResponse: { statuses: [0, 200] },
             },
