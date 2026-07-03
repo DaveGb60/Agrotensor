@@ -1,5 +1,6 @@
 // Sync share client — short-code project sharing via Lovable Cloud.
 import { supabase } from '@/integrations/supabase/client';
+import { isNetworkOnline } from './networkStatus';
 import {
   FarmProject,
   FarmRecord,
@@ -27,6 +28,7 @@ export interface CreateShareResult {
 }
 
 export async function createSyncShare(projectIds: string[], allProjects: FarmProject[]): Promise<CreateShareResult> {
+  if (!isNetworkOnline()) throw new Error('Sharing requires an internet connection');
   const selected = allProjects.filter((p) => projectIds.includes(p.id) && !p.isDeleted);
   if (selected.length === 0) throw new Error('No projects selected');
 
@@ -54,6 +56,7 @@ export interface ClaimResult {
 }
 
 export async function claimSyncShare(shareCode: string): Promise<ClaimResult> {
+  if (!isNetworkOnline()) throw new Error('Sharing requires an internet connection');
   const data = await invoke('claim-share', { share_code: shareCode });
   const projects: FarmProject[] = data.projects || [];
   const records: FarmRecord[] = data.records || [];
@@ -69,7 +72,7 @@ export async function claimSyncShare(shareCode: string): Promise<ClaimResult> {
   }
 
   let importedProjects = 0;
-  let updatedProjects = 0;
+  const updatedProjects = 0;
   for (const p of projects) {
     // importProject upserts on existing ID — so a project that already exists locally is updated, not duplicated.
     await importProject(p);
