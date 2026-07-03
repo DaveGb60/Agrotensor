@@ -5,6 +5,7 @@
 //   the new SW takes control so users never get stuck on stale bundles.
 
 const SW_URL = "/sw.js";
+const APP_SHELL_SW_URLS = [SW_URL, "/service-worker.js"];
 
 function isRefusedContext(): boolean {
   try {
@@ -47,7 +48,7 @@ async function unregisterMatching() {
             r.installing?.scriptURL ||
             r.waiting?.scriptURL ||
             "";
-          return url.endsWith(SW_URL);
+          return APP_SHELL_SW_URLS.some((swUrl) => url.endsWith(swUrl));
         })
         .map((r) => r.unregister())
     );
@@ -71,11 +72,12 @@ let reloadScheduled = false;
 function scheduleControllerReload() {
   if (reloadScheduled) return;
   reloadScheduled = true;
+  const hadController = Boolean(navigator.serviceWorker.controller);
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     // Only reload once, and only if this page was already controlled — that
     // means an update took over, not a first-install. This avoids reload loops
     // on the very first visit.
-    if (!navigator.serviceWorker.controller) return;
+    if (!hadController || !navigator.serviceWorker.controller) return;
     window.location.reload();
   });
 }

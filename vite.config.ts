@@ -18,7 +18,6 @@ export default defineConfig(({ mode }) => ({
       injectRegister: null,
       devOptions: { enabled: false },
       filename: "sw.js",
-      includeAssets: ["assets/landing/logo.png"],
       manifest: {
         name: "AgroTensor - Offline Farm Records",
         short_name: "AgroTensor",
@@ -28,6 +27,7 @@ export default defineConfig(({ mode }) => ({
         background_color: "#f5f2eb",
         display: "standalone",
         orientation: "portrait",
+        id: "/",
         scope: "/",
         start_url: "/",
         icons: [
@@ -46,23 +46,26 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,webmanifest,json,woff2}"],
+        globIgnores: ["**/service-worker.js"],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
         navigationPreload: true,
-        navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
         runtimeCaching: [
           {
-            // HTML navigations: always try network first so updates roll out.
+            // App navigations: try network first for fresh deploys, then fall
+            // back to the precached app shell so installed apps open offline.
             urlPattern: ({ request, url }) =>
               request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
             handler: "NetworkFirst",
             options: {
               cacheName: "html-navigations",
               networkTimeoutSeconds: 4,
+              precacheFallback: { fallbackURL: "/index.html" },
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
           {
