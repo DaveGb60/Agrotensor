@@ -766,6 +766,11 @@ export async function getRecordsByProject(projectId: string): Promise<FarmRecord
   return db.getAllFromIndex('records', 'by-project', projectId);
 }
 
+export async function getRecord(id: string): Promise<FarmRecord | undefined> {
+  const db = await getDB();
+  return db.get('records', id);
+}
+
 export async function updateRecord(record: FarmRecord): Promise<void> {
   const db = await getDB();
   if (record.isLocked) {

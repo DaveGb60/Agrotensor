@@ -2,6 +2,7 @@ import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
+import { NetworkStatusIndicator } from '@/components/NetworkStatusIndicator';
 
 /**
  * Slim top bar used by standalone pages (e.g. AdminAuth) that live outside
@@ -31,15 +32,18 @@ export function Header() {
           </div>
         </button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          className="h-9 w-9"
-          aria-label="Toggle theme"
-        >
-          {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-        </Button>
+        <div className="flex items-center gap-3">
+          <NetworkStatusIndicator />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-9 w-9"
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
     </header>
   );

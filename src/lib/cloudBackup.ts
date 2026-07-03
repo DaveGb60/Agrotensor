@@ -14,6 +14,18 @@ import {
   FarmAnimal,
 } from './db';
 import { generateRecordFingerprint } from './fileSync';
+import { 
+  withErrorRecovery, 
+  withRetry, 
+  batchWithPartialFailure,
+  isNetworkOffline 
+} from './errorRecovery';
+import { 
+  enqueueOperation, 
+  removeOperation,
+  updateOperationRetry,
+  getPendingOperationsByType 
+} from './syncQueue';
 
 const STORAGE_KEY = 'agrotensor-cloud-identity';
 
@@ -93,29 +105,63 @@ export async function verifyAndStoreIdentity(identity: CloudIdentity): Promise<C
 }
 
 export async function backupToCloud(identity: CloudIdentity) {
-  const projects = await getAllProjects();
-  const activeProjects = projects.filter((p) => !p.isDeleted);
+  const operationType = 'backup_cloud';
+  
+  try {
+    // If offline, queue this operation
+    if (isNetworkOffline()) {
+      enqueueOperation(
+        operationType,
+        { cloudId: identity.cloudId, recoveryCode: identity.recoveryCode },
+        { description: 'Backup projects and records to cloud' }
+      );
+      throw new Error('Offline - backup queued for later');
+    }
 
-  const allRecords: (FarmRecord & { fingerprint: string })[] = [];
-  const allAnimals: FarmAnimal[] = [];
-  for (const project of activeProjects) {
-    const records = await getRecordsByProject(project.id);
-    for (const r of records) {
-      allRecords.push({ ...r, fingerprint: generateRecordFingerprint(r) });
+    return await withRetry(
+      async () => {
+        const projects = await getAllProjects();
+        const activeProjects = projects.filter((p) => !p.isDeleted);
+
+        const allRecords: (FarmRecord & { fingerprint: string })[] = [];
+        const allAnimals: FarmAnimal[] = [];
+        for (const project of activeProjects) {
+          const records = await getRecordsByProject(project.id);
+          for (const r of records) {
+            allRecords.push({ ...r, fingerprint: generateRecordFingerprint(r) });
+          }
+          if (project.projectType === 'breeding') {
+            const animals = await getAnimalsByProject(project.id);
+            allAnimals.push(...animals);
+          }
+        }
+
+        return await invoke('backup', {
+          cloud_id: identity.cloudId,
+          recovery_code: identity.recoveryCode,
+          projects: activeProjects,
+          records: allRecords,
+          animals: allAnimals,
+        });
+      },
+      3,
+      2000
+    );
+  } catch (error) {
+    // If this is a retryable error and we don't already have it queued
+    if ((error instanceof Error && (error.message.includes('network') || error.message.includes('Offline'))) ||
+        (isNetworkOffline())) {
+      const existing = getPendingOperationsByType(operationType);
+      if (!existing.length) {
+        enqueueOperation(
+          operationType,
+          { cloudId: identity.cloudId, recoveryCode: identity.recoveryCode },
+          { description: 'Backup projects and records to cloud' }
+        );
+      }
     }
-    if (project.projectType === 'breeding') {
-      const animals = await getAnimalsByProject(project.id);
-      allAnimals.push(...animals);
-    }
+    throw error;
   }
-
-  return await invoke('backup', {
-    cloud_id: identity.cloudId,
-    recovery_code: identity.recoveryCode,
-    projects: activeProjects,
-    records: allRecords,
-    animals: allAnimals,
-  });
 }
 
 export interface RestoreResult {
@@ -123,56 +169,96 @@ export interface RestoreResult {
   importedRecords: number;
   importedAnimals: number;
   skippedRecords: number;
+  errors?: Array<{ item: string; error: string }>;
 }
 
 export async function restoreFromCloud(identity: CloudIdentity): Promise<RestoreResult> {
-  const data = await invoke('restore', {
-    cloud_id: identity.cloudId,
-    recovery_code: identity.recoveryCode,
-  });
-
-  const projects: FarmProject[] = data.projects || [];
-  const records: FarmRecord[] = data.records || [];
-  const animals: FarmAnimal[] = data.animals || [];
-
-  // Build fingerprint set of local records to dedupe
-  const localFingerprints = new Set<string>();
-  const localProjects = await getAllProjects();
-  for (const lp of localProjects) {
-    const localRecords = await getRecordsByProject(lp.id);
-    for (const lr of localRecords) {
-      localFingerprints.add(`${lr.projectId}|${generateRecordFingerprint(lr)}`);
+  const operationType = 'restore_cloud';
+  
+  try {
+    if (isNetworkOffline()) {
+      enqueueOperation(
+        operationType,
+        { cloudId: identity.cloudId, recoveryCode: identity.recoveryCode },
+        { description: 'Restore projects and records from cloud' }
+      );
+      throw new Error('Offline - restore queued for later');
     }
-  }
 
-  let importedProjects = 0;
-  for (const p of projects) {
-    await importProject(p);
-    importedProjects++;
-  }
+    return await withRetry(
+      async () => {
+        const data = await invoke('restore', {
+          cloud_id: identity.cloudId,
+          recovery_code: identity.recoveryCode,
+        });
 
-  let importedRecords = 0;
-  let skippedRecords = 0;
-  for (const r of records) {
-    const key = `${r.projectId}|${generateRecordFingerprint(r)}`;
-    if (localFingerprints.has(key)) {
-      skippedRecords++;
-      continue;
+        const projects: FarmProject[] = data.projects || [];
+        const records: FarmRecord[] = data.records || [];
+        const animals: FarmAnimal[] = data.animals || [];
+
+        // Build fingerprint set of local records to dedupe
+        const localFingerprints = new Set<string>();
+        const localProjects = await getAllProjects();
+        for (const lp of localProjects) {
+          const localRecords = await getRecordsByProject(lp.id);
+          for (const lr of localRecords) {
+            localFingerprints.add(`${lr.projectId}|${generateRecordFingerprint(lr)}`);
+          }
+        }
+
+        const errors: Array<{ item: string; error: string }> = [];
+
+        // Import projects (use batch with partial failure tolerance)
+        const projectResults = await batchWithPartialFailure(projects, importProject);
+        const importedProjects = projectResults.succeeded.length;
+        projectResults.failed.forEach(f => {
+          errors.push({ item: `Project: ${f.item.title}`, error: f.error.message });
+        });
+
+        // Import records (filter duplicates first)
+        const uniqueRecords = records.filter(r => {
+          const key = `${r.projectId}|${generateRecordFingerprint(r)}`;
+          return !localFingerprints.has(key);
+        });
+
+        const recordResults = await batchWithPartialFailure(uniqueRecords, importRecord);
+        const importedRecords = recordResults.succeeded.length;
+        const skippedRecords = records.length - uniqueRecords.length;
+        recordResults.failed.forEach(f => {
+          errors.push({ item: `Record: ${f.item.projectId}/${f.item.id}`, error: f.error.message });
+        });
+
+        // Import animals (best effort)
+        const animalResults = await batchWithPartialFailure(animals, importAnimal);
+        const importedAnimals = animalResults.succeeded.length;
+        animalResults.failed.forEach(f => {
+          errors.push({ item: `Animal: ${f.item.projectId}/${f.item.animalId}`, error: f.error.message });
+        });
+
+        return { 
+          importedProjects, 
+          importedRecords, 
+          importedAnimals, 
+          skippedRecords,
+          errors: errors.length > 0 ? errors : undefined,
+        };
+      },
+      3,
+      2000
+    );
+  } catch (error) {
+    // If this is a retryable error
+    if ((error instanceof Error && (error.message.includes('network') || error.message.includes('Offline'))) ||
+        (isNetworkOffline())) {
+      const existing = getPendingOperationsByType(operationType);
+      if (!existing.length) {
+        enqueueOperation(
+          operationType,
+          { cloudId: identity.cloudId, recoveryCode: identity.recoveryCode },
+          { description: 'Restore projects and records from cloud' }
+        );
+      }
     }
-    await importRecord(r);
-    importedRecords++;
-    localFingerprints.add(key);
+    throw error;
   }
-
-  let importedAnimals = 0;
-  for (const animal of animals) {
-    try {
-      await importAnimal(animal);
-      importedAnimals++;
-    } catch {
-      // skip locked or invalid
-    }
-  }
-
-  return { importedProjects, importedRecords, importedAnimals, skippedRecords };
 }
