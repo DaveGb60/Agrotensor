@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>AgroTensor — Offline</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      color-scheme: light dark;
     }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
       background: linear-gradient(135deg, hsl(150 55% 12%) 0%, hsl(150 60% 8%) 100%);
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -21,112 +21,135 @@
     }
     .container {
       text-align: center;
-      max-width: 500px;
+      max-width: 520px;
+      width: 100%;
     }
     .logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 24px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 20px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.08);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 48px;
+      border: 1px solid rgba(255,255,255,0.12);
     }
     h1 {
       color: white;
-      font-size: 28px;
-      margin-bottom: 12px;
-      font-weight: 600;
+      font-size: 26px;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
     }
     p {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 16px;
+      color: rgba(255,255,255,0.82);
+      font-size: 15px;
       line-height: 1.6;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
     .status {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
       padding: 16px;
-      margin-bottom: 32px;
-      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 24px;
+      color: rgba(255,255,255,0.92);
       font-size: 14px;
     }
     .status strong {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       color: #ffd700;
     }
     .button {
       display: inline-block;
       background: #2f7a2f;
       color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
+      padding: 12px 22px;
+      border-radius: 10px;
       text-decoration: none;
       font-weight: 600;
       border: none;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 15px;
       transition: background 0.2s;
     }
-    .button:hover {
-      background: #1f5a1f;
-    }
+    .button:hover { background: #246124; }
     .tips {
-      margin-top: 32px;
+      margin-top: 28px;
       text-align: left;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
     }
     .tips h3 {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 14px;
-      margin-bottom: 12px;
+      color: rgba(255,255,255,0.88);
+      font-size: 13px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
     .tips ul {
       list-style: none;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255,255,255,0.72);
       font-size: 13px;
-      line-height: 1.8;
-    }
-    .tips li {
-      margin-bottom: 8px;
+      line-height: 1.9;
     }
     .tips li:before {
       content: "✓ ";
       color: #7fbf2f;
-      font-weight: bold;
+      font-weight: 700;
       margin-right: 8px;
+    }
+    .footer {
+      margin-top: 22px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">🌾</div>
+    <div class="logo" aria-hidden="true">🌾</div>
     <h1>You're Offline</h1>
-    <p>AgroTensor requires the app to be loaded before you can work offline. Once loaded, all your data works without internet.</p>
-    
+    <p>
+      AgroTensor is designed to work offline. Most features are available without internet.
+      Only cloud backup, sharing, and payments need a connection.
+    </p>
+
     <div class="status">
-      <strong>What you can do:</strong>
-      Connect to the internet and reload to load the app, or wait for your connection to come back online.
+      <strong>What you can do now</strong>
+      View projects, record data, manage livestock, and generate reports.
+      Changes will sync automatically when you're back online.
     </div>
 
-    <button class="button" onclick="location.reload()">Try Reloading</button>
+    <button class="button" id="reload">Try Reloading</button>
 
     <div class="tips">
-      <h3>💡 Tips for working offline:</h3>
+      <h3>Offline Capabilities</h3>
       <ul>
-        <li>Open the app while online to cache everything</li>
-        <li>All your projects and records are stored on your device</li>
-        <li>You can work completely offline once the app is loaded</li>
-        <li>Changes sync automatically when you're back online</li>
+        <li>Create and edit farm projects</li>
+        <li>Record operations and finances</li>
+        <li>Track animals and breeding</li>
+        <li>Generate PDF summaries</li>
+        <li>Import / export local data</li>
       </ul>
     </div>
+
+    <div class="footer">
+      AgroTensor &middot; Offline-first farm management
+    </div>
   </div>
+
+  <script>
+    const btn = document.getElementById('reload');
+    if (btn) {
+      btn.addEventListener('click', () => location.reload());
+    }
+    window.addEventListener('online', () => location.reload(), { once: true });
+  </script>
 </body>
 </html>
