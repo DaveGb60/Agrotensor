@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroTensor — Offline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, hsl(150 55% 12%) 0%, hsl(150 60% 8%) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      text-align: center;
+      max-width: 500px;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+    h1 {
+      color: white;
+      font-size: 28px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .status {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 32px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+    }
+    .status strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #ffd700;
+    }
+    .button {
+      display: inline-block;
+      background: #2f7a2f;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+    .button:hover {
+      background: #1f5a1f;
+    }
+    .tips {
+      margin-top: 32px;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .tips h3 {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .tips ul {
+      list-style: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    .tips li {
+      margin-bottom: 8px;
+    }
+    .tips li:before {
+      content: "✓ ";
+      color: #7fbf2f;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🌾</div>
+    <h1>You're Offline</h1>
+    <p>AgroTensor requires the app to be loaded before you can work offline. Once loaded, all your data works without internet.</p>
+    
+    <div class="status">
+      <strong>What you can do:</strong>
+      Connect to the internet and reload to load the app, or wait for your connection to come back online.
+    </div>
+
+    <button class="button" onclick="location.reload()">Try Reloading</button>
+
+    <div class="tips">
+      <h3>💡 Tips for working offline:</h3>
+      <ul>
+        <li>Open the app while online to cache everything</li>
+        <li>All your projects and records are stored on your device</li>
+        <li>You can work completely offline once the app is loaded</li>
+        <li>Changes sync automatically when you're back online</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
