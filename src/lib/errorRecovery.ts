@@ -1,5 +1,7 @@
 // Error recovery utilities for database and cloud operations
-export { isNetworkOffline } from './networkStatus';
+import { isNetworkOffline } from './networkStatus';
+export { isNetworkOffline };
+
 
 
 export class OfflineError extends Error {
