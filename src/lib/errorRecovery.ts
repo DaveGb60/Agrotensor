@@ -1,6 +1,6 @@
 // Error recovery utilities for database and cloud operations
-import { isNetworkOffline } from './networkStatus';
-export { isNetworkOffline };
+export { isNetworkOffline } from './networkStatus';
+
 
 export class OfflineError extends Error {
   constructor(message: string, public operation: string) {
