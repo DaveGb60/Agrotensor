@@ -153,7 +153,7 @@ export interface SyncServiceOptions {
 export class SyncService {
   private autoRetryInterval: number;
   private maxConcurrent: number;
-  private retryTimer: NodeJS.Timer | null = null;
+  private retryTimer: ReturnType<typeof setInterval> | null = null;
   private isProcessing = false;
   private processedCount = 0;
 
