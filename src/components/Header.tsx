@@ -28,7 +28,7 @@ export function Header() {
           />
           <div className="text-left">
             <h1 className="font-serif text-xl font-semibold text-foreground">AgroTensor</h1>
-            <p className="text-xs text-muted-foreground">Offline Farm Records</p>
+            <p className="text-xs text-muted-foreground">Smart Farm Intelligence</p>
           </div>
         </button>
 

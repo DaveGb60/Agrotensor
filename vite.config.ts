@@ -19,10 +19,10 @@ export default defineConfig(({ mode }) => ({
       devOptions: { enabled: false },
       filename: "sw.js",
       manifest: {
-        name: "AgroTensor - Offline Farm Records",
+        name: "AgroTensor — Smart Farm Intelligence",
         short_name: "AgroTensor",
         description:
-          "Track your farm projects, operations, and finances offline. Secure, private, and always available.",
+          "The intelligent, offline-first command center for modern farms. Unify livestock, crops, operations and finance—secure, private, and always available.",
         theme_color: "#3d6b4f",
         background_color: "#f5f2eb",
         display: "standalone",

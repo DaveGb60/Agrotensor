@@ -703,7 +703,7 @@ const Index = () => {
             Welcome to AgroTensor
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto mb-6">
-            Your offline farm records platform. Track projects, operations, and finances—all stored securely on your device.
+            The intelligent, offline-first command center for modern farms—unify livestock, crops, operations and finance in one secure workspace on your device.
           </p>
           
           <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-8">
