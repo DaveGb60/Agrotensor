@@ -2,6 +2,8 @@
 import { isNetworkOffline } from './networkStatus';
 export { isNetworkOffline };
 
+
+
 export class OfflineError extends Error {
   constructor(message: string, public operation: string) {
     super(message);
