@@ -55,7 +55,7 @@ export function AppSidebar() {
                 AgroTensor
               </p>
               <p className="text-[10px] text-muted-foreground truncate">
-                Offline Farm Records
+                Smart Farm Intelligence
               </p>
             </div>
           )}
