@@ -34,7 +34,7 @@ export function ProjectDetailsSection({
   onCompleteProject,
 }: ProjectDetailsSectionProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState<ProjectDetails>(project.details as ProjectDetails);
+  const [editData, setEditData] = useState<ProjectDetails>(project.details);
   const [newFieldKey, setNewFieldKey] = useState('');
   const [newInputName, setNewInputName] = useState('');
   const [newInputCost, setNewInputCost] = useState('');
@@ -149,7 +149,7 @@ export function ProjectDetailsSection({
                 {isEditing ? (
                   <>
                     <Button variant="ghost" size="sm" onClick={() => {
-                      setEditData(project.details as ProjectDetails);
+                      setEditData(project.details);
                       setIsEditing(false);
                     }}>
                       Cancel

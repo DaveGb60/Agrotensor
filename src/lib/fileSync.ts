@@ -1,22 +1,15 @@
-// File Sync Module for AgroTensor
+// File Sync Module for FarmDeck
 // Handles file-based data import/export and sharing
 
-import { FarmProject, FarmRecord, FarmAnimal, getProject, importProject, importRecord, importAnimal, getRecordsByProject, getAnimalsByProject } from './db';
+import { FarmProject, FarmRecord, getProject, importProject, importRecord, getRecordsByProject } from './db';
 
-export interface SyncDataV1 {
-  type: 'agrotensor-sync';
+export interface SyncData {
+  type: 'farmdeck-sync';
   version: '1.0';
   timestamp: string;
   project: FarmProject;
   records: FarmRecord[];
 }
-
-export interface SyncDataV2 extends Omit<SyncDataV1, 'version'> {
-  version: '2.0';
-  animals: FarmAnimal[];
-}
-
-export type SyncData = SyncDataV1 | SyncDataV2;
 
 export interface SyncResult {
   success: boolean;
@@ -27,14 +20,13 @@ export interface SyncResult {
 }
 
 // Create sync data package
-export function createSyncData(project: FarmProject, records: FarmRecord[], animals: FarmAnimal[] = []): SyncDataV2 {
+export function createSyncData(project: FarmProject, records: FarmRecord[]): SyncData {
   return {
-    type: 'agrotensor-sync',
-    version: '2.0',
+    type: 'farmdeck-sync',
+    version: '1.0',
     timestamp: new Date().toISOString(),
     project,
     records,
-    animals,
   };
 }
 
@@ -42,20 +34,13 @@ export function createSyncData(project: FarmProject, records: FarmRecord[], anim
 export function validateSyncData(data: unknown): data is SyncData {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
-  const validVersion = d.version === '1.0' || d.version === '2.0';
   return (
-    d.type === 'agrotensor-sync' &&
-    validVersion &&
+    d.type === 'farmdeck-sync' &&
+    d.version === '1.0' &&
     typeof d.project === 'object' &&
     d.project !== null &&
-    Array.isArray(d.records) &&
-    (d.version === '1.0' || Array.isArray(d.animals))
+    Array.isArray(d.records)
   );
-}
-
-export function getSyncAnimals(data: SyncData): FarmAnimal[] {
-  if (data.version === '2.0') return data.animals;
-  return [];
 }
 
 // Generate a content fingerprint for a record (excludes id, createdAt, updatedAt)
@@ -156,17 +141,6 @@ export async function importSyncData(data: SyncData): Promise<SyncResult> {
         skippedCount++;
       }
     }
-
-    // Import animals (v2.0 sync)
-    let importedAnimals = 0;
-    for (const animal of getSyncAnimals(data)) {
-      try {
-        await importAnimal(animal);
-        importedAnimals++;
-      } catch {
-        skippedCount++;
-      }
-    }
     
     // Skip content duplicates (same data, different IDs)
     skippedCount += diff.duplicateRecords.length;
@@ -201,8 +175,8 @@ export async function importSyncData(data: SyncData): Promise<SyncResult> {
     return {
       success: true,
       message: diff.projectExists 
-        ? `Synced ${importedCount} new, ${updatedCount} updated records${importedAnimals ? `, ${importedAnimals} animals` : ''}${duplicateInfo}`
-        : `Imported project with ${importedCount} records${importedAnimals ? ` and ${importedAnimals} animals` : ''}`,
+        ? `Synced ${importedCount} new, ${updatedCount} updated records${duplicateInfo}`
+        : `Imported project with ${importedCount} records`,
       newRecords: importedCount,
       updatedRecords: updatedCount,
       skippedRecords: skippedCount,
@@ -216,8 +190,8 @@ export async function importSyncData(data: SyncData): Promise<SyncResult> {
 }
 
 // Export project data to JSON string
-export function exportToJSON(project: FarmProject, records: FarmRecord[], animals: FarmAnimal[] = []): string {
-  const syncData = createSyncData(project, records, animals);
+export function exportToJSON(project: FarmProject, records: FarmRecord[]): string {
+  const syncData = createSyncData(project, records);
   return JSON.stringify(syncData, null, 2);
 }
 
@@ -235,13 +209,13 @@ export function parseJSONImport(jsonString: string): SyncData | null {
 }
 
 // Download JSON file
-export function downloadJSON(project: FarmProject, records: FarmRecord[], animals: FarmAnimal[] = []): void {
-  const json = exportToJSON(project, records, animals);
+export function downloadJSON(project: FarmProject, records: FarmRecord[]): void {
+  const json = exportToJSON(project, records);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `agrotensor-${project.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.json`;
+  a.download = `farmdeck-${project.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -249,19 +223,19 @@ export function downloadJSON(project: FarmProject, records: FarmRecord[], animal
 }
 
 // Share via Web Share API (if available)
-export async function shareViaWebShare(project: FarmProject, records: FarmRecord[], animals: FarmAnimal[] = []): Promise<boolean> {
+export async function shareViaWebShare(project: FarmProject, records: FarmRecord[]): Promise<boolean> {
   if (!navigator.share) {
     return false;
   }
   
-  const json = exportToJSON(project, records, animals);
+  const json = exportToJSON(project, records);
   const blob = new Blob([json], { type: 'application/json' });
-  const file = new File([blob], `agrotensor-${project.title}.json`, { type: 'application/json' });
+  const file = new File([blob], `farmdeck-${project.title}.json`, { type: 'application/json' });
   
   try {
     await navigator.share({
-      title: `AgroTensor: ${project.title}`,
-      text: `AgroTensor project data - ${records.length} records${animals.length ? `, ${animals.length} animals` : ''}`,
+      title: `FarmDeck: ${project.title}`,
+      text: `Farm project data - ${records.length} records`,
       files: [file],
     });
     return true;
@@ -272,8 +246,8 @@ export async function shareViaWebShare(project: FarmProject, records: FarmRecord
 }
 
 // Copy to clipboard
-export async function copyToClipboard(project: FarmProject, records: FarmRecord[], animals: FarmAnimal[] = []): Promise<boolean> {
-  const json = exportToJSON(project, records, animals);
+export async function copyToClipboard(project: FarmProject, records: FarmRecord[]): Promise<boolean> {
+  const json = exportToJSON(project, records);
   try {
     await navigator.clipboard.writeText(json);
     return true;
@@ -283,21 +257,22 @@ export async function copyToClipboard(project: FarmProject, records: FarmRecord[
 }
 
 // Generate shareable text for nearby share (Android/iOS)
-export function generateShareableLink(project: FarmProject, records: FarmRecord[], animals: FarmAnimal[] = []): {
+export function generateShareableLink(project: FarmProject, records: FarmRecord[]): {
   title: string;
   text: string;
   data: string;
 } {
-  const data = exportToJSON(project, records, animals);
+  const data = exportToJSON(project, records);
   return {
-      title: `AgroTensor: ${project.title}`,
-    text: `Farm project with ${records.length} records${animals.length ? ` and ${animals.length} animals` : ''}`,
+    title: `FarmDeck: ${project.title}`,
+    text: `Farm project with ${records.length} records`,
     data,
   };
 }
 
-export function createDataUrl(project: FarmProject, records: FarmRecord[], animals: FarmAnimal[] = []): string {
-  const json = exportToJSON(project, records, animals);
+// Create a data URL for the sync data (useful for some sharing methods)
+export function createDataUrl(project: FarmProject, records: FarmRecord[]): string {
+  const json = exportToJSON(project, records);
   const base64 = btoa(unescape(encodeURIComponent(json)));
   return `data:application/json;base64,${base64}`;
 }

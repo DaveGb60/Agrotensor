@@ -18,27 +18,23 @@ export default defineConfig(({ mode }) => ({
       injectRegister: null,
       devOptions: { enabled: false },
       filename: "sw.js",
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       manifest: {
-        name: "AgroTensor — Smart Farm Intelligence",
-        short_name: "AgroTensor",
+        name: "FarmDesk - Offline Farm Records",
+        short_name: "FarmDesk",
         description:
-          "The intelligent, offline-first command center for modern farms. Unify livestock, crops, operations and finance—secure, private, and always available.",
+          "Track your farm projects, operations, and finances offline. Secure, private, and always available.",
         theme_color: "#3d6b4f",
         background_color: "#f5f2eb",
         display: "standalone",
         orientation: "portrait",
-        id: "/",
         scope: "/",
         start_url: "/",
         icons: [
-          { src: "/assets/landing/logo.png", sizes: "16x16", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "32x32", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "48x48", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "180x180", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "192x192", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "512x512", type: "image/png" },
+          { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+          { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
           {
-            src: "/assets/landing/logo.png",
+            src: "/pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable",
@@ -46,27 +42,26 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,webmanifest,json,woff2}"],
-        globIgnores: ["**/service-worker.js"],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
-        navigationPreload: true,
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
         runtimeCaching: [
           {
+            // HTML navigations: always try network first so updates roll out.
             urlPattern: ({ request, url }) =>
               request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
             handler: "NetworkFirst",
             options: {
               cacheName: "html-navigations",
               networkTimeoutSeconds: 4,
-              precacheFallback: { fallbackURL: "/offline.html" },
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
-              cacheableResponse: { statuses: [0, 200] },
             },
           },
           {
+            // Same-origin hashed static assets.
             urlPattern: ({ request, sameOrigin }) =>
               sameOrigin &&
               ["script", "style", "worker", "font", "image"].includes(request.destination),

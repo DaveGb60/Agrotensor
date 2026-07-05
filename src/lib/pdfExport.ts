@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { FarmProject, FarmRecord, MonthlyAggregation, ProjectDetails, calculateTotalProjectCosts } from './db';
+import { FarmProject, FarmRecord, MonthlyAggregation, calculateTotalProjectCosts } from './db';
 import { format, parse } from 'date-fns';
 
 interface PDFExportOptions {
@@ -25,7 +25,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  doc.text('AgroTensor', 14, 20);
+  doc.text('FarmDeck', 14, 20);
   
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
@@ -79,7 +79,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.text('Project Details', 14, yPos);
     yPos += 8;
     
-    const details = project.details as ProjectDetails;
+    const details = project.details;
     const boxWidth = 44;
     const boxHeight = 24;
     const startX = 14;
@@ -176,10 +176,8 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     yPos += 8;
     
     // Calculate totals including project-level costs
-    const produceDetails = project.details as ProjectDetails | undefined;
-    const totalProjectCosts = produceDetails ? calculateTotalProjectCosts(produceDetails) : 0;
-    const capital = produceDetails?.capital || 0;
-
+    const totalProjectCosts = project.details ? calculateTotalProjectCosts(project.details) : 0;
+    const capital = project.details?.capital || 0;
     
     const totals = filteredAggregations.reduce(
       (acc, agg) => ({
@@ -342,7 +340,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      `AgroTensor | Page ${i} of ${pageCount}`,
+      `FarmDeck | Page ${i} of ${pageCount}`,
       doc.internal.pageSize.width / 2,
       doc.internal.pageSize.height - 10,
       { align: 'center' }
@@ -352,7 +350,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
   // Generate filename
   const dateStr = format(new Date(), 'yyyy-MM-dd');
   const monthStr = selectedMonth ? `-${selectedMonth}` : '';
-  const filename = `AgroTensor_${project.title.replace(/\s+/g, '_')}${monthStr}_${dateStr}.pdf`;
+  const filename = `FarmDeck_${project.title.replace(/\s+/g, '_')}${monthStr}_${dateStr}.pdf`;
   
   doc.save(filename);
 }

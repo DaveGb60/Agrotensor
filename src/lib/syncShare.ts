@@ -1,15 +1,11 @@
 // Sync share client — short-code project sharing via Lovable Cloud.
 import { supabase } from '@/integrations/supabase/client';
-import { isNetworkOnline } from './networkStatus';
 import {
   FarmProject,
   FarmRecord,
-  FarmAnimal,
   getRecordsByProject,
-  getAnimalsByProject,
   importProject,
   importRecord,
-  importAnimal,
 } from './db';
 import { generateRecordFingerprint } from './fileSync';
 
@@ -28,39 +24,31 @@ export interface CreateShareResult {
 }
 
 export async function createSyncShare(projectIds: string[], allProjects: FarmProject[]): Promise<CreateShareResult> {
-  if (!isNetworkOnline()) throw new Error('Sharing requires an internet connection');
   const selected = allProjects.filter((p) => projectIds.includes(p.id) && !p.isDeleted);
   if (selected.length === 0) throw new Error('No projects selected');
 
   const records: (FarmRecord & { fingerprint: string })[] = [];
-  const animals: FarmAnimal[] = [];
   for (const project of selected) {
     const list = await getRecordsByProject(project.id);
     for (const r of list) {
       records.push({ ...r, fingerprint: generateRecordFingerprint(r) });
     }
-    if (project.projectType === 'breeding') {
-      animals.push(...(await getAnimalsByProject(project.id)));
-    }
   }
 
-  return await invoke('create-share', { projects: selected, records, animals });
+  return await invoke('create-share', { projects: selected, records });
 }
 
 export interface ClaimResult {
   importedProjects: number;
   updatedProjects: number;
   importedRecords: number;
-  importedAnimals: number;
   skippedRecords: number;
 }
 
 export async function claimSyncShare(shareCode: string): Promise<ClaimResult> {
-  if (!isNetworkOnline()) throw new Error('Sharing requires an internet connection');
   const data = await invoke('claim-share', { share_code: shareCode });
   const projects: FarmProject[] = data.projects || [];
   const records: FarmRecord[] = data.records || [];
-  const animals: FarmAnimal[] = data.animals || [];
 
   // Build dedupe set of local records (per project)
   const localFingerprints = new Set<string>();
@@ -72,7 +60,7 @@ export async function claimSyncShare(shareCode: string): Promise<ClaimResult> {
   }
 
   let importedProjects = 0;
-  const updatedProjects = 0;
+  let updatedProjects = 0;
   for (const p of projects) {
     // importProject upserts on existing ID — so a project that already exists locally is updated, not duplicated.
     await importProject(p);
@@ -93,15 +81,5 @@ export async function claimSyncShare(shareCode: string): Promise<ClaimResult> {
     localFingerprints.add(key);
   }
 
-  let importedAnimals = 0;
-  for (const animal of animals) {
-    try {
-      await importAnimal(animal);
-      importedAnimals++;
-    } catch {
-      // skip
-    }
-  }
-
-  return { importedProjects, updatedProjects, importedRecords, importedAnimals, skippedRecords };
+  return { importedProjects, updatedProjects, importedRecords, skippedRecords };
 }

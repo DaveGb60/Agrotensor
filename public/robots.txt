@@ -1,34 +1,14 @@
-# AgroTensor — https://agrotensor.vercel.app
-# Offline-first farm management platform
-
-User-agent: *
-Allow: /
-Allow: /app
-
-# Private / authenticated areas
-Disallow: /admin
-Disallow: /admin-auth
-Disallow: /cloud
-Disallow: /trash
-
-# Major search engines
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
-User-agent: DuckDuckBot
-Allow: /
-
-# Social preview crawlers
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: LinkedInBot
+User-agent: *
 Allow: /
-
-Sitemap: https://agrotensor.vercel.app/sitemap.xml

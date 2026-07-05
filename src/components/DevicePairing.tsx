@@ -26,7 +26,7 @@ const DevicePairing: React.FC = () => {
   return (
     <div className="fd-pair">
       <h4>Pair a device</h4>
-      <p>Open AgroTensor on the device to pair and enter this code or scan the QR (optional).</p>
+      <p>Open FarmDesk on the device to pair and enter this code or scan the QR (optional).</p>
       <div className="fd-pair__code">{code}</div>
       <div className="fd-pair__actions">
         <button className="fd-btn" onClick={copy}>{copied ? 'Copied' : 'Copy code'}</button>
