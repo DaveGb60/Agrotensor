@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 const primaryItems = [
   { label: "Projects", path: "/app", icon: Home },
   { label: "Cloud Backup", path: "/cloud", icon: Cloud },
+  { label: "Data Recovery", path: "/recover", icon: LifeBuoy },
   { label: "Trash", path: "/trash", icon: Trash2 },
 ];
 
