@@ -1,4 +1,4 @@
-import { Home, Trash2, Cloud, Shield, Heart, Sun, Moon } from "lucide-react";
+import { Home, Trash2, Cloud, Shield, Heart, Sun, Moon, LifeBuoy } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
