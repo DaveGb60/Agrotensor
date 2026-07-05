@@ -766,6 +766,17 @@ export async function getRecordsByProject(projectId: string): Promise<FarmRecord
   return db.getAllFromIndex('records', 'by-project', projectId);
 }
 
+export async function getAllRecords(): Promise<FarmRecord[]> {
+  const db = await getDB();
+  return db.getAll('records');
+}
+
+export async function getAllAnimals(): Promise<FarmAnimal[]> {
+  const db = await getDB();
+  const animals = await db.getAll('animals');
+  return animals.map((a) => normalizeAnimal(a as FarmAnimal));
+}
+
 export async function getRecord(id: string): Promise<FarmRecord | undefined> {
   const db = await getDB();
   return db.get('records', id);
