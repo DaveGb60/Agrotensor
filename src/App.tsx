@@ -10,6 +10,7 @@ import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Trash from "./pages/Trash";
 import CloudBackup from "./pages/CloudBackup";
+import DataRecovery from "./pages/DataRecovery";
 import Admin from "./pages/Admin";
 import AdminAuth from "./pages/AdminAuth";
 import NotFound from "./pages/NotFound";
