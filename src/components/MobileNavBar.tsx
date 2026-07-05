@@ -1,4 +1,4 @@
-import { Home, Trash2, Cloud, Shield, Heart } from "lucide-react";
+import { Home, Trash2, Cloud, Shield, Heart, LifeBuoy } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { DonateDialog } from "@/components/DonateDialog";
@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const primaryItems = [
   { label: "Projects", path: "/app", icon: Home },
   { label: "Cloud", path: "/cloud", icon: Cloud },
+  { label: "Recover", path: "/recover", icon: LifeBuoy },
   { label: "Trash", path: "/trash", icon: Trash2 },
 ];
 

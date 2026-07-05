@@ -10,6 +10,7 @@ import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Trash from "./pages/Trash";
 import CloudBackup from "./pages/CloudBackup";
+import DataRecovery from "./pages/DataRecovery";
 import Admin from "./pages/Admin";
 import AdminAuth from "./pages/AdminAuth";
 import NotFound from "./pages/NotFound";
@@ -85,6 +86,7 @@ const App = () => (
             <Route path="/app" element={<AppLayout><Index /></AppLayout>} />
             <Route path="/trash" element={<AppLayout><Trash /></AppLayout>} />
             <Route path="/cloud" element={<AppLayout><CloudBackup /></AppLayout>} />
+            <Route path="/recover" element={<AppLayout><DataRecovery /></AppLayout>} />
             <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
             <Route path="/admin-auth" element={<AdminAuth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

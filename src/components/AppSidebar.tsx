@@ -1,4 +1,4 @@
-import { Home, Trash2, Cloud, Shield, Heart, Sun, Moon } from "lucide-react";
+import { Home, Trash2, Cloud, Shield, Heart, Sun, Moon, LifeBuoy } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 const primaryItems = [
   { label: "Projects", path: "/app", icon: Home },
   { label: "Cloud Backup", path: "/cloud", icon: Cloud },
+  { label: "Data Recovery", path: "/recover", icon: LifeBuoy },
   { label: "Trash", path: "/trash", icon: Trash2 },
 ];
 
