@@ -53,6 +53,8 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         skipWaiting: true,
         navigationPreload: true,
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/~oauth/],
         runtimeCaching: [
           {
             urlPattern: ({ request, url }) =>
@@ -61,7 +63,7 @@ export default defineConfig(({ mode }) => ({
             options: {
               cacheName: "html-navigations",
               networkTimeoutSeconds: 4,
-              precacheFallback: { fallbackURL: "/offline.html" },
+              precacheFallback: { fallbackURL: "/index.html" },
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
               cacheableResponse: { statuses: [0, 200] },
             },
