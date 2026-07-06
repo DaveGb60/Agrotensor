@@ -61,7 +61,7 @@ export default defineConfig(({ mode }) => ({
             options: {
               cacheName: "html-navigations",
               networkTimeoutSeconds: 4,
-              precacheFallback: { fallbackURL: "/offline.html" },
+              precacheFallback: { fallbackURL: "/index.html" },
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
               cacheableResponse: { statuses: [0, 200] },
             },

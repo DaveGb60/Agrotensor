@@ -6,6 +6,7 @@
 
 const SW_URL = "/sw.js";
 const APP_SHELL_SW_URLS = [SW_URL, "/service-worker.js"];
+const OFFLINE_SHELL_URLS = ["/", "/app", "/index.html", "/offline.html", "/manifest.webmanifest", "/favicon.png"];
 
 function isRefusedContext(): boolean {
   try {
@@ -82,6 +83,44 @@ function scheduleControllerReload() {
   });
 }
 
+function waitForController(timeoutMs = 8000): Promise<void> {
+  if (navigator.serviceWorker.controller) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      navigator.serviceWorker.removeEventListener("controllerchange", finish);
+      resolve();
+    };
+
+    navigator.serviceWorker.addEventListener("controllerchange", finish);
+    window.setTimeout(finish, timeoutMs);
+  });
+}
+
+async function warmOfflineShell() {
+  if (!navigator.onLine) return;
+
+  try {
+    await navigator.serviceWorker.ready;
+    await waitForController();
+    if (!navigator.serviceWorker.controller) return;
+
+    await Promise.allSettled(
+      OFFLINE_SHELL_URLS.map((url) =>
+        fetch(url, {
+          cache: "reload",
+          credentials: "same-origin",
+        })
+      )
+    );
+  } catch {
+    // Offline preparation should never block app startup.
+  }
+}
+
 export async function registerServiceWorker() {
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
 
@@ -119,6 +158,8 @@ export async function registerServiceWorker() {
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") checkForUpdate();
     });
+
+    void warmOfflineShell();
   } catch (err) {
     console.warn("Service worker registration failed:", err);
   }
