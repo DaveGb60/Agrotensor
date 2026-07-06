@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Header } from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -151,7 +150,7 @@ export default function Admin() {
   if (auth.loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        
         <div className="container py-12 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>
       </div>
     );
@@ -160,7 +159,7 @@ export default function Admin() {
   if (!auth.isAdmin) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        
         <main className="container max-w-md py-12 px-4">
           <Card>
             <CardHeader className="text-center">
@@ -187,7 +186,7 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      
       <main className="container py-8 px-4 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>

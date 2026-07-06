@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   FarmProject,
+  ProjectDetails,
   FarmRecord,
   getDeletedProjects,
   restoreProject,
@@ -91,7 +91,7 @@ const Trash = () => {
   if (viewingProject) {
     return (
       <div className="min-h-screen bg-gradient-earth">
-        <Header />
+        
         <main className="container px-4 py-6 space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => setViewingProject(null)}>
@@ -115,32 +115,34 @@ const Trash = () => {
               <CardTitle className="font-serif text-lg">Project Details</CardTitle>
             </CardHeader>
             <CardContent>
+              {(() => { const details = viewingProject.project.details as ProjectDetails; return (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="p-3 rounded-lg bg-muted/50">
                   <div className="text-xs text-muted-foreground">Capital</div>
                   <div className="text-lg font-semibold tabular-nums">
-                    {viewingProject.project.details.capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    {details.capital.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </div>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
                   <div className="text-xs text-muted-foreground">Total Items</div>
                   <div className="text-lg font-semibold tabular-nums">
-                    {viewingProject.project.details.totalItemCount.toLocaleString()}
+                    {details.totalItemCount.toLocaleString()}
                   </div>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
                   <div className="text-xs text-muted-foreground">Costs</div>
                   <div className="text-lg font-semibold tabular-nums text-destructive">
-                    -{viewingProject.project.details.costs.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    -{details.costs.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </div>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
                   <div className="text-xs text-muted-foreground">Est. Revenue</div>
                   <div className="text-lg font-semibold tabular-nums text-success">
-                    +{viewingProject.project.details.estimatedRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    +{details.estimatedRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </div>
                 </div>
               </div>
+              ); })()}
             </CardContent>
           </Card>
 
@@ -177,7 +179,7 @@ const Trash = () => {
 
   return (
     <div className="min-h-screen bg-gradient-earth">
-      <Header />
+      
       <main className="container px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" onClick={() => navigate('/')}>

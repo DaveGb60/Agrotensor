@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:wght@500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -40,7 +40,7 @@
 
     --radius: 0.75rem;
 
-    /* Custom FarmDeck Tokens */
+    /* Custom AgroTensor Tokens */
     --success: 150 50% 40%;
     --success-foreground: 42 30% 98%;
     --warning: 35 80% 50%;
