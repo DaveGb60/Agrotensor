@@ -135,9 +135,15 @@ const Index = () => {
     }
   };
 
-  const handleCreateProject = async (title: string, startDate: string, customColumns: string[], projectType: ProjectType = 'produce') => {
+  const handleCreateProject = async (
+    title: string,
+    startDate: string,
+    customColumns: string[],
+    projectType: ProjectType = 'produce',
+    recordType: RecordType = 'standard',
+  ) => {
     try {
-      const newProject = await createProject(title, startDate, customColumns, undefined, 'standard', projectType);
+      const newProject = await createProject(title, startDate, customColumns, undefined, recordType, projectType);
       setProjects([newProject, ...projects]);
       setRecordCounts({ ...recordCounts, [newProject.id]: 0 });
       toast({ title: 'Project created successfully' });
