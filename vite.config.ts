@@ -53,8 +53,6 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         skipWaiting: true,
         navigationPreload: true,
-        navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/~oauth/],
         runtimeCaching: [
           {
             urlPattern: ({ request, url }) =>
