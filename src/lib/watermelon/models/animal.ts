@@ -6,9 +6,10 @@ import { Project } from './project';
 export class Animal extends Model {
   static table = 'animals';
   static associations = {
-    project: { type: 'belongs_to', key: 'project_id' },
-  };
+    project: { type: 'belongs_to' as const, key: 'project_id' },
+  } as const;
 
+  @field('project_id') projectId!: string;
   @relation('projects', 'project_id') project!: Project;
   @field('animal_id') animalId!: string;
   @field('sex') sex!: string;
@@ -25,12 +26,12 @@ export class Animal extends Model {
   @field('updated_at') updatedAt!: string;
   @field('is_locked') isLocked!: boolean;
   @field('locked_at') lockedAt?: string;
-  @json('mating_history') matingHistory!: MatingRecord[];
-  @json('pregnancy_history') pregnancyHistory!: PregnancyRecord[];
-  @json('birth_records') birthRecords!: BirthRecord[];
-  @json('death_records') deathRecords!: DeathRecord[];
-  @json('sale_records') saleRecords!: SaleRecord[];
-  @json('treatment_history') treatmentHistory!: TreatmentRecord[];
+  @json('mating_history', data => JSON.parse(data)) matingHistory!: MatingRecord[];
+  @json('pregnancy_history', data => JSON.parse(data)) pregnancyHistory!: PregnancyRecord[];
+  @json('birth_records', data => JSON.parse(data)) birthRecords!: BirthRecord[];
+  @json('death_records', data => JSON.parse(data)) deathRecords!: DeathRecord[];
+  @json('sale_records', data => JSON.parse(data)) saleRecords!: SaleRecord[];
+  @json('treatment_history', data => JSON.parse(data)) treatmentHistory!: TreatmentRecord[];
 }
 
 export interface MatingRecord {

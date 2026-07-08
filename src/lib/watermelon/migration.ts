@@ -26,28 +26,28 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
       for (const p of projects) {
         const projectType = (p as any).projectType || 'produce';
         const details = p.details || (projectType === 'produce' ? createDefaultProjectDetails() : createDefaultBreedingProjectDetails());
-        await database.get('projects').prepareCreate((proj) => {
-          proj._id = p.id;
+        await database.get('projects').prepareCreate((proj: any) => {
+          proj.id = p.id;
           proj.title = p.title;
           proj.startDate = p.startDate;
-          proj.createdAt = new Date(p.createdAt);
-          proj.updatedAt = new Date(p.updatedAt);
+          proj.createdAt = p.createdAt;
+          proj.updatedAt = p.updatedAt;
           proj.projectType = projectType;
           proj.customColumns = p.customColumns ?? [];
           proj.customColumnTypes = p.customColumnTypes ?? {};
           proj.recordType = p.recordType ?? 'standard';
           proj.isCompleted = p.isCompleted ?? false;
-          if (p.completedAt) proj.completedAt = new Date(p.completedAt);
+          if (p.completedAt) proj.completedAt = p.completedAt;
           proj.details = details as Record<string, any>;
-          if (p.deletedAt) proj.deletedAt = new Date(p.deletedAt);
+          if (p.deletedAt) proj.deletedAt = p.deletedAt;
           proj.isDeleted = p.isDeleted ?? false;
         });
         projectsCount++;
       }
 
       for (const r of records) {
-        await database.get('records').prepareCreate((rec) => {
-          rec._id = r.id;
+        await database.get('records').prepareCreate((rec: any) => {
+          rec.id = r.id;
           rec.projectId = r.projectId;
           rec.date = r.date;
           if (r.item !== undefined) rec.item = r.item;
@@ -55,10 +55,10 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
           rec.produceRevenue = r.produceRevenue;
           rec.comment = r.comment;
           rec.isLocked = r.isLocked;
-          if (r.lockedAt) rec.lockedAt = new Date(r.lockedAt);
+          if (r.lockedAt) rec.lockedAt = r.lockedAt;
           rec.customFields = r.customFields ?? {};
-          rec.createdAt = new Date(r.createdAt);
-          rec.updatedAt = new Date(r.updatedAt);
+          rec.createdAt = r.createdAt;
+          rec.updatedAt = r.updatedAt;
           if (r.isBatchSale !== undefined) rec.isBatchSale = r.isBatchSale;
           if (r.isCarriedBalance !== undefined) rec.isCarriedBalance = r.isCarriedBalance;
           if (r.sourceRecordIds !== undefined) rec.sourceRecordIds = r.sourceRecordIds;
@@ -71,8 +71,8 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
 
       for (const a of animals) {
         const normalized = normalizeAnimal(a);
-        await database.get('animals').prepareCreate((ani) => {
-          ani._id = normalized.id;
+        await database.get('animals').prepareCreate((ani: any) => {
+          ani.id = normalized.id;
           ani.projectId = normalized.projectId;
           ani.animalId = normalized.animalId;
           ani.sex = normalized.sex;
@@ -85,10 +85,10 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
           if (normalized.notes !== undefined) ani.notes = normalized.notes;
           if (normalized.motherId !== undefined) ani.motherId = normalized.motherId;
           if (normalized.fatherId !== undefined) ani.fatherId = normalized.fatherId;
-          ani.createdAt = new Date(normalized.createdAt);
-          ani.updatedAt = new Date(normalized.updatedAt);
+          ani.createdAt = normalized.createdAt;
+          ani.updatedAt = normalized.updatedAt;
           ani.isLocked = normalized.isLocked;
-          if (normalized.lockedAt) ani.lockedAt = new Date(normalized.lockedAt);
+          if (normalized.lockedAt) ani.lockedAt = normalized.lockedAt;
           ani.matingHistory = normalized.matingHistory ?? [];
           ani.pregnancyHistory = normalized.pregnancyHistory ?? [];
           ani.birthRecords = normalized.birthRecords ?? [];

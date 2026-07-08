@@ -1,7 +1,7 @@
 import { Database } from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import { schema } from './schema';
-import { Project, Record, Animal } from './models';
+import { Project, RecordModel, Animal } from './models';
 
 const MIGRATION_KEY = 'agrotensor-wmdb-migrated';
 
@@ -30,7 +30,7 @@ export async function createDatabase(): Promise<Database> {
 
   const database = new Database({
     adapter,
-    modelClasses: [Project, Record, Animal],
+    modelClasses: [Project, RecordModel, Animal],
   });
 
   return database;
@@ -56,6 +56,10 @@ export async function needsMigration(): Promise<boolean> {
 
 export function markMigrationComplete(): void {
   if (typeof window !== 'undefined') {
-    localStorage.setItem(MIGRATION_KEY, 'true');
+    try {
+      localStorage.setItem(MIGRATION_KEY, 'true');
+    } catch {
+      /* ignore */
+    }
   }
 }
