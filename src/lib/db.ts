@@ -1,45 +1,60 @@
-// IndexedDB wrapper for AgroTensor local storage
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { Database, Q } from '@nozbe/watermelondb';
+import { Project, RecordModel, Animal } from '@/lib/watermelon/models';
+
+let dbInstance: Database | null = null;
+
+export async function getDB(): Promise<Database> {
+  if (dbInstance) return dbInstance;
+
+  const { createDatabase } = await import('@/lib/watermelon/database');
+  dbInstance = await createDatabase();
+
+  const { needsMigration, markMigrationComplete } = await import('@/lib/watermelon/database');
+  if (await needsMigration()) {
+    try {
+      const { migrateFromIndexedDB } = await import('@/lib/watermelon/migration');
+      await migrateFromIndexedDB(dbInstance);
+      markMigrationComplete();
+    } catch (e) {
+      console.error('Migration from IndexedDB to WatermelonDB failed:', e);
+    }
+  }
+
+  return dbInstance;
+}
 
 // Input item for project details
 export interface InputItem {
   name: string;
   cost: number;
-  date?: string; // YYYY-MM-DD - when this cost was incurred (start date if recurring)
-  isRecurring?: boolean; // Whether this cost spans multiple months
-  endDate?: string; // YYYY-MM-DD - end date for recurring costs
+  date?: string;
+  isRecurring?: boolean;
+  endDate?: string;
 }
 
-// Cost entry with timestamp
 export interface CostEntry {
   amount: number;
-  date: string; // YYYY-MM-DD - when this cost was incurred
+  date: string;
   description?: string;
 }
 
-// Helper to get all months between two dates
 export function getMonthsBetween(startDate: string, endDate: string): string[] {
   const months: string[] = [];
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
-  // Normalize to first of month
   start.setDate(1);
   end.setDate(1);
-  
   while (start <= end) {
     const year = start.getFullYear();
     const month = String(start.getMonth() + 1).padStart(2, '0');
     months.push(`${year}-${month}`);
     start.setMonth(start.getMonth() + 1);
   }
-  
   return months;
 }
 
 export type ProjectType = 'produce' | 'breeding';
 
-// Project Details for Produce Projects
 export interface ProjectDetails {
   capital: number;
   capitalDate?: string;
@@ -61,7 +76,6 @@ export interface BreedingCostItem {
   category: 'feed' | 'veterinary' | 'equipment' | 'other';
 }
 
-// Project Details for Breeding Projects
 export interface BreedingProjectDetails {
   breed?: string;
   herdSize?: number;
@@ -206,7 +220,7 @@ export interface FarmRecord {
   id: string;
   projectId: string;
   date: string;
-  item?: string; // Optional - for projects with multiple products
+  item?: string;
   produceAmount: number;
   produceRevenue: number;
   comment: string;
@@ -215,17 +229,16 @@ export interface FarmRecord {
   customFields: Record<string, string | number>;
   createdAt: string;
   updatedAt: string;
-  // Delayed revenue fields
-  isBatchSale?: boolean; // True when this record represents a batch sale
-  isCarriedBalance?: boolean; // True when this record is unsold inventory carried forward
-  sourceRecordIds?: string[]; // IDs of records that contributed to this batch sale
-  soldQuantity?: number; // Quantity actually sold (for partial sales)
-  availableQuantity?: number; // Remaining quantity available for sale (for delayed revenue tracking)
-  batchSaleId?: string; // Links carried balance to its originating batch sale
+  isBatchSale?: boolean;
+  isCarriedBalance?: boolean;
+  sourceRecordIds?: string[];
+  soldQuantity?: number;
+  availableQuantity?: number;
+  batchSaleId?: string;
 }
 
 export interface MonthlyAggregation {
-  month: string; // YYYY-MM
+  month: string;
   projectId: string;
   totalInputCost: number;
   totalProduceAmount: number;
@@ -235,35 +248,79 @@ export interface MonthlyAggregation {
   recordCount: number;
 }
 
-interface AgroTensorDB extends DBSchema {
-  projects: {
-    key: string;
-    value: FarmProject;
-    indexes: { 'by-title': string };
-  };
-  records: {
-    key: string;
-    value: FarmRecord;
-    indexes: { 
-      'by-project': string;
-      'by-date': string;
-      'by-project-date': [string, string];
-    };
-  };
-  animals: {
-    key: string;
-    value: FarmAnimal;
-    indexes: { 
-      'by-project': string;
-      'by-animalId': string;
-      'by-mother': string;
-      'by-father': string;
-      'by-status': AnimalStatus;
-    };
+// --- WatermelonDB model <-> plain interface helpers ---
+
+function toProjectPlain(p: Project): FarmProject {
+  return {
+    id: p.id,
+    title: p.title,
+    startDate: p.startDate,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+    projectType: p.projectType as FarmProject['projectType'],
+    customColumns: p.customColumns ?? [],
+    customColumnTypes: (p.customColumnTypes ?? {}) as Record<string, ColumnType>,
+    recordType: p.recordType as FarmProject['recordType'],
+    isCompleted: p.isCompleted,
+    completedAt: p.completedAt,
+    details: (p.details ?? {}) as FarmProject['details'],
+    deletedAt: p.deletedAt,
+    isDeleted: p.isDeleted,
   };
 }
 
-export function normalizeAnimal(animal: FarmAnimal): FarmAnimal {
+function toRecordPlain(r: RecordModel): FarmRecord {
+  return {
+    id: r.id,
+    projectId: r.projectId,
+    date: r.date,
+    item: r.item,
+    produceAmount: r.produceAmount,
+    produceRevenue: r.produceRevenue,
+    comment: r.comment,
+    isLocked: r.isLocked,
+    lockedAt: r.lockedAt,
+    customFields: r.customFields ?? {},
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+    isBatchSale: r.isBatchSale,
+    isCarriedBalance: r.isCarriedBalance,
+    sourceRecordIds: r.sourceRecordIds,
+    soldQuantity: r.soldQuantity,
+    availableQuantity: r.availableQuantity,
+    batchSaleId: r.batchSaleId,
+  };
+}
+
+function toAnimalPlain(a: Animal): FarmAnimal {
+  return {
+    id: a.id,
+    projectId: a.projectId,
+    animalId: a.animalId,
+    sex: a.sex as FarmAnimal['sex'],
+    age: a.age,
+    birthDate: a.birthDate,
+    breed: a.breed,
+    healthStatus: a.healthStatus as FarmAnimal['healthStatus'],
+    currentStatus: a.currentStatus as FarmAnimal['currentStatus'],
+    acquisitionCost: a.acquisitionCost,
+    notes: a.notes,
+    motherId: a.motherId,
+    fatherId: a.fatherId,
+    createdAt: a.createdAt,
+    updatedAt: a.updatedAt,
+    isLocked: a.isLocked,
+    lockedAt: a.lockedAt,
+    matingHistory: a.matingHistory ?? [],
+    pregnancyHistory: (a.pregnancyHistory ?? []).map((pr: any) => ({ ...pr, status: pr.status as PregnancyRecord['status'] })) as PregnancyRecord[],
+    birthRecords: a.birthRecords ?? [],
+    deathRecords: a.deathRecords ?? [],
+    saleRecords: a.saleRecords ?? [],
+    treatmentHistory: a.treatmentHistory ?? [],
+  };
+}
+
+function normalizeAnimal(animal: FarmAnimal): FarmAnimal {
   return {
     ...animal,
     currentStatus: animal.currentStatus ?? 'active',
@@ -276,55 +333,12 @@ export function normalizeAnimal(animal: FarmAnimal): FarmAnimal {
   };
 }
 
-let dbInstance: IDBPDatabase<AgroTensorDB> | null = null;
+export { normalizeAnimal };
 
-export async function getDB(): Promise<IDBPDatabase<AgroTensorDB>> {
-  if (dbInstance) return dbInstance;
-
-  dbInstance = await openDB<AgroTensorDB>('agrotensor-db', 3, {
-    upgrade(db, oldVersion, _newVersion, transaction) {
-      if (oldVersion < 1) {
-        const projectStore = db.createObjectStore('projects', { keyPath: 'id' });
-        projectStore.createIndex('by-title', 'title');
-
-        const recordStore = db.createObjectStore('records', { keyPath: 'id' });
-        recordStore.createIndex('by-project', 'projectId');
-        recordStore.createIndex('by-date', 'date');
-        recordStore.createIndex('by-project-date', ['projectId', 'date']);
-      }
-
-      if (oldVersion < 2) {
-        const animalStore = db.createObjectStore('animals', { keyPath: 'id' });
-        animalStore.createIndex('by-project', 'projectId');
-        animalStore.createIndex('by-animalId', 'animalId');
-        animalStore.createIndex('by-mother', 'motherId');
-        animalStore.createIndex('by-father', 'fatherId');
-      }
-
-      if (oldVersion < 3) {
-        const animalStore = transaction.objectStore('animals');
-        if (!animalStore.indexNames.contains('by-status')) {
-          animalStore.createIndex('by-status', 'currentStatus');
-        }
-        animalStore.openCursor().then(function migrate(cursor) {
-          if (!cursor) return;
-          const animal = normalizeAnimal(cursor.value as FarmAnimal);
-          cursor.update(animal);
-          return cursor.continue().then(migrate);
-        });
-      }
-    },
-  });
-
-  return dbInstance;
-}
-
-// Generate unique ID
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Default project details (Produce)
 export function createDefaultProjectDetails(): ProjectDetails {
   return {
     capital: 0,
@@ -337,46 +351,49 @@ export function createDefaultProjectDetails(): ProjectDetails {
   };
 }
 
-// Default breeding project details
 export function createDefaultBreedingProjectDetails(): BreedingProjectDetails {
   return {};
 }
 
-// Project operations
+// --- Project operations ---
+
 export async function createProject(
-  title: string, 
-  startDate: string, 
-  customColumns: string[] = [], 
-  existingId?: string, 
-  recordType: RecordType = 'standard', 
+  title: string,
+  startDate: string,
+  customColumns: string[] = [],
+  existingId?: string,
+  recordType: RecordType = 'standard',
   projectType: ProjectType = 'produce'
 ): Promise<FarmProject> {
   const db = await getDB();
   const now = new Date().toISOString();
-  const project: FarmProject = {
-    id: existingId || generateId(),
-    title,
-    startDate,
-    createdAt: now,
-    updatedAt: now,
-    projectType,
-    customColumns,
-    customColumnTypes: {},
-    recordType,
-    isCompleted: false,
-    details: projectType === 'produce' ? createDefaultProjectDetails() : createDefaultBreedingProjectDetails(),
-  };
-  await db.put('projects', project);
-  return project;
+  const project = await db.get('projects').prepareCreate((proj: any) => {
+    proj.id = existingId || generateId();
+    proj.title = title;
+    proj.startDate = startDate;
+    proj.createdAt = now;
+    proj.updatedAt = now;
+    proj.projectType = projectType;
+    proj.customColumns = customColumns;
+    proj.customColumnTypes = {};
+    proj.recordType = recordType;
+    proj.isCompleted = false;
+    proj.details = projectType === 'produce' ? createDefaultProjectDetails() : createDefaultBreedingProjectDetails();
+    proj.isDeleted = false;
+  });
+  await db.write(async () => {});
+  return toProjectPlain(project as any);
 }
 
-// Animal operations
 export async function isAnimalTagUnique(projectId: string, animalTag: string, excludeId?: string): Promise<boolean> {
   const animals = await getAnimalsByProject(projectId);
   return !animals.some((a) => a.animalId === animalTag && a.id !== excludeId);
 }
 
-export async function createAnimal(projectId: string, data: Omit<FarmAnimal, 'id' | 'projectId' | 'createdAt' | 'updatedAt' | 'isLocked' | 'lockedAt' | 'matingHistory' | 'pregnancyHistory' | 'birthRecords' | 'deathRecords' | 'saleRecords' | 'treatmentHistory'>): Promise<FarmAnimal> {
+export async function createAnimal(
+  projectId: string,
+  data: Omit<FarmAnimal, 'id' | 'projectId' | 'createdAt' | 'updatedAt' | 'isLocked' | 'lockedAt' | 'matingHistory' | 'pregnancyHistory' | 'birthRecords' | 'deathRecords' | 'saleRecords' | 'treatmentHistory'>
+): Promise<FarmAnimal> {
   const db = await getDB();
   const unique = await isAnimalTagUnique(projectId, data.animalId);
   if (!unique) {
@@ -384,48 +401,80 @@ export async function createAnimal(projectId: string, data: Omit<FarmAnimal, 'id
   }
 
   const now = new Date().toISOString();
-  const animal: FarmAnimal = normalizeAnimal({
-    id: generateId(),
-    projectId,
-    ...data,
-    currentStatus: data.currentStatus ?? 'active',
-    createdAt: now,
-    updatedAt: now,
-    isLocked: false,
-    matingHistory: [],
-    pregnancyHistory: [],
-    birthRecords: [],
-    deathRecords: [],
-    saleRecords: [],
-    treatmentHistory: [],
+  const animal = await db.get('animals').prepareCreate((ani: any) => {
+    ani.id = generateId();
+    ani.projectId = projectId;
+    ani.animalId = data.animalId;
+    ani.sex = data.sex;
+    ani.healthStatus = data.healthStatus;
+    if (data.age !== undefined) ani.age = data.age;
+    if (data.birthDate !== undefined) ani.birthDate = data.birthDate;
+    if (data.breed !== undefined) ani.breed = data.breed;
+    if (data.currentStatus !== undefined) ani.currentStatus = data.currentStatus;
+    if (data.acquisitionCost !== undefined) ani.acquisitionCost = data.acquisitionCost;
+    if (data.notes !== undefined) ani.notes = data.notes;
+    if (data.motherId !== undefined) ani.motherId = data.motherId;
+    if (data.fatherId !== undefined) ani.fatherId = data.fatherId;
+    ani.createdAt = now;
+    ani.updatedAt = now;
+    ani.isLocked = false;
+    ani.matingHistory = [];
+    ani.pregnancyHistory = [];
+    ani.birthRecords = [];
+    ani.deathRecords = [];
+    ani.saleRecords = [];
+    ani.treatmentHistory = [];
   });
-  await db.put('animals', animal);
-  return animal;
+  await db.write(async () => {});
+  return toAnimalPlain(animal as any);
 }
 
 export async function importAnimal(animal: FarmAnimal): Promise<FarmAnimal> {
   const db = await getDB();
-  const existing = await db.get('animals', animal.id);
-  if (existing?.isLocked) return existing;
+  const existing = await db.get('animals').find(animal.id).catch(() => null);
+  if (existing?.isLocked) return toAnimalPlain(existing as any);
 
-  const imported = normalizeAnimal({
-    ...animal,
-    updatedAt: new Date().toISOString(),
+  const imported = normalizeAnimal(animal);
+  await db.write(async () => {
+    await db.get('animals').prepareCreate((ani: any) => {
+      ani.id = imported.id;
+      ani.projectId = imported.projectId;
+      ani.animalId = imported.animalId;
+      ani.sex = imported.sex;
+      ani.healthStatus = imported.healthStatus;
+      if (imported.age !== undefined) ani.age = imported.age;
+      if (imported.birthDate !== undefined) ani.birthDate = imported.birthDate;
+      if (imported.breed !== undefined) ani.breed = imported.breed;
+      if (imported.currentStatus !== undefined) ani.currentStatus = imported.currentStatus;
+      if (imported.acquisitionCost !== undefined) ani.acquisitionCost = imported.acquisitionCost;
+      if (imported.notes !== undefined) ani.notes = imported.notes;
+      if (imported.motherId !== undefined) ani.motherId = imported.motherId;
+      if (imported.fatherId !== undefined) ani.fatherId = imported.fatherId;
+      ani.createdAt = imported.createdAt;
+      ani.updatedAt = new Date().toISOString();
+      ani.isLocked = imported.isLocked;
+      if (imported.lockedAt) ani.lockedAt = imported.lockedAt;
+      ani.matingHistory = imported.matingHistory ?? [];
+      ani.pregnancyHistory = imported.pregnancyHistory ?? [];
+      ani.birthRecords = imported.birthRecords ?? [];
+      ani.deathRecords = imported.deathRecords ?? [];
+      ani.saleRecords = imported.saleRecords ?? [];
+      ani.treatmentHistory = imported.treatmentHistory ?? [];
+    });
   });
-  await db.put('animals', imported);
   return imported;
 }
 
 export async function getAnimalsByProject(projectId: string): Promise<FarmAnimal[]> {
   const db = await getDB();
-  const animals = await db.getAllFromIndex('animals', 'by-project', projectId);
-  return animals.map(normalizeAnimal);
+  const animals = await db.get('animals').query(Q.where('project_id', projectId)).fetch();
+  return animals.map(toAnimalPlain);
 }
 
 export async function getAnimal(id: string): Promise<FarmAnimal | undefined> {
   const db = await getDB();
-  const animal = await db.get('animals', id);
-  return animal ? normalizeAnimal(animal) : undefined;
+  const animal = await db.get('animals').find(id).catch(() => null);
+  return animal ? toAnimalPlain(animal as any) : undefined;
 }
 
 export async function updateAnimal(animal: FarmAnimal): Promise<void> {
@@ -437,48 +486,71 @@ export async function updateAnimal(animal: FarmAnimal): Promise<void> {
   if (!unique) {
     throw new Error(`Animal ID "${animal.animalId}" already exists in this project`);
   }
-  animal.updatedAt = new Date().toISOString();
-  await db.put('animals', normalizeAnimal(animal));
+  await db.write(async () => {
+    const existing = await db.get('animals').find(animal.id);
+    await existing.update((ani: any) => {
+      ani.animalId = animal.animalId;
+      ani.sex = animal.sex;
+      ani.healthStatus = animal.healthStatus;
+      if (animal.age !== undefined) ani.age = animal.age;
+      if (animal.birthDate !== undefined) ani.birthDate = animal.birthDate;
+      if (animal.breed !== undefined) ani.breed = animal.breed;
+      if (animal.currentStatus !== undefined) ani.currentStatus = animal.currentStatus;
+      if (animal.acquisitionCost !== undefined) ani.acquisitionCost = animal.acquisitionCost;
+      if (animal.notes !== undefined) ani.notes = animal.notes;
+      if (animal.motherId !== undefined) ani.motherId = animal.motherId;
+      if (animal.fatherId !== undefined) ani.fatherId = animal.fatherId;
+      ani.updatedAt = new Date().toISOString();
+    });
+  });
 }
 
 export async function lockAnimal(id: string): Promise<void> {
   const db = await getDB();
-  const animal = await db.get('animals', id);
+  const animal = await db.get('animals').find(id).catch(() => null);
   if (!animal) throw new Error('Animal not found');
-  animal.isLocked = true;
-  animal.lockedAt = new Date().toISOString();
-  animal.updatedAt = new Date().toISOString();
-  await db.put('animals', animal);
+  await db.write(async () => {
+    await animal.update((ani: any) => {
+      ani.isLocked = true;
+      ani.lockedAt = new Date().toISOString();
+      ani.updatedAt = new Date().toISOString();
+    });
+  });
 }
 
 export async function deleteAnimal(id: string): Promise<void> {
   const db = await getDB();
-  const animal = await db.get('animals', id);
+  const animal = await db.get('animals').find(id).catch(() => null);
   if (animal?.isLocked) {
     throw new Error('Cannot delete a locked animal');
   }
-  await db.delete('animals', id);
+  await db.write(async () => {
+    const a = await db.get('animals').find(id);
+    await a.destroyPermanently();
+  });
 }
 
-// Lineage tracking helpers
 export async function getAnimalOffspring(animalId: string, projectId?: string): Promise<FarmAnimal[]> {
   const db = await getDB();
   const allAnimals = projectId
-    ? await db.getAllFromIndex('animals', 'by-project', projectId)
-    : await db.getAll('animals');
+    ? await db.get('animals').query(Q.where('project_id', projectId)).fetch()
+    : await db.get('animals').query().fetch();
   return allAnimals
-    .map(normalizeAnimal)
+    .map(toAnimalPlain)
     .filter((a) => a.motherId === animalId || a.fatherId === animalId);
 }
 
 export async function getAnimalLineage(animalId: string, projectId?: string): Promise<{ ancestors: FarmAnimal[], descendants: FarmAnimal[] }> {
   const db = await getDB();
-  const animal = await db.get('animals', animalId);
+  const animal = await db.get('animals').find(animalId).catch(() => null);
   if (!animal) return { ancestors: [], descendants: [] };
 
-  const scopedProjectId = projectId ?? animal.projectId;
-  const allAnimals = (await db.getAllFromIndex('animals', 'by-project', scopedProjectId)).map(normalizeAnimal);
-  const animalMap = new Map(allAnimals.map((a) => [a.id, a]));
+  const scopedProjectId = projectId ?? (animal as any).projectId;
+  const allAnimals = await db.get('animals').query(Q.where('project_id', scopedProjectId)).fetch();
+  const animalMap = new Map(allAnimals.map((a) => [a.id, toAnimalPlain(a as any)]));
+
+  const animalData = animalMap.get(animalId);
+  if (!animalData) return { ancestors: [], descendants: [] };
 
   const ancestors: FarmAnimal[] = [];
   const seen = new Set<string>();
@@ -499,9 +571,9 @@ export async function getAnimalLineage(animalId: string, projectId?: string): Pr
 
   const descendants: FarmAnimal[] = [];
   const getDescendants = (id: string) => {
-    const offspring = allAnimals.filter((a) => a.motherId === id || a.fatherId === id);
+    const offspring = (allAnimals as any[]).filter((a) => a.motherId === id || a.fatherId === id);
     for (const child of offspring) {
-      descendants.push(child);
+      descendants.push(toAnimalPlain(child as any));
       getDescendants(child.id);
     }
   };
@@ -518,7 +590,7 @@ export async function recordBirthWithOffspring(
   fatherInternalId?: string
 ): Promise<{ birthRecord: BirthRecord; offspring: FarmAnimal[]; updatedMother: FarmAnimal }> {
   const db = await getDB();
-  const mother = await db.get('animals', motherInternalId);
+  const mother = await db.get('animals').find(motherInternalId).catch(() => null);
   if (!mother) throw new Error('Mother not found');
   if (mother.isLocked) throw new Error('Cannot add birth record to a locked animal');
   if (mother.projectId !== projectId) throw new Error('Animal does not belong to this project');
@@ -552,90 +624,120 @@ export async function recordBirthWithOffspring(
     isLocked: false,
   };
 
-  const updatedMother = normalizeAnimal({
-    ...mother,
-    birthRecords: [...(mother.birthRecords || []), birthRecord],
-    updatedAt: new Date().toISOString(),
+  const updatedMother = await db.write(async () => {
+    const m = await db.get('animals').find(motherInternalId);
+    await m.update((ani: any) => {
+      ani.birthRecords = [...(ani.birthRecords ?? []), birthRecord];
+      ani.updatedAt = new Date().toISOString();
+    });
+    return toAnimalPlain(m as any);
   });
-  await db.put('animals', updatedMother);
 
   return { birthRecord, offspring: createdOffspring, updatedMother };
 }
 
-// Import a full project with its original ID (for syncing)
+// --- Import helpers (for sync/recovery) ---
+
 export async function importProject(projectData: FarmProject): Promise<FarmProject> {
   const db = await getDB();
-  const project: FarmProject = {
-    ...projectData,
-    // Ensure details exists (for backward compatibility)
-    details: projectData.details || createDefaultProjectDetails(),
-    customColumnTypes: projectData.customColumnTypes || {},
-    recordType: projectData.recordType || 'standard',
-    isCompleted: projectData.isCompleted || false,
-    updatedAt: new Date().toISOString(),
-  };
-  await db.put('projects', project);
-  return project;
+  await db.write(async () => {
+    await db.get('projects').prepareCreate((proj: any) => {
+      proj.id = projectData.id;
+      proj.title = projectData.title;
+      proj.startDate = projectData.startDate;
+      proj.createdAt = projectData.createdAt || new Date().toISOString();
+      proj.updatedAt = new Date().toISOString();
+      proj.projectType = projectData.projectType || 'produce';
+      proj.customColumns = projectData.customColumns ?? [];
+      proj.customColumnTypes = projectData.customColumnTypes ?? {};
+      proj.recordType = projectData.recordType || 'standard';
+      proj.isCompleted = projectData.isCompleted || false;
+      proj.details = projectData.details || (projectData.projectType === 'breeding' ? createDefaultBreedingProjectDetails() : createDefaultProjectDetails());
+      proj.isDeleted = projectData.isDeleted || false;
+      if (projectData.deletedAt) proj.deletedAt = projectData.deletedAt;
+      if (projectData.completedAt) proj.completedAt = projectData.completedAt;
+    });
+  });
+  return projectData;
 }
 
-// Update project details (Section 1)
 export async function updateProjectDetails(projectId: string, details: ProjectDetails): Promise<void> {
   const db = await getDB();
-  const project = await db.get('projects', projectId);
+  const project = await db.get('projects').find(projectId).catch(() => null);
   if (!project) throw new Error('Project not found');
   if (project.isCompleted) throw new Error('Cannot update a completed project');
-  
-  project.details = details;
-  project.updatedAt = new Date().toISOString();
-  await db.put('projects', project);
+
+  await db.write(async () => {
+    await project.update((p: any) => {
+      p.details = details;
+      p.updatedAt = new Date().toISOString();
+    });
+  });
 }
 
-// Complete project (lock Section 1)
 export async function completeProject(projectId: string): Promise<void> {
   const db = await getDB();
-  const project = await db.get('projects', projectId);
+  const project = await db.get('projects').find(projectId).catch(() => null);
   if (!project) throw new Error('Project not found');
-  
-  project.isCompleted = true;
-  project.completedAt = new Date().toISOString();
-  project.updatedAt = new Date().toISOString();
-  await db.put('projects', project);
+
+  await db.write(async () => {
+    await project.update((p: any) => {
+      p.isCompleted = true;
+      p.completedAt = new Date().toISOString();
+      p.updatedAt = new Date().toISOString();
+    });
+  });
 }
 
-// Import a record with its original ID (for syncing)
 export async function importRecord(record: FarmRecord): Promise<FarmRecord> {
   const db = await getDB();
-  const existingRecord = await db.get('records', record.id);
-  
-  // If record already exists and is locked, don't overwrite
+  const existingRecord = await db.get('records').find(record.id).catch(() => null);
+
   if (existingRecord?.isLocked) {
-    return existingRecord;
+    return toRecordPlain(existingRecord);
   }
-  
-  // Preserve the original record data including ID and lock status
-  const importedRecord: FarmRecord = {
-    ...record,
-    updatedAt: new Date().toISOString(),
-  };
-  await db.put('records', importedRecord);
-  return importedRecord;
+
+  await db.write(async () => {
+    await db.get('records').prepareCreate((rec: any) => {
+      rec.id = record.id;
+      rec.projectId = record.projectId;
+      rec.date = record.date;
+      if (record.item !== undefined) rec.item = record.item;
+      rec.produceAmount = record.produceAmount;
+      rec.produceRevenue = record.produceRevenue;
+      rec.comment = record.comment;
+      rec.isLocked = record.isLocked;
+      if (record.lockedAt) rec.lockedAt = record.lockedAt;
+      rec.customFields = record.customFields ?? {};
+      rec.createdAt = record.createdAt;
+      rec.updatedAt = new Date().toISOString();
+      if (record.isBatchSale !== undefined) rec.isBatchSale = record.isBatchSale;
+      if (record.isCarriedBalance !== undefined) rec.isCarriedBalance = record.isCarriedBalance;
+      if (record.sourceRecordIds !== undefined) rec.sourceRecordIds = record.sourceRecordIds;
+      if (record.soldQuantity !== undefined) rec.soldQuantity = record.soldQuantity;
+      if (record.availableQuantity !== undefined) rec.availableQuantity = record.availableQuantity;
+      if (record.batchSaleId !== undefined) rec.batchSaleId = record.batchSaleId;
+    });
+  });
+  return record;
 }
 
 export async function getAllProjects(): Promise<FarmProject[]> {
   const db = await getDB();
-  const projects = await db.getAll('projects');
+  const projects = await db.get('projects').query().fetch() as any as Project[];
   return projects
-    .filter(p => !p.isDeleted)
-    .map(p => {
-      const projectType = (p as any).projectType || 'produce';
+    .filter((p) => !p.isDeleted)
+    .map(toProjectPlain)
+    .map((p) => {
+      const projectType = p.projectType || 'produce';
       return {
         ...p,
         projectType,
         isCompleted: p.isCompleted ?? false,
-        details: projectType === 'produce' 
-          ? (p.details ?? createDefaultProjectDetails()) 
+        details: projectType === 'produce'
+          ? (p.details ?? createDefaultProjectDetails())
           : (p.details ?? createDefaultBreedingProjectDetails()),
-        customColumnTypes: p.customColumnTypes ?? {},
+        customColumnTypes: (p.customColumnTypes ?? {}) as Record<string, ColumnType>,
         recordType: p.recordType ?? 'standard',
       };
     });
@@ -643,19 +745,19 @@ export async function getAllProjects(): Promise<FarmProject[]> {
 
 export async function getDeletedProjects(): Promise<FarmProject[]> {
   const db = await getDB();
-  const projects = await db.getAll('projects');
+  const projects = await db.get('projects').query(Q.where('is_deleted', true)).fetch();
   return projects
-    .filter(p => p.isDeleted)
-    .map(p => {
-      const projectType = (p as any).projectType || 'produce';
+    .map(toProjectPlain)
+    .map((p) => {
+      const projectType = p.projectType || 'produce';
       return {
         ...p,
         projectType,
         isCompleted: p.isCompleted ?? false,
-        details: projectType === 'produce' 
-          ? (p.details ?? createDefaultProjectDetails()) 
+        details: projectType === 'produce'
+          ? (p.details ?? createDefaultProjectDetails())
           : (p.details ?? createDefaultBreedingProjectDetails()),
-        customColumnTypes: p.customColumnTypes ?? {},
+        customColumnTypes: (p.customColumnTypes ?? {}) as Record<string, ColumnType>,
         recordType: p.recordType ?? 'standard',
       };
     })
@@ -664,122 +766,160 @@ export async function getDeletedProjects(): Promise<FarmProject[]> {
 
 export async function getProject(id: string): Promise<FarmProject | undefined> {
   const db = await getDB();
-  const project = await db.get('projects', id);
+  const project = await db.get('projects').find(id).catch(() => null);
   if (!project) return undefined;
-  const projectType = (project as any).projectType || 'produce';
+  const plain = toProjectPlain(project);
+  const projectType = plain.projectType || 'produce';
   return {
-    ...project,
+    ...plain,
     projectType,
-    isCompleted: project.isCompleted ?? false,
-    details: projectType === 'produce' 
-      ? (project.details ?? createDefaultProjectDetails()) 
-      : (project.details ?? createDefaultBreedingProjectDetails()),
-    customColumnTypes: project.customColumnTypes ?? {},
-    recordType: project.recordType ?? 'standard',
+    isCompleted: plain.isCompleted ?? false,
+    details: projectType === 'produce'
+      ? (plain.details ?? createDefaultProjectDetails())
+      : (plain.details ?? createDefaultBreedingProjectDetails()),
+    customColumnTypes: plain.customColumnTypes ?? {},
+    recordType: plain.recordType ?? 'standard',
   };
 }
 
 export async function updateProject(project: FarmProject): Promise<void> {
   const db = await getDB();
-  project.updatedAt = new Date().toISOString();
-  await db.put('projects', project);
+  await db.write(async () => {
+    const existing = await db.get('projects').find(project.id);
+    await existing.update((p: any) => {
+      p.title = project.title;
+      p.startDate = project.startDate;
+      p.projectType = project.projectType;
+      p.customColumns = project.customColumns;
+      p.customColumnTypes = project.customColumnTypes;
+      p.recordType = project.recordType;
+      p.isCompleted = project.isCompleted;
+      if (project.completedAt != null) p.completedAt = project.completedAt;
+      p.details = project.details;
+      if (project.deletedAt != null) p.deletedAt = project.deletedAt;
+      p.isDeleted = project.isDeleted;
+      p.updatedAt = new Date().toISOString();
+    });
+  });
 }
 
-// Soft delete - moves project to trash
 export async function deleteProject(id: string): Promise<void> {
   const db = await getDB();
-  const project = await db.get('projects', id);
+  const project = await db.get('projects').find(id).catch(() => null);
   if (!project) throw new Error('Project not found');
-  
-  project.isDeleted = true;
-  project.deletedAt = new Date().toISOString();
-  project.updatedAt = new Date().toISOString();
-  await db.put('projects', project);
+
+  await db.write(async () => {
+    await project.update((p: any) => {
+      p.isDeleted = true;
+      p.deletedAt = new Date().toISOString();
+      p.updatedAt = new Date().toISOString();
+    });
+  });
 }
 
-// Restore project from trash
 export async function restoreProject(id: string): Promise<void> {
   const db = await getDB();
-  const project = await db.get('projects', id);
+  const project = await db.get('projects').find(id).catch(() => null);
   if (!project) throw new Error('Project not found');
-  
-  project.isDeleted = false;
-  project.deletedAt = undefined;
-  project.updatedAt = new Date().toISOString();
-  await db.put('projects', project);
+
+  await db.write(async () => {
+    await project.update((p: any) => {
+      p.isDeleted = false;
+      p.deletedAt = undefined;
+      p.updatedAt = new Date().toISOString();
+    });
+  });
 }
 
-// Permanently delete project and all its records and animals
 export async function permanentlyDeleteProject(id: string): Promise<void> {
   const db = await getDB();
-  const records = await getRecordsByProject(id);
-  const animals = await getAnimalsByProject(id);
-  const tx = db.transaction(['projects', 'records', 'animals'], 'readwrite');
-  for (const record of records) {
-    await tx.objectStore('records').delete(record.id);
-  }
-  for (const animal of animals) {
-    await tx.objectStore('animals').delete(animal.id);
-  }
-  await tx.objectStore('projects').delete(id);
-  await tx.done;
+  await db.write(async () => {
+    const records = await db.get('records').query(Q.where('project_id', id)).fetch();
+    const animals = await db.get('animals').query(Q.where('project_id', id)).fetch();
+    for (const r of records) await r.destroyPermanently();
+    for (const a of animals) await a.destroyPermanently();
+    const project = await db.get('projects').find(id);
+    await project.destroyPermanently();
+  });
 }
 
-// Clean up projects that have been in trash for more than 30 days
 export async function cleanupOldTrash(): Promise<void> {
   const db = await getDB();
-  const projects = await db.getAll('projects');
+  const projects = await db.get('projects').query(Q.where('is_deleted', true)).fetch() as any as Project[];
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
-  for (const project of projects) {
-    if (project.isDeleted && project.deletedAt) {
-      const deletedDate = new Date(project.deletedAt);
-      if (deletedDate < thirtyDaysAgo) {
-        await permanentlyDeleteProject(project.id);
-      }
+
+  const toDelete: string[] = [];
+  for (const p of projects) {
+    if (p.deletedAt && new Date(p.deletedAt) < thirtyDaysAgo) {
+      toDelete.push(p.id);
     }
+  }
+
+  if (toDelete.length > 0) {
+    await db.write(async () => {
+      for (const id of toDelete) {
+        const project = await db.get('projects').find(id).catch(() => null);
+        if (project) await project.destroyPermanently();
+      }
+    });
   }
 }
 
-// Record operations
+// --- Record operations ---
+
 export async function createRecord(
   projectId: string,
   data: Omit<FarmRecord, 'id' | 'projectId' | 'isLocked' | 'createdAt' | 'updatedAt'>
 ): Promise<FarmRecord> {
   const db = await getDB();
   const now = new Date().toISOString();
-  const record: FarmRecord = {
-    id: generateId(),
-    projectId,
-    ...data,
-    isLocked: false,
-    createdAt: now,
-    updatedAt: now,
-  };
-  await db.put('records', record);
-  return record;
+  const record = await db.get('records').prepareCreate((rec: any) => {
+    rec.id = generateId();
+    rec.projectId = projectId;
+    rec.date = data.date;
+    if (data.item !== undefined) rec.item = data.item;
+    rec.produceAmount = data.produceAmount;
+    rec.produceRevenue = data.produceRevenue;
+    rec.comment = data.comment;
+    rec.isLocked = false;
+    if (data.lockedAt) rec.lockedAt = data.lockedAt;
+    rec.customFields = data.customFields ?? {};
+    rec.createdAt = now;
+    rec.updatedAt = now;
+    if (data.isBatchSale !== undefined) rec.isBatchSale = data.isBatchSale;
+    if (data.isCarriedBalance !== undefined) rec.isCarriedBalance = data.isCarriedBalance;
+    if (data.sourceRecordIds !== undefined) rec.sourceRecordIds = data.sourceRecordIds;
+    if (data.soldQuantity !== undefined) rec.soldQuantity = data.soldQuantity;
+    if (data.availableQuantity !== undefined) rec.availableQuantity = data.availableQuantity;
+    if (data.batchSaleId !== undefined) rec.batchSaleId = data.batchSaleId;
+  });
+  await db.write(async () => {});
+  return toRecordPlain(record as any);
 }
 
 export async function getRecordsByProject(projectId: string): Promise<FarmRecord[]> {
   const db = await getDB();
-  return db.getAllFromIndex('records', 'by-project', projectId);
+  const records = await db.get('records').query(Q.where('project_id', projectId)).fetch() as any as RecordModel[];
+  return records.map(toRecordPlain);
 }
 
 export async function getAllRecords(): Promise<FarmRecord[]> {
   const db = await getDB();
-  return db.getAll('records');
+  const records = await db.get('records').query().fetch();
+  return records.map(toRecordPlain);
 }
 
 export async function getAllAnimals(): Promise<FarmAnimal[]> {
   const db = await getDB();
-  const animals = await db.getAll('animals');
-  return animals.map((a) => normalizeAnimal(a as FarmAnimal));
+  const animals = await db.get('animals').query().fetch();
+  return animals.map(toAnimalPlain);
 }
 
 export async function getRecord(id: string): Promise<FarmRecord | undefined> {
   const db = await getDB();
-  return db.get('records', id);
+  const record = await db.get('records').find(id).catch(() => null);
+  return record ? toRecordPlain(record) : undefined;
 }
 
 export async function updateRecord(record: FarmRecord): Promise<void> {
@@ -787,59 +927,79 @@ export async function updateRecord(record: FarmRecord): Promise<void> {
   if (record.isLocked) {
     throw new Error('Cannot update a locked record');
   }
-  record.updatedAt = new Date().toISOString();
-  await db.put('records', record);
+  await db.write(async () => {
+    const existing = await db.get('records').find(record.id);
+    await existing.update((rec: any) => {
+      if (record.date) rec.date = record.date;
+      if (record.item !== undefined) rec.item = record.item;
+      rec.produceAmount = record.produceAmount;
+      rec.produceRevenue = record.produceRevenue;
+      rec.comment = record.comment;
+      rec.customFields = record.customFields ?? {};
+      if (record.isBatchSale !== undefined) rec.isBatchSale = record.isBatchSale;
+      if (record.isCarriedBalance !== undefined) rec.isCarriedBalance = record.isCarriedBalance;
+      if (record.sourceRecordIds !== undefined) rec.sourceRecordIds = record.sourceRecordIds;
+      if (record.soldQuantity !== undefined) rec.soldQuantity = record.soldQuantity;
+      if (record.availableQuantity !== undefined) rec.availableQuantity = record.availableQuantity;
+      if (record.batchSaleId !== undefined) rec.batchSaleId = record.batchSaleId;
+      rec.updatedAt = new Date().toISOString();
+    });
+  });
 }
 
 export async function lockRecord(id: string): Promise<void> {
   const db = await getDB();
-  const record = await db.get('records', id);
+  const record = await db.get('records').find(id).catch(() => null);
   if (!record) throw new Error('Record not found');
-  record.isLocked = true;
-  record.lockedAt = new Date().toISOString();
-  record.updatedAt = new Date().toISOString();
-  await db.put('records', record);
+  await db.write(async () => {
+    await record.update((rec: any) => {
+      rec.isLocked = true;
+      rec.lockedAt = new Date().toISOString();
+      rec.updatedAt = new Date().toISOString();
+    });
+  });
 }
 
 export async function deleteRecord(id: string): Promise<void> {
   const db = await getDB();
-  const record = await db.get('records', id);
+  const record = await db.get('records').find(id).catch(() => null);
   if (record?.isLocked) {
     throw new Error('Cannot delete a locked record');
   }
-  await db.delete('records', id);
+  await db.write(async () => {
+    const r = await db.get('records').find(id);
+    await r.destroyPermanently();
+  });
 }
 
-// Aggregation helpers
+// --- Aggregation helpers ---
+
 export function getMonthFromDate(dateStr: string): string {
-  return dateStr.substring(0, 7); // YYYY-MM
+  return dateStr.substring(0, 7);
 }
 
-// Calculate total project costs (inputs + costs from project details)
 export function calculateTotalProjectCosts(details: ProjectDetails): number {
   const inputsCost = details.inputs?.reduce((sum, input) => sum + (input.cost || 0), 0) || 0;
   return inputsCost + (details.costs || 0);
 }
 
 export async function getMonthlyAggregation(
-  projectId: string, 
+  projectId: string,
   projectDetails?: ProjectDetails,
   customColumnTypes?: Record<string, ColumnType>
 ): Promise<MonthlyAggregation[]> {
   const records = await getRecordsByProject(projectId);
   const monthlyData: Record<string, MonthlyAggregation> = {};
 
-  // Helper to calculate net revenue for a record (apply cash inflows/outflows)
-  // Records already have precalculated revenue with cash flows from the records environment
   const calculateNetRevenue = (record: FarmRecord) => {
     let netRevenue = record.produceRevenue || 0;
-    
+
     if (customColumnTypes) {
       for (const col in record.customFields) {
         const colType = customColumnTypes[col];
         const value = record.customFields[col];
         const numValue = typeof value === 'number' ? value : parseFloat(value as string) || 0;
-        
+
         if (colType === 'cash_inflow') {
           netRevenue += numValue;
         } else if (colType === 'cash_outflow') {
@@ -847,43 +1007,38 @@ export async function getMonthlyAggregation(
         }
       }
     }
-    
+
     return netRevenue;
   };
 
-  // First pass: aggregate record data by month
   for (const record of records) {
     const month = getMonthFromDate(record.date);
     if (!monthlyData[month]) {
       monthlyData[month] = {
         month,
         projectId,
-        totalInputCost: 0, // Will hold month-specific costs
+        totalInputCost: 0,
         totalProduceAmount: 0,
-        totalRevenue: 0, // This is net revenue from records (already includes cash flows)
+        totalRevenue: 0,
         grossProfit: 0,
         netProfit: 0,
         recordCount: 0,
       };
     }
     monthlyData[month].totalProduceAmount += record.produceAmount || 0;
-    // Revenue already includes cash inflows/outflows from record-level custom columns
     monthlyData[month].totalRevenue += calculateNetRevenue(record);
     monthlyData[month].recordCount += 1;
   }
 
-  // Second pass: add project-level costs to their specific months
   if (projectDetails) {
-    // Add capital to its specific month (or first month if not specified)
     if (projectDetails.capital > 0) {
-      const capitalMonth = projectDetails.capitalDate 
+      const capitalMonth = projectDetails.capitalDate
         ? getMonthFromDate(projectDetails.capitalDate)
-        : Object.keys(monthlyData).sort()[0]; // First month as fallback
-      
+        : Object.keys(monthlyData).sort()[0];
+
       if (capitalMonth && monthlyData[capitalMonth]) {
         monthlyData[capitalMonth].totalInputCost += projectDetails.capital;
       } else if (capitalMonth) {
-        // Create month entry if it doesn't exist
         monthlyData[capitalMonth] = {
           month: capitalMonth,
           projectId,
@@ -897,12 +1052,11 @@ export async function getMonthlyAggregation(
       }
     }
 
-    // Add general costs to their specific month
     if (projectDetails.costs > 0) {
-      const costsMonth = projectDetails.costsDate 
+      const costsMonth = projectDetails.costsDate
         ? getMonthFromDate(projectDetails.costsDate)
-        : Object.keys(monthlyData).sort()[0]; // First month as fallback
-      
+        : Object.keys(monthlyData).sort()[0];
+
       if (costsMonth && monthlyData[costsMonth]) {
         monthlyData[costsMonth].totalInputCost += projectDetails.costs;
       } else if (costsMonth) {
@@ -919,14 +1073,12 @@ export async function getMonthlyAggregation(
       }
     }
 
-    // Add input costs to their specific months (with recurring cost support)
     for (const input of projectDetails.inputs || []) {
       if (input.cost > 0) {
-        // Check if this is a recurring cost
         if (input.isRecurring && input.date && input.endDate) {
           const months = getMonthsBetween(input.date, input.endDate);
           const costPerMonth = input.cost / months.length;
-          
+
           for (const month of months) {
             if (monthlyData[month]) {
               monthlyData[month].totalInputCost += costPerMonth;
@@ -944,11 +1096,10 @@ export async function getMonthlyAggregation(
             }
           }
         } else {
-          // Single month cost (existing logic)
-          const inputMonth = input.date 
+          const inputMonth = input.date
             ? getMonthFromDate(input.date)
-            : Object.keys(monthlyData).sort()[0]; // First month as fallback
-          
+            : Object.keys(monthlyData).sort()[0];
+
           if (inputMonth && monthlyData[inputMonth]) {
             monthlyData[inputMonth].totalInputCost += input.cost;
           } else if (inputMonth) {
@@ -968,13 +1119,9 @@ export async function getMonthlyAggregation(
     }
   }
 
-  // Third pass: calculate profits (month-specific, no carry-over)
   for (const month in monthlyData) {
     const data = monthlyData[month];
-    // Gross profit = revenue from records (already net of record-level cash flows)
     data.grossProfit = data.totalRevenue;
-    // Net profit = Gross profit - Month-specific project costs
-    // Each month stands alone, no costs carried from other months
     data.netProfit = data.totalRevenue - data.totalInputCost;
   }
 
