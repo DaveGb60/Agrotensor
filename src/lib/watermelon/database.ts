@@ -41,6 +41,13 @@ export async function needsMigration(): Promise<boolean> {
   try {
     const migrated = localStorage.getItem(MIGRATION_KEY);
     if (migrated === 'true') return false;
+
+    const db = await createDatabase();
+    const projects = await db.get('projects').query().fetchCount();
+    if (projects > 0) {
+      localStorage.setItem(MIGRATION_KEY, 'true');
+      return false;
+    }
     return true;
   } catch {
     return false;
