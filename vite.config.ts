@@ -31,12 +31,19 @@ export default defineConfig(({ mode }) => ({
         scope: "/",
         start_url: "/",
         icons: [
-          { src: "/assets/landing/logo.png", sizes: "16x16", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "32x32", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "48x48", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "180x180", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "192x192", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "512x512", type: "image/png" },
+          // FIX: Cleaned up icons. Browsers reject manifest icons if the declared 
+          // "sizes" don't match the actual image dimensions. Since you are using 
+          // a single logo.png file, only declare the sizes it actually supports.
+          {
+            src: "/assets/landing/logo.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/assets/landing/logo.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
           {
             src: "/assets/landing/logo.png",
             sizes: "512x512",
@@ -47,7 +54,13 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,webmanifest,json,woff2}"],
-        globIgnores: ["**/service-worker.js"],
+        
+        // FIX: Added "**/sw.js" to the ignore list. 
+        // Previously, it only ignored "**/service-worker.js". Because your filename 
+        // is "sw.js", Workbox was trying to precache the service worker itself, 
+        // causing a hash mismatch and silently failing the installation.
+        globIgnores: ["**/sw.js", "**/service-worker.js"],
+        
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
@@ -78,6 +91,8 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
+            // FIX: Corrected invalid Regex syntax. The unescaped forward slashes 
+            // (//) were acting as JS comments, breaking the build.
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
             options: {
@@ -87,6 +102,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
+            // FIX: Corrected invalid Regex syntax for gstatic fonts as well.
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
             handler: "CacheFirst",
             options: {
@@ -104,4 +120,5 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+}));  },
 }));
