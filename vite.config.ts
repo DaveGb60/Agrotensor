@@ -50,7 +50,6 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,webmanifest,json,woff2}"],
-        // CRITICAL FIX: Add sw.js to the ignore list
         globIgnores: ["**/sw.js", "**/service-worker.js"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
@@ -82,7 +81,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            // FIXED: Properly escaped regex
+            // CORRECTED: Properly escaped forward slashes
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
             options: {
@@ -92,7 +91,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            // FIXED: Properly escaped regex
+            // CORRECTED: Properly escaped forward slashes
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
             handler: "CacheFirst",
             options: {
@@ -110,4 +109,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-}));            
+}));
