@@ -16,9 +16,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       injectRegister: null,
       devOptions: { enabled: false },
-      filename: "service-worker.js",
-      strategies: "injectManifest",
-      srcDir: "public",
+      filename: "sw.js",
+      strategies: "generateSW",
       manifest: {
         name: "AgroTensor — Smart Farm Intelligence",
         short_name: "AgroTensor",
