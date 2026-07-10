@@ -16,7 +16,9 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       injectRegister: null,
       devOptions: { enabled: false },
-      filename: "sw.js",
+      filename: "service-worker.js",
+      strategies: "injectManifest",
+      srcDir: "public",
       manifest: {
         name: "AgroTensor — Smart Farm Intelligence",
         short_name: "AgroTensor",
@@ -50,7 +52,7 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,webmanifest,json,woff2}"],
-        globIgnores: ["**/sw.js", "**/service-worker.js"],
+        globIgnores: ["**/service-worker.js"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
