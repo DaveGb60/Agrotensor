@@ -5,11 +5,6 @@ User-agent: *
 Allow: /
 Allow: /app
 
-# Private / authenticated areas
-Disallow: /admin
-Disallow: /admin-auth
-Disallow: /cloud
-Disallow: /trash
 
 # Major search engines
 User-agent: Googlebot
