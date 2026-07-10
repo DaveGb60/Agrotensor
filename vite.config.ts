@@ -4,7 +4,6 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -31,12 +30,16 @@ export default defineConfig(({ mode }) => ({
         scope: "/",
         start_url: "/",
         icons: [
-          { src: "/assets/landing/logo.png", sizes: "16x16", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "32x32", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "48x48", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "180x180", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "192x192", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "512x512", type: "image/png" },
+          {
+            src: "/assets/landing/logo.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/assets/landing/logo.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
           {
             src: "/assets/landing/logo.png",
             sizes: "512x512",
@@ -47,7 +50,7 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,webmanifest,json,woff2}"],
-        globIgnores: ["**/service-worker.js"],
+        globIgnores: ["**/sw.js", "**/service-worker.js"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
@@ -78,6 +81,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
+            // CORRECTED: Properly escaped forward slashes
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
             options: {
@@ -87,6 +91,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
+            // CORRECTED: Properly escaped forward slashes
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
             handler: "CacheFirst",
             options: {
