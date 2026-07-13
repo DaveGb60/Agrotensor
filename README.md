@@ -10,8 +10,6 @@ AgroTensor provides a modern, intuitive interface for managing farm operations i
 - Data visualization and reporting
 - Real-time farm metrics and analytics
 
-**Project URL**: https://lovable.dev/projects/53410996-a867-482d-8f69-ebe442833ddc
-
 ---
 
 ## 🚀 Getting Started
@@ -26,7 +24,7 @@ AgroTensor provides a modern, intuitive interface for managing farm operations i
 git clone <YOUR_GIT_URL>
 
 # Step 2: Navigate to the project directory
-cd farmdesk
+cd agrotensor
 
 # Step 3: Install dependencies
 npm i
@@ -59,18 +57,6 @@ AgroTensor is built with modern web technologies:
 
 ---
 
-## 📝 How to Edit
-
-### Option 1: Use Lovable
-Visit the [AgroTensor Lovable Project](https://lovable.dev/projects/53410996-a867-482d-8f69-ebe442833ddc) and start prompting. Changes will automatically sync to this repository.
-
-### Option 2: Local IDE
-Clone the repo and work locally (see Getting Started above). Push your changes and they'll reflect in Lovable.
-
-### Option 3: GitHub Web Editor
-- Navigate to the desired file
-- Click the pencil icon to edit
-- Commit your changes directly
 
 ### Option 4: GitHub Codespaces
 1. Go to the repository main page
@@ -78,19 +64,6 @@ Clone the repo and work locally (see Getting Started above). Push your changes a
 3. Select **Codespaces** tab
 4. Click **New codespace**
 5. Edit and commit your changes
-
----
-
-## 🚢 Deployment
-
-### Deploy with Lovable
-1. Open [AgroTensor on Lovable](https://lovable.dev/projects/53410996-a867-482d-8f69-ebe442833ddc)
-2. Click **Share → Publish**
-
-### Connect a Custom Domain
-Go to **Project → Settings → Domains** and click **Connect Domain**.
-
-[Learn more about custom domains](https://docs.lovable.dev/features/custom-domain#custom-domain)
 
 ---
 
@@ -125,3 +98,6 @@ This project is private. See repository settings for license information.
 For questions or contributions, please open an issue or pull request.
 
 Happy farming! 🌱
+
+## Regards
+Gfibion @3sixT Labs

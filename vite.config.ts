@@ -14,10 +14,8 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      injectRegister: null,
-      devOptions: { enabled: false },
-      filename: "sw.js",
-      strategies: "generateSW",
+         includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
+      
       manifest: {
         name: "AgroTensor — Smart Farm Intelligence",
         short_name: "AgroTensor",
@@ -51,56 +49,37 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,webmanifest,json,woff2}"],
-        globIgnores: ["**/service-worker.js"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
-        navigationPreload: true,
         runtimeCaching: [
           {
-            urlPattern: ({ request, url }) =>
-              request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "html-navigations",
-              networkTimeoutSeconds: 4,
-              precacheFallback: { fallbackURL: "/index.html" },
-              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: ({ request, sameOrigin }) =>
-              sameOrigin &&
-              ["script", "style", "worker", "font", "image"].includes(request.destination),
-            handler: "CacheFirst",
-            options: {
-              cacheName: "static-assets",
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            // CORRECTED: Properly escaped forward slashes
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
             options: {
               cacheName: "google-fonts-cache",
-              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
           {
-            // CORRECTED: Properly escaped forward slashes
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
             options: {
               cacheName: "gstatic-fonts-cache",
-              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
+          
         ],
       },
     }),
