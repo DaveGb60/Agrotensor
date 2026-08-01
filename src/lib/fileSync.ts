@@ -301,3 +301,52 @@ export function createDataUrl(project: FarmProject, records: FarmRecord[], anima
   const base64 = btoa(unescape(encodeURIComponent(json)));
   return `data:application/json;base64,${base64}`;
 }
+
+// One-tap share: saves the JSON file to device storage and opens the OS share sheet.
+export async function shareProjectFile(
+  project: FarmProject,
+  records: FarmRecord[],
+  animals: FarmAnimal[] = []
+): Promise<{ saved: boolean; shared: boolean }> {
+  const json = exportToJSON(project, records, animals);
+  const fileName = `agrotensor-${project.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}.json`;
+  const blob = new Blob([json], { type: 'application/json' });
+
+  // 1. Drop a copy into device storage (Downloads)
+  let saved = false;
+  try {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    saved = true;
+  } catch {
+    saved = false;
+  }
+
+  // 2. Open the external apps share sheet with the same file
+  let shared = false;
+  try {
+    const file = new File([blob], fileName, { type: 'application/json' });
+    const canShareFile =
+      typeof navigator !== 'undefined' &&
+      !!navigator.share &&
+      (!navigator.canShare || navigator.canShare({ files: [file] }));
+    if (canShareFile) {
+      await navigator.share({
+        title: `AgroTensor: ${project.title}`,
+        text: `AgroTensor project data - ${records.length} records${animals.length ? `, ${animals.length} animals` : ''}`,
+        files: [file],
+      });
+      shared = true;
+    }
+  } catch {
+    shared = false;
+  }
+
+  return { saved, shared };
+}
