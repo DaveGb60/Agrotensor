@@ -4,8 +4,11 @@ import "./index.css";
 import { startSyncService } from "./lib/syncService";
 import { scheduleAutoSnapshot } from "./lib/dataRecovery";
 import { getDB } from "./lib/db";
+import { registerServiceWorker } from "./lib/registerSW";
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+registerServiceWorker();
 
 
 startSyncService({
