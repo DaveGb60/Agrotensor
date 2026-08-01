@@ -15,6 +15,7 @@ import { BreedingCalendar } from '@/components/breeding/BreedingCalendar';
 
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
+import { shareProjectFile } from '@/lib/fileSync';
 import { SyncShareDialog } from '@/components/SyncShareDialog';
 import { ColumnManagerDropdown, CustomColumn, ColumnType } from '@/components/ColumnManagerDropdown';
 import { Button } from '@/components/ui/button';
