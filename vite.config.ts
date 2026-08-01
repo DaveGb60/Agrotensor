@@ -14,7 +14,11 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-         includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
+      injectRegister: null,
+      devOptions: { enabled: false },
+      filename: "sw.js",
+      includeAssets: ["favicon.png", "assets/landing/logo.png"],
+
       
       manifest: {
         name: "AgroTensor — Smart Farm Intelligence",
