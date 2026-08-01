@@ -5,7 +5,6 @@ import { RecordTable } from '@/components/RecordTable';
 import { DelayedRevenueRecordTable } from '@/components/DelayedRevenueRecordTable';
 import { MonthlySummary } from '@/components/MonthlySummary';
 import { ProjectDetailsSection } from '@/components/ProjectDetailsSection';
-import { ShareDialog } from '@/components/ShareDialog';
 import { BreedingProjectDetails } from '@/components/BreedingProjectDetails';
 import { LivestockRecordManager } from '@/components/LivestockRecordManager';
 import { BreedingDashboard } from '@/components/breeding/BreedingDashboard';
@@ -16,6 +15,7 @@ import { BreedingCalendar } from '@/components/breeding/BreedingCalendar';
 
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
+import { shareProjectFile } from '@/lib/fileSync';
 import { SyncShareDialog } from '@/components/SyncShareDialog';
 import { ColumnManagerDropdown, CustomColumn, ColumnType } from '@/components/ColumnManagerDropdown';
 import { Button } from '@/components/ui/button';
@@ -70,7 +70,6 @@ const Index = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [shareProject, setShareProject] = useState<{ project: FarmProject; records: FarmRecord[]; animals: FarmAnimal[] } | null>(null);
   const [breedingRefreshKey, setBreedingRefreshKey] = useState(0);
   const [breedingAnimals, setBreedingAnimals] = useState<FarmAnimal[]>([]);
   
@@ -176,13 +175,25 @@ const Index = () => {
     }
   };
 
+  const shareProjectData = async (project: FarmProject, projectRecords: FarmRecord[], animals: FarmAnimal[]) => {
+    const { saved, shared } = await shareProjectFile(project, projectRecords, animals);
+    toast({
+      title: shared ? 'Project shared' : 'Project file saved',
+      description: saved
+        ? shared
+          ? 'A copy was also saved to your device storage.'
+          : 'Saved to your device storage — share it from your files app.'
+        : 'Could not save the file.',
+      variant: saved || shared ? undefined : 'destructive',
+    });
+  };
+
   const handleShareProject = async (id: string) => {
     const project = await getProject(id);
-    if (project) {
-      const projectRecords = await getRecordsByProject(id);
-      const animals = project.projectType === 'breeding' ? await getAnimalsByProject(id) : [];
-      setShareProject({ project, records: projectRecords, animals });
-    }
+    if (!project) return;
+    const projectRecords = await getRecordsByProject(id);
+    const animals = project.projectType === 'breeding' ? await getAnimalsByProject(id) : [];
+    await shareProjectData(project, projectRecords, animals);
   };
 
   const handleAddRecord = async (data: Omit<FarmRecord, 'id' | 'projectId' | 'isLocked' | 'createdAt' | 'updatedAt'>) => {
@@ -456,8 +467,10 @@ const Index = () => {
               <Button
                 variant="outline"
                 onClick={async () => {
-                  const animals = await getAnimalsByProject(selectedProject.id);
-                  setShareProject({ project: selectedProject, records, animals });
+                  const animals = selectedProject.projectType === 'breeding'
+                    ? await getAnimalsByProject(selectedProject.id)
+                    : [];
+                  await shareProjectData(selectedProject, records, animals);
                 }}
               >
                 <Share2 className="h-4 w-4 mr-2" />
@@ -672,15 +685,6 @@ const Index = () => {
           )}
         </main>
 
-        {shareProject && (
-          <ShareDialog
-            open={!!shareProject}
-            onOpenChange={() => setShareProject(null)}
-            project={shareProject.project}
-            records={shareProject.records}
-            animals={shareProject.animals}
-          />
-        )}
 
         <PDFExportDialog
           open={isPDFExportOpen}
@@ -807,14 +811,6 @@ const Index = () => {
         onSyncComplete={loadProjects}
       />
 
-      {shareProject && (
-        <ShareDialog
-          open={!!shareProject}
-          onOpenChange={() => setShareProject(null)}
-          project={shareProject.project}
-          records={shareProject.records}
-        />
-      )}
 
       <AlertDialog open={!!deleteProjectId} onOpenChange={() => setDeleteProjectId(null)}>
         <AlertDialogContent>
