@@ -71,19 +71,23 @@ const HeroSection = () => {
 
         {/* Visual */}
         <div className="lg:col-span-6 relative">
-          <div className="absolute -inset-6 bg-green-500/20 blur-3xl rounded-full pointer-events-none" />
-          <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-elevated ring-1 ring-green-300/20">
+          <div className="absolute -inset-8 bg-gradient-to-tr from-emerald-500/25 via-teal-400/15 to-sky-500/20 blur-3xl rounded-[3rem] pointer-events-none" />
+          <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-elevated ring-1 ring-emerald-300/25">
             <img
               src={brand.hero}
-              alt="Farmer using AgroTensor dashboard to manage the farm"
+              alt="Farmer reviewing AgroTensor farm intelligence data on a tablet in the field"
+              width={1600}
+              height={1120}
               className="w-full h-auto object-cover"
               loading="eager"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-[hsl(155_60%_7%_/_0.55)] via-transparent to-transparent pointer-events-none" />
           </div>
-          <div className="hidden md:block absolute -bottom-6 -left-6 w-28 h-28 rounded-2xl overflow-hidden border-2 border-white/40 shadow-elevated bg-primary">
-            <img src={brand.icon} alt="AgroTensor icon" className="w-full h-full object-contain p-2" />
+          <div className="hidden md:block absolute -bottom-6 -left-6 w-28 h-28 rounded-2xl overflow-hidden border-2 border-white/40 shadow-elevated bg-primary backdrop-blur">
+            <img src={brand.icon} alt="AgroTensor logo" className="w-full h-full object-contain p-2" />
           </div>
         </div>
+
       </div>
     </div>
   );

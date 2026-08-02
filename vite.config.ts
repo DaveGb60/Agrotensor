@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
+    react({ tsDecorators: true }),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",

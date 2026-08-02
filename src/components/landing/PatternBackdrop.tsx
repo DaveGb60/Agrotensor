@@ -28,13 +28,23 @@ const PatternBackdrop = ({ variant = 'light', className = '', children, id }: Pr
       className={`relative overflow-hidden ${className}`}
       style={{
         backgroundImage: `${tints[variant]}, url(${brand.bgPattern})`,
-        backgroundSize: 'cover, 520px auto',
+        backgroundSize: 'cover, 620px auto',
         backgroundRepeat: 'no-repeat, repeat',
         backgroundBlendMode: 'normal, luminosity',
       }}
     >
-      {children}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.10]"
+        style={{
+          backgroundImage:
+            variant === 'light'
+              ? 'radial-gradient(60% 50% at 100% 0%, hsl(150 60% 35% / 0.5) 0%, transparent 70%), radial-gradient(50% 45% at 0% 100%, hsl(200 65% 40% / 0.4) 0%, transparent 70%)'
+              : 'radial-gradient(60% 50% at 100% 0%, hsl(150 70% 60% / 0.5) 0%, transparent 70%), radial-gradient(50% 45% at 0% 100%, hsl(200 80% 65% / 0.4) 0%, transparent 70%)',
+        }}
+      />
+      <div className="relative">{children}</div>
     </section>
+
   );
 };
 

@@ -10,8 +10,8 @@ export class Project extends Model {
 
   @text('title') title!: string;
   @field('start_date') startDate!: string;
-  @field('created_at') createdAt!: string;
-  @field('updated_at') updatedAt!: string;
+  @field('created_at_iso') createdAt!: string;
+  @field('updated_at_iso') updatedAt!: string;
   @field('project_type') projectType!: string;
   @json('custom_columns', data => JSON.parse(data)) customColumns!: string[];
   @json('custom_column_types', data => JSON.parse(data)) customColumnTypes!: Record<string, string>;

@@ -19,8 +19,8 @@ export class RecordModel extends Model {
   @field('is_locked') isLocked!: boolean;
   @field('locked_at') lockedAt?: string;
   @json('custom_fields', data => JSON.parse(data)) customFields!: Record<string, string | number>;
-  @field('created_at') createdAt!: string;
-  @field('updated_at') updatedAt!: string;
+  @field('created_at_iso') createdAt!: string;
+  @field('updated_at_iso') updatedAt!: string;
   @field('is_batch_sale') isBatchSale?: boolean;
   @field('is_carried_balance') isCarriedBalance?: boolean;
   @json('source_record_ids', data => JSON.parse(data)) sourceRecordIds?: string[];
