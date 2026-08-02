@@ -48,6 +48,39 @@ async function unregisterAppWorkers(): Promise<void> {
 
 let reloading = false;
 
+async function installServiceWorker(): Promise<void> {
+  try {
+    const registration = await navigator.serviceWorker.register(SW_URL, { scope: "/" });
+
+    // Activate a waiting worker immediately so users never sit on stale code.
+    const promote = () => {
+      registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+    };
+    promote();
+    registration.addEventListener("updatefound", () => {
+      const installing = registration.installing;
+      if (!installing) return;
+      installing.addEventListener("statechange", () => {
+        if (installing.state === "installed" && navigator.serviceWorker.controller) {
+          promote();
+        }
+      });
+    });
+
+    const checkForUpdate = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        registration.update().catch(() => {
+          /* offline is expected */
+        });
+      }
+    };
+    document.addEventListener("visibilitychange", checkForUpdate);
+    window.addEventListener("focus", checkForUpdate);
+  } catch (error) {
+    console.error("Service worker registration failed:", error);
+  }
+}
+
 export function registerServiceWorker(): void {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
@@ -56,43 +89,15 @@ export function registerServiceWorker(): void {
     return;
   }
 
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register(SW_URL, { scope: "/" })
-      .then((registration) => {
-        // Activate a waiting worker immediately so users never sit on stale code.
-        const promote = () => {
-          registration.waiting?.postMessage({ type: "SKIP_WAITING" });
-        };
-        promote();
-        registration.addEventListener("updatefound", () => {
-          const installing = registration.installing;
-          if (!installing) return;
-          installing.addEventListener("statechange", () => {
-            if (installing.state === "installed" && navigator.serviceWorker.controller) {
-              promote();
-            }
-          });
-        });
-
-        const checkForUpdate = () => {
-          if (document.visibilityState === "visible") {
-            registration.update().catch(() => {
-              /* offline is fine */
-            });
-          }
-        };
-        document.addEventListener("visibilitychange", checkForUpdate);
-        window.addEventListener("focus", checkForUpdate);
-      })
-      .catch((error) => {
-        console.error("Service worker registration failed:", error);
-      });
-
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloading) return;
-      reloading = true;
-      window.location.reload();
-    });
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
   });
+
+  if (document.readyState === "complete") {
+    void installServiceWorker();
+  } else {
+    window.addEventListener("load", () => void installServiceWorker(), { once: true });
+  }
 }

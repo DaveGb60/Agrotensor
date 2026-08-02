@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => ({
       injectRegister: null,
       devOptions: { enabled: false },
       filename: "sw.js",
-      includeAssets: ["favicon.png", "assets/landing/logo.png"],
 
       
       manifest: {
@@ -52,7 +51,10 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,webmanifest,json,woff2}"],
+        // The generated manifest is injected by vite-plugin-pwa. Public images
+        // are discovered here exactly once so conflicting precache revisions
+        // cannot abort service-worker installation.
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff2}"],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
