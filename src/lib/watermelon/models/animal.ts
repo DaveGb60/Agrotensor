@@ -22,8 +22,8 @@ export class Animal extends Model {
   @text('notes') notes?: string;
   @field('mother_id') motherId?: string;
   @field('father_id') fatherId?: string;
-  @field('created_at') createdAt!: string;
-  @field('updated_at') updatedAt!: string;
+  @field('created_at_iso') createdAt!: string;
+  @field('updated_at_iso') updatedAt!: string;
   @field('is_locked') isLocked!: boolean;
   @field('locked_at') lockedAt?: string;
   @json('mating_history', data => JSON.parse(data)) matingHistory!: MatingRecord[];
