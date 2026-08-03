@@ -437,32 +437,40 @@ export async function importAnimal(animal: FarmAnimal): Promise<FarmAnimal> {
   if (existing?.isLocked) return toAnimalPlain(existing as any);
 
   const imported = normalizeAnimal(animal);
+  const apply = (ani: any) => {
+    ani.projectId = imported.projectId;
+    ani.animalId = imported.animalId;
+    ani.sex = imported.sex;
+    ani.healthStatus = imported.healthStatus;
+    if (imported.age !== undefined) ani.age = imported.age;
+    if (imported.birthDate !== undefined) ani.birthDate = imported.birthDate;
+    if (imported.breed !== undefined) ani.breed = imported.breed;
+    if (imported.currentStatus !== undefined) ani.currentStatus = imported.currentStatus;
+    if (imported.acquisitionCost !== undefined) ani.acquisitionCost = imported.acquisitionCost;
+    if (imported.notes !== undefined) ani.notes = imported.notes;
+    if (imported.motherId !== undefined) ani.motherId = imported.motherId;
+    if (imported.fatherId !== undefined) ani.fatherId = imported.fatherId;
+    ani.createdAt = imported.createdAt;
+    ani.updatedAt = new Date().toISOString();
+    ani.isLocked = imported.isLocked;
+    if (imported.lockedAt) ani.lockedAt = imported.lockedAt;
+    ani.matingHistory = imported.matingHistory ?? [];
+    ani.pregnancyHistory = imported.pregnancyHistory ?? [];
+    ani.birthRecords = imported.birthRecords ?? [];
+    ani.deathRecords = imported.deathRecords ?? [];
+    ani.saleRecords = imported.saleRecords ?? [];
+    ani.treatmentHistory = imported.treatmentHistory ?? [];
+  };
+
   await db.write(async () => {
-    await db.get('animals').prepareCreate((ani: any) => {
-      ani.id = imported.id;
-      ani.projectId = imported.projectId;
-      ani.animalId = imported.animalId;
-      ani.sex = imported.sex;
-      ani.healthStatus = imported.healthStatus;
-      if (imported.age !== undefined) ani.age = imported.age;
-      if (imported.birthDate !== undefined) ani.birthDate = imported.birthDate;
-      if (imported.breed !== undefined) ani.breed = imported.breed;
-      if (imported.currentStatus !== undefined) ani.currentStatus = imported.currentStatus;
-      if (imported.acquisitionCost !== undefined) ani.acquisitionCost = imported.acquisitionCost;
-      if (imported.notes !== undefined) ani.notes = imported.notes;
-      if (imported.motherId !== undefined) ani.motherId = imported.motherId;
-      if (imported.fatherId !== undefined) ani.fatherId = imported.fatherId;
-      ani.createdAt = imported.createdAt;
-      ani.updatedAt = new Date().toISOString();
-      ani.isLocked = imported.isLocked;
-      if (imported.lockedAt) ani.lockedAt = imported.lockedAt;
-      ani.matingHistory = imported.matingHistory ?? [];
-      ani.pregnancyHistory = imported.pregnancyHistory ?? [];
-      ani.birthRecords = imported.birthRecords ?? [];
-      ani.deathRecords = imported.deathRecords ?? [];
-      ani.saleRecords = imported.saleRecords ?? [];
-      ani.treatmentHistory = imported.treatmentHistory ?? [];
-    });
+    if (existing) {
+      await (existing as any).update(apply);
+    } else {
+      await db.get('animals').create((ani: any) => {
+        ani._raw.id = imported.id;
+        apply(ani);
+      });
+    }
   });
   return imported;
 }
