@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { FarmProject, FarmRecord, MonthlyAggregation } from '@/lib/db';
-import { generateProjectPDF } from '@/lib/pdfExport';
+// jsPDF is heavy: loaded on demand so the first-load bundle stays small.
 import { FileText, Calendar, Download } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -34,6 +34,7 @@ export function PDFExportDialog({
   const handleExport = async (type: 'monthly' | 'full') => {
     setIsExporting(true);
     try {
+      const { generateProjectPDF } = await import('@/lib/pdfExport');
       generateProjectPDF({
         project,
         records,
