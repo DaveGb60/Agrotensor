@@ -10,7 +10,7 @@ export async function getDB(): Promise<Database> {
   dbInstance = await createDatabase();
 
   const { needsMigration, markMigrationComplete } = await import('@/lib/watermelon/database');
-  if (await needsMigration()) {
+  if (await needsMigration(dbInstance)) {
     try {
       const { migrateFromIndexedDB } = await import('@/lib/watermelon/migration');
       await migrateFromIndexedDB(dbInstance);
