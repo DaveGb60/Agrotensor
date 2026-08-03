@@ -54,8 +54,208 @@ export function validateSyncData(data: unknown): data is SyncData {
 }
 
 export function getSyncAnimals(data: SyncData): FarmAnimal[] {
-  if (data.version === '2.0') return data.animals;
-  return [];
+  const animals = (data as SyncDataV2).animals;
+  return Array.isArray(animals) ? animals : [];
+}
+
+// ---------- Legacy (FarmDeck era) backup parsing ----------
+
+export interface ParsedBackup {
+  projects: FarmProject[];
+  records: FarmRecord[];
+  animals: FarmAnimal[];
+}
+
+function coerceProject(raw: any): FarmProject | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = raw.id ?? raw.projectId ?? raw.uuid;
+  const title = raw.title ?? raw.name ?? raw.projectName;
+  if (typeof id !== 'string' || typeof title !== 'string') return null;
+  const now = new Date().toISOString();
+  const projectType = raw.projectType ?? raw.type ?? 'produce';
+  return {
+    id,
+    title,
+    startDate: raw.startDate ?? raw.start_date ?? raw.createdAt ?? now,
+    createdAt: raw.createdAt ?? raw.created_at ?? now,
+    updatedAt: raw.updatedAt ?? raw.updated_at ?? now,
+    projectType: projectType === 'breeding' ? 'breeding' : 'produce',
+    customColumns: Array.isArray(raw.customColumns) ? raw.customColumns : [],
+    customColumnTypes: raw.customColumnTypes && typeof raw.customColumnTypes === 'object' ? raw.customColumnTypes : {},
+    recordType: raw.recordType === 'delayed_revenue' ? 'delayed_revenue' : 'standard',
+    isCompleted: !!raw.isCompleted,
+    completedAt: raw.completedAt,
+    details: raw.details ?? raw.projectDetails ?? {},
+    deletedAt: raw.deletedAt,
+    isDeleted: !!raw.isDeleted,
+  } as FarmProject;
+}
+
+function coerceRecord(raw: any, fallbackProjectId?: string): FarmRecord | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = raw.id ?? raw.recordId;
+  const projectId = raw.projectId ?? raw.project_id ?? fallbackProjectId;
+  if (typeof id !== 'string' || typeof projectId !== 'string') return null;
+  const now = new Date().toISOString();
+  return {
+    id,
+    projectId,
+    date: raw.date ?? raw.recordDate ?? now.slice(0, 10),
+    item: raw.item ?? raw.produceItem,
+    produceAmount: Number(raw.produceAmount ?? raw.amount ?? raw.quantity ?? 0) || 0,
+    produceRevenue: Number(raw.produceRevenue ?? raw.revenue ?? raw.income ?? 0) || 0,
+    comment: raw.comment ?? raw.notes ?? '',
+    isLocked: !!raw.isLocked,
+    lockedAt: raw.lockedAt,
+    customFields: raw.customFields && typeof raw.customFields === 'object' ? raw.customFields : {},
+    createdAt: raw.createdAt ?? raw.created_at ?? now,
+    updatedAt: raw.updatedAt ?? raw.updated_at ?? now,
+    isBatchSale: raw.isBatchSale,
+    isCarriedBalance: raw.isCarriedBalance,
+    sourceRecordIds: raw.sourceRecordIds,
+    soldQuantity: raw.soldQuantity,
+    availableQuantity: raw.availableQuantity,
+    batchSaleId: raw.batchSaleId,
+  } as FarmRecord;
+}
+
+function coerceAnimal(raw: any, fallbackProjectId?: string): FarmAnimal | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = raw.id;
+  const projectId = raw.projectId ?? raw.project_id ?? fallbackProjectId;
+  if (typeof id !== 'string' || typeof projectId !== 'string') return null;
+  if (!('animalId' in raw) && !('tag' in raw)) return null;
+  return { ...raw, id, projectId, animalId: raw.animalId ?? raw.tag } as FarmAnimal;
+}
+
+/**
+ * Accepts any AgroTensor or legacy FarmDeck backup/export shape:
+ *  - { type: '*-sync', project, records, animals }
+ *  - { projects: [], records: [], animals: [] } (full backup / snapshot)
+ *  - { data: { ... } } or { backup: { ... } } wrappers
+ *  - a bare array of projects (each optionally embedding its records)
+ */
+export function parseAnyBackup(input: string | unknown): ParsedBackup | null {
+  let data: any = input;
+  if (typeof input === 'string') {
+    try {
+      data = JSON.parse(input);
+    } catch {
+      return null;
+    }
+  }
+  if (!data || typeof data !== 'object') return null;
+
+  // Unwrap common containers
+  for (const key of ['data', 'backup', 'payload', 'export']) {
+    if (data[key] && typeof data[key] === 'object' && !Array.isArray(data[key])) {
+      const inner = data[key];
+      if (inner.projects || inner.project || inner.records) data = inner;
+    }
+  }
+
+  const projects: FarmProject[] = [];
+  const records: FarmRecord[] = [];
+  const animals: FarmAnimal[] = [];
+
+  const takeProject = (rawProject: any) => {
+    const project = coerceProject(rawProject);
+    if (!project) return;
+    projects.push(project);
+    const embeddedRecords = rawProject.records ?? rawProject.entries ?? rawProject.rows;
+    if (Array.isArray(embeddedRecords)) {
+      for (const r of embeddedRecords) {
+        const rec = coerceRecord(r, project.id);
+        if (rec) records.push(rec);
+      }
+    }
+    const embeddedAnimals = rawProject.animals ?? rawProject.livestock;
+    if (Array.isArray(embeddedAnimals)) {
+      for (const a of embeddedAnimals) {
+        const ani = coerceAnimal(a, project.id);
+        if (ani) animals.push(ani);
+      }
+    }
+  };
+
+  if (Array.isArray(data)) {
+    data.forEach(takeProject);
+  } else {
+    if (data.project) takeProject(data.project);
+    if (Array.isArray(data.projects)) data.projects.forEach(takeProject);
+    const topRecords = data.records ?? data.entries;
+    if (Array.isArray(topRecords)) {
+      for (const r of topRecords) {
+        const rec = coerceRecord(r, projects.length === 1 ? projects[0].id : undefined);
+        if (rec) records.push(rec);
+      }
+    }
+    const topAnimals = data.animals ?? data.livestock;
+    if (Array.isArray(topAnimals)) {
+      for (const a of topAnimals) {
+        const ani = coerceAnimal(a, projects.length === 1 ? projects[0].id : undefined);
+        if (ani) animals.push(ani);
+      }
+    }
+  }
+
+  if (!projects.length && !records.length && !animals.length) return null;
+
+  // Dedupe by id (first wins)
+  const uniq = <T extends { id: string }>(items: T[]) => {
+    const map = new Map<string, T>();
+    for (const i of items) if (!map.has(i.id)) map.set(i.id, i);
+    return Array.from(map.values());
+  };
+
+  return { projects: uniq(projects), records: uniq(records), animals: uniq(animals) };
+}
+
+export interface BackupImportResult {
+  projects: number;
+  records: number;
+  animals: number;
+  failed: number;
+  errors: string[];
+}
+
+export async function importAnyBackup(input: string | unknown): Promise<BackupImportResult> {
+  const parsed = parseAnyBackup(input);
+  if (!parsed) {
+    throw new Error('This file is not a recognisable AgroTensor or FarmDeck backup.');
+  }
+
+  const result: BackupImportResult = { projects: 0, records: 0, animals: 0, failed: 0, errors: [] };
+
+  for (const p of parsed.projects) {
+    try {
+      await importProject(p);
+      result.projects++;
+    } catch (e) {
+      result.failed++;
+      if (result.errors.length < 5) result.errors.push(`Project "${p.title}": ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  for (const r of parsed.records) {
+    try {
+      await importRecord(r);
+      result.records++;
+    } catch (e) {
+      result.failed++;
+      if (result.errors.length < 5) result.errors.push(`Record ${r.id}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  for (const a of parsed.animals) {
+    try {
+      await importAnimal(a);
+      result.animals++;
+    } catch (e) {
+      result.failed++;
+      if (result.errors.length < 5) result.errors.push(`Animal ${a.id}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  return result;
 }
 
 // Generate a content fingerprint for a record (excludes id, createdAt, updatedAt)
