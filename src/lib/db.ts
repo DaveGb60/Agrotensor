@@ -367,21 +367,22 @@ export async function createProject(
 ): Promise<FarmProject> {
   const db = await getDB();
   const now = new Date().toISOString();
-  const project = await db.get('projects').prepareCreate((proj: any) => {
-    proj.id = existingId || generateId();
-    proj.title = title;
-    proj.startDate = startDate;
-    proj.createdAt = now;
-    proj.updatedAt = now;
-    proj.projectType = projectType;
-    proj.customColumns = customColumns;
-    proj.customColumnTypes = {};
-    proj.recordType = recordType;
-    proj.isCompleted = false;
-    proj.details = projectType === 'produce' ? createDefaultProjectDetails() : createDefaultBreedingProjectDetails();
-    proj.isDeleted = false;
-  });
-  await db.write(async () => {});
+  const project = await db.write(async () =>
+    db.get('projects').create((proj: any) => {
+      proj._raw.id = existingId || generateId();
+      proj.title = title;
+      proj.startDate = startDate;
+      proj.createdAt = now;
+      proj.updatedAt = now;
+      proj.projectType = projectType;
+      proj.customColumns = customColumns;
+      proj.customColumnTypes = {};
+      proj.recordType = recordType;
+      proj.isCompleted = false;
+      proj.details = projectType === 'produce' ? createDefaultProjectDetails() : createDefaultBreedingProjectDetails();
+      proj.isDeleted = false;
+    })
+  );
   return toProjectPlain(project as any);
 }
 
