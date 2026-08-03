@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, RefreshCw, ShieldCheck, Database, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Loader2, RefreshCw, ShieldCheck, Database, AlertTriangle, CheckCircle2, Upload } from 'lucide-react';
 import {
   scanForRecoverableData,
   restoreFromScan,
@@ -11,6 +12,7 @@ import {
   RecoverySummary,
   RestoreOutcome,
 } from '@/lib/dataRecovery';
+import { importAnyBackup } from '@/lib/fileSync';
 import { toast } from 'sonner';
 
 export default function DataRecovery() {
@@ -18,6 +20,27 @@ export default function DataRecovery() {
   const [restoring, setRestoring] = useState(false);
   const [summary, setSummary] = useState<RecoverySummary | null>(null);
   const [outcome, setOutcome] = useState<RestoreOutcome | null>(null);
+  const [fileBusy, setFileBusy] = useState(false);
+  const [pasted, setPasted] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const importBackupText = async (text: string) => {
+    setFileBusy(true);
+    try {
+      const res = await importAnyBackup(text);
+      toast.success('Backup restored', {
+        description: `${res.projects} projects, ${res.records} records, ${res.animals} animals imported${res.failed ? `, ${res.failed} failed` : ''}.`,
+      });
+      if (res.errors.length) console.warn('Backup import issues:', res.errors);
+      await writeAutoSnapshot();
+      await runScan();
+    } catch (e) {
+      toast.error('Restore failed', { description: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setFileBusy(false);
+    }
+  };
+
 
   const runScan = async () => {
     setScanning(true);
@@ -102,6 +125,54 @@ export default function DataRecovery() {
           </p>
         </AlertDescription>
       </Alert>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5" /> Restore from a backup file
+          </CardTitle>
+          <CardDescription>
+            Works with current AgroTensor exports and older FarmDeck-era backup files.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json,.txt"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = '';
+              if (!file) return;
+              const text = await file.text();
+              await importBackupText(text);
+            }}
+          />
+          <Button onClick={() => fileInputRef.current?.click()} disabled={fileBusy}>
+            {fileBusy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+            Choose backup file
+          </Button>
+          <Textarea
+            value={pasted}
+            onChange={(e) => setPasted(e.target.value)}
+            placeholder="…or paste the backup JSON here"
+            className="min-h-24 font-mono text-xs"
+          />
+          <Button
+            variant="outline"
+            disabled={fileBusy || !pasted.trim()}
+            onClick={async () => {
+              await importBackupText(pasted);
+              setPasted('');
+            }}
+          >
+            Restore pasted backup
+          </Button>
+        </CardContent>
+      </Card>
+
+
 
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-4">

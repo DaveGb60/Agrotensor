@@ -26,8 +26,8 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
       for (const p of projects) {
         const projectType = (p as any).projectType || 'produce';
         const details = p.details || (projectType === 'produce' ? createDefaultProjectDetails() : createDefaultBreedingProjectDetails());
-        await database.get('projects').prepareCreate((proj: any) => {
-          proj.id = p.id;
+        await database.get('projects').create((proj: any) => {
+          proj._raw.id = p.id;
           proj.title = p.title;
           proj.startDate = p.startDate;
           proj.createdAt = p.createdAt;
@@ -46,8 +46,8 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
       }
 
       for (const r of records) {
-        await database.get('records').prepareCreate((rec: any) => {
-          rec.id = r.id;
+        await database.get('records').create((rec: any) => {
+          rec._raw.id = r.id;
           rec.projectId = r.projectId;
           rec.date = r.date;
           if (r.item !== undefined) rec.item = r.item;
@@ -71,8 +71,8 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
 
       for (const a of animals) {
         const normalized = normalizeAnimal(a);
-        await database.get('animals').prepareCreate((ani: any) => {
-          ani.id = normalized.id;
+        await database.get('animals').create((ani: any) => {
+          ani._raw.id = normalized.id;
           ani.projectId = normalized.projectId;
           ani.animalId = normalized.animalId;
           ani.sex = normalized.sex;

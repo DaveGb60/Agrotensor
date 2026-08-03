@@ -10,7 +10,7 @@ export async function getDB(): Promise<Database> {
   dbInstance = await createDatabase();
 
   const { needsMigration, markMigrationComplete } = await import('@/lib/watermelon/database');
-  if (await needsMigration()) {
+  if (await needsMigration(dbInstance)) {
     try {
       const { migrateFromIndexedDB } = await import('@/lib/watermelon/migration');
       await migrateFromIndexedDB(dbInstance);
@@ -367,21 +367,22 @@ export async function createProject(
 ): Promise<FarmProject> {
   const db = await getDB();
   const now = new Date().toISOString();
-  const project = await db.get('projects').prepareCreate((proj: any) => {
-    proj.id = existingId || generateId();
-    proj.title = title;
-    proj.startDate = startDate;
-    proj.createdAt = now;
-    proj.updatedAt = now;
-    proj.projectType = projectType;
-    proj.customColumns = customColumns;
-    proj.customColumnTypes = {};
-    proj.recordType = recordType;
-    proj.isCompleted = false;
-    proj.details = projectType === 'produce' ? createDefaultProjectDetails() : createDefaultBreedingProjectDetails();
-    proj.isDeleted = false;
-  });
-  await db.write(async () => {});
+  const project = await db.write(async () =>
+    db.get('projects').create((proj: any) => {
+      proj._raw.id = existingId || generateId();
+      proj.title = title;
+      proj.startDate = startDate;
+      proj.createdAt = now;
+      proj.updatedAt = now;
+      proj.projectType = projectType;
+      proj.customColumns = customColumns;
+      proj.customColumnTypes = {};
+      proj.recordType = recordType;
+      proj.isCompleted = false;
+      proj.details = projectType === 'produce' ? createDefaultProjectDetails() : createDefaultBreedingProjectDetails();
+      proj.isDeleted = false;
+    })
+  );
   return toProjectPlain(project as any);
 }
 
@@ -401,31 +402,32 @@ export async function createAnimal(
   }
 
   const now = new Date().toISOString();
-  const animal = await db.get('animals').prepareCreate((ani: any) => {
-    ani.id = generateId();
-    ani.projectId = projectId;
-    ani.animalId = data.animalId;
-    ani.sex = data.sex;
-    ani.healthStatus = data.healthStatus;
-    if (data.age !== undefined) ani.age = data.age;
-    if (data.birthDate !== undefined) ani.birthDate = data.birthDate;
-    if (data.breed !== undefined) ani.breed = data.breed;
-    if (data.currentStatus !== undefined) ani.currentStatus = data.currentStatus;
-    if (data.acquisitionCost !== undefined) ani.acquisitionCost = data.acquisitionCost;
-    if (data.notes !== undefined) ani.notes = data.notes;
-    if (data.motherId !== undefined) ani.motherId = data.motherId;
-    if (data.fatherId !== undefined) ani.fatherId = data.fatherId;
-    ani.createdAt = now;
-    ani.updatedAt = now;
-    ani.isLocked = false;
-    ani.matingHistory = [];
-    ani.pregnancyHistory = [];
-    ani.birthRecords = [];
-    ani.deathRecords = [];
-    ani.saleRecords = [];
-    ani.treatmentHistory = [];
-  });
-  await db.write(async () => {});
+  const animal = await db.write(async () =>
+    db.get('animals').create((ani: any) => {
+      ani._raw.id = generateId();
+      ani.projectId = projectId;
+      ani.animalId = data.animalId;
+      ani.sex = data.sex;
+      ani.healthStatus = data.healthStatus;
+      if (data.age !== undefined) ani.age = data.age;
+      if (data.birthDate !== undefined) ani.birthDate = data.birthDate;
+      if (data.breed !== undefined) ani.breed = data.breed;
+      if (data.currentStatus !== undefined) ani.currentStatus = data.currentStatus;
+      if (data.acquisitionCost !== undefined) ani.acquisitionCost = data.acquisitionCost;
+      if (data.notes !== undefined) ani.notes = data.notes;
+      if (data.motherId !== undefined) ani.motherId = data.motherId;
+      if (data.fatherId !== undefined) ani.fatherId = data.fatherId;
+      ani.createdAt = now;
+      ani.updatedAt = now;
+      ani.isLocked = false;
+      ani.matingHistory = [];
+      ani.pregnancyHistory = [];
+      ani.birthRecords = [];
+      ani.deathRecords = [];
+      ani.saleRecords = [];
+      ani.treatmentHistory = [];
+    })
+  );
   return toAnimalPlain(animal as any);
 }
 
@@ -435,32 +437,40 @@ export async function importAnimal(animal: FarmAnimal): Promise<FarmAnimal> {
   if (existing?.isLocked) return toAnimalPlain(existing as any);
 
   const imported = normalizeAnimal(animal);
+  const apply = (ani: any) => {
+    ani.projectId = imported.projectId;
+    ani.animalId = imported.animalId;
+    ani.sex = imported.sex;
+    ani.healthStatus = imported.healthStatus;
+    if (imported.age !== undefined) ani.age = imported.age;
+    if (imported.birthDate !== undefined) ani.birthDate = imported.birthDate;
+    if (imported.breed !== undefined) ani.breed = imported.breed;
+    if (imported.currentStatus !== undefined) ani.currentStatus = imported.currentStatus;
+    if (imported.acquisitionCost !== undefined) ani.acquisitionCost = imported.acquisitionCost;
+    if (imported.notes !== undefined) ani.notes = imported.notes;
+    if (imported.motherId !== undefined) ani.motherId = imported.motherId;
+    if (imported.fatherId !== undefined) ani.fatherId = imported.fatherId;
+    ani.createdAt = imported.createdAt;
+    ani.updatedAt = new Date().toISOString();
+    ani.isLocked = imported.isLocked;
+    if (imported.lockedAt) ani.lockedAt = imported.lockedAt;
+    ani.matingHistory = imported.matingHistory ?? [];
+    ani.pregnancyHistory = imported.pregnancyHistory ?? [];
+    ani.birthRecords = imported.birthRecords ?? [];
+    ani.deathRecords = imported.deathRecords ?? [];
+    ani.saleRecords = imported.saleRecords ?? [];
+    ani.treatmentHistory = imported.treatmentHistory ?? [];
+  };
+
   await db.write(async () => {
-    await db.get('animals').prepareCreate((ani: any) => {
-      ani.id = imported.id;
-      ani.projectId = imported.projectId;
-      ani.animalId = imported.animalId;
-      ani.sex = imported.sex;
-      ani.healthStatus = imported.healthStatus;
-      if (imported.age !== undefined) ani.age = imported.age;
-      if (imported.birthDate !== undefined) ani.birthDate = imported.birthDate;
-      if (imported.breed !== undefined) ani.breed = imported.breed;
-      if (imported.currentStatus !== undefined) ani.currentStatus = imported.currentStatus;
-      if (imported.acquisitionCost !== undefined) ani.acquisitionCost = imported.acquisitionCost;
-      if (imported.notes !== undefined) ani.notes = imported.notes;
-      if (imported.motherId !== undefined) ani.motherId = imported.motherId;
-      if (imported.fatherId !== undefined) ani.fatherId = imported.fatherId;
-      ani.createdAt = imported.createdAt;
-      ani.updatedAt = new Date().toISOString();
-      ani.isLocked = imported.isLocked;
-      if (imported.lockedAt) ani.lockedAt = imported.lockedAt;
-      ani.matingHistory = imported.matingHistory ?? [];
-      ani.pregnancyHistory = imported.pregnancyHistory ?? [];
-      ani.birthRecords = imported.birthRecords ?? [];
-      ani.deathRecords = imported.deathRecords ?? [];
-      ani.saleRecords = imported.saleRecords ?? [];
-      ani.treatmentHistory = imported.treatmentHistory ?? [];
-    });
+    if (existing) {
+      await (existing as any).update(apply);
+    } else {
+      await db.get('animals').create((ani: any) => {
+        ani._raw.id = imported.id;
+        apply(ani);
+      });
+    }
   });
   return imported;
 }
@@ -640,23 +650,32 @@ export async function recordBirthWithOffspring(
 
 export async function importProject(projectData: FarmProject): Promise<FarmProject> {
   const db = await getDB();
+  const existing = await db.get('projects').find(projectData.id).catch(() => null);
+  const apply = (proj: any) => {
+    proj.title = projectData.title;
+    proj.startDate = projectData.startDate;
+    proj.createdAt = projectData.createdAt || new Date().toISOString();
+    proj.updatedAt = new Date().toISOString();
+    proj.projectType = projectData.projectType || 'produce';
+    proj.customColumns = projectData.customColumns ?? [];
+    proj.customColumnTypes = projectData.customColumnTypes ?? {};
+    proj.recordType = projectData.recordType || 'standard';
+    proj.isCompleted = projectData.isCompleted || false;
+    proj.details = projectData.details || (projectData.projectType === 'breeding' ? createDefaultBreedingProjectDetails() : createDefaultProjectDetails());
+    proj.isDeleted = projectData.isDeleted || false;
+    if (projectData.deletedAt) proj.deletedAt = projectData.deletedAt;
+    if (projectData.completedAt) proj.completedAt = projectData.completedAt;
+  };
+
   await db.write(async () => {
-    await db.get('projects').prepareCreate((proj: any) => {
-      proj.id = projectData.id;
-      proj.title = projectData.title;
-      proj.startDate = projectData.startDate;
-      proj.createdAt = projectData.createdAt || new Date().toISOString();
-      proj.updatedAt = new Date().toISOString();
-      proj.projectType = projectData.projectType || 'produce';
-      proj.customColumns = projectData.customColumns ?? [];
-      proj.customColumnTypes = projectData.customColumnTypes ?? {};
-      proj.recordType = projectData.recordType || 'standard';
-      proj.isCompleted = projectData.isCompleted || false;
-      proj.details = projectData.details || (projectData.projectType === 'breeding' ? createDefaultBreedingProjectDetails() : createDefaultProjectDetails());
-      proj.isDeleted = projectData.isDeleted || false;
-      if (projectData.deletedAt) proj.deletedAt = projectData.deletedAt;
-      if (projectData.completedAt) proj.completedAt = projectData.completedAt;
-    });
+    if (existing) {
+      await (existing as any).update(apply);
+    } else {
+      await db.get('projects').create((proj: any) => {
+        proj._raw.id = projectData.id;
+        apply(proj);
+      });
+    }
   });
   return projectData;
 }
@@ -697,27 +716,35 @@ export async function importRecord(record: FarmRecord): Promise<FarmRecord> {
     return toRecordPlain(existingRecord);
   }
 
+  const apply = (rec: any) => {
+    rec.projectId = record.projectId;
+    rec.date = record.date;
+    if (record.item !== undefined) rec.item = record.item;
+    rec.produceAmount = Number(record.produceAmount) || 0;
+    rec.produceRevenue = Number(record.produceRevenue) || 0;
+    rec.comment = record.comment ?? '';
+    rec.isLocked = record.isLocked ?? false;
+    if (record.lockedAt) rec.lockedAt = record.lockedAt;
+    rec.customFields = record.customFields ?? {};
+    rec.createdAt = record.createdAt || new Date().toISOString();
+    rec.updatedAt = new Date().toISOString();
+    if (record.isBatchSale !== undefined) rec.isBatchSale = record.isBatchSale;
+    if (record.isCarriedBalance !== undefined) rec.isCarriedBalance = record.isCarriedBalance;
+    if (record.sourceRecordIds !== undefined) rec.sourceRecordIds = record.sourceRecordIds;
+    if (record.soldQuantity !== undefined) rec.soldQuantity = record.soldQuantity;
+    if (record.availableQuantity !== undefined) rec.availableQuantity = record.availableQuantity;
+    if (record.batchSaleId !== undefined) rec.batchSaleId = record.batchSaleId;
+  };
+
   await db.write(async () => {
-    await db.get('records').prepareCreate((rec: any) => {
-      rec.id = record.id;
-      rec.projectId = record.projectId;
-      rec.date = record.date;
-      if (record.item !== undefined) rec.item = record.item;
-      rec.produceAmount = record.produceAmount;
-      rec.produceRevenue = record.produceRevenue;
-      rec.comment = record.comment;
-      rec.isLocked = record.isLocked;
-      if (record.lockedAt) rec.lockedAt = record.lockedAt;
-      rec.customFields = record.customFields ?? {};
-      rec.createdAt = record.createdAt;
-      rec.updatedAt = new Date().toISOString();
-      if (record.isBatchSale !== undefined) rec.isBatchSale = record.isBatchSale;
-      if (record.isCarriedBalance !== undefined) rec.isCarriedBalance = record.isCarriedBalance;
-      if (record.sourceRecordIds !== undefined) rec.sourceRecordIds = record.sourceRecordIds;
-      if (record.soldQuantity !== undefined) rec.soldQuantity = record.soldQuantity;
-      if (record.availableQuantity !== undefined) rec.availableQuantity = record.availableQuantity;
-      if (record.batchSaleId !== undefined) rec.batchSaleId = record.batchSaleId;
-    });
+    if (existingRecord) {
+      await (existingRecord as any).update(apply);
+    } else {
+      await db.get('records').create((rec: any) => {
+        rec._raw.id = record.id;
+        apply(rec);
+      });
+    }
   });
   return record;
 }
@@ -874,27 +901,28 @@ export async function createRecord(
 ): Promise<FarmRecord> {
   const db = await getDB();
   const now = new Date().toISOString();
-  const record = await db.get('records').prepareCreate((rec: any) => {
-    rec.id = generateId();
-    rec.projectId = projectId;
-    rec.date = data.date;
-    if (data.item !== undefined) rec.item = data.item;
-    rec.produceAmount = data.produceAmount;
-    rec.produceRevenue = data.produceRevenue;
-    rec.comment = data.comment;
-    rec.isLocked = false;
-    if (data.lockedAt) rec.lockedAt = data.lockedAt;
-    rec.customFields = data.customFields ?? {};
-    rec.createdAt = now;
-    rec.updatedAt = now;
-    if (data.isBatchSale !== undefined) rec.isBatchSale = data.isBatchSale;
-    if (data.isCarriedBalance !== undefined) rec.isCarriedBalance = data.isCarriedBalance;
-    if (data.sourceRecordIds !== undefined) rec.sourceRecordIds = data.sourceRecordIds;
-    if (data.soldQuantity !== undefined) rec.soldQuantity = data.soldQuantity;
-    if (data.availableQuantity !== undefined) rec.availableQuantity = data.availableQuantity;
-    if (data.batchSaleId !== undefined) rec.batchSaleId = data.batchSaleId;
-  });
-  await db.write(async () => {});
+  const record = await db.write(async () =>
+    db.get('records').create((rec: any) => {
+      rec._raw.id = generateId();
+      rec.projectId = projectId;
+      rec.date = data.date;
+      if (data.item !== undefined) rec.item = data.item;
+      rec.produceAmount = data.produceAmount;
+      rec.produceRevenue = data.produceRevenue;
+      rec.comment = data.comment ?? '';
+      rec.isLocked = false;
+      if (data.lockedAt) rec.lockedAt = data.lockedAt;
+      rec.customFields = data.customFields ?? {};
+      rec.createdAt = now;
+      rec.updatedAt = now;
+      if (data.isBatchSale !== undefined) rec.isBatchSale = data.isBatchSale;
+      if (data.isCarriedBalance !== undefined) rec.isCarriedBalance = data.isCarriedBalance;
+      if (data.sourceRecordIds !== undefined) rec.sourceRecordIds = data.sourceRecordIds;
+      if (data.soldQuantity !== undefined) rec.soldQuantity = data.soldQuantity;
+      if (data.availableQuantity !== undefined) rec.availableQuantity = data.availableQuantity;
+      if (data.batchSaleId !== undefined) rec.batchSaleId = data.batchSaleId;
+    })
+  );
   return toRecordPlain(record as any);
 }
 
