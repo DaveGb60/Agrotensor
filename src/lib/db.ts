@@ -650,23 +650,32 @@ export async function recordBirthWithOffspring(
 
 export async function importProject(projectData: FarmProject): Promise<FarmProject> {
   const db = await getDB();
+  const existing = await db.get('projects').find(projectData.id).catch(() => null);
+  const apply = (proj: any) => {
+    proj.title = projectData.title;
+    proj.startDate = projectData.startDate;
+    proj.createdAt = projectData.createdAt || new Date().toISOString();
+    proj.updatedAt = new Date().toISOString();
+    proj.projectType = projectData.projectType || 'produce';
+    proj.customColumns = projectData.customColumns ?? [];
+    proj.customColumnTypes = projectData.customColumnTypes ?? {};
+    proj.recordType = projectData.recordType || 'standard';
+    proj.isCompleted = projectData.isCompleted || false;
+    proj.details = projectData.details || (projectData.projectType === 'breeding' ? createDefaultBreedingProjectDetails() : createDefaultProjectDetails());
+    proj.isDeleted = projectData.isDeleted || false;
+    if (projectData.deletedAt) proj.deletedAt = projectData.deletedAt;
+    if (projectData.completedAt) proj.completedAt = projectData.completedAt;
+  };
+
   await db.write(async () => {
-    await db.get('projects').prepareCreate((proj: any) => {
-      proj.id = projectData.id;
-      proj.title = projectData.title;
-      proj.startDate = projectData.startDate;
-      proj.createdAt = projectData.createdAt || new Date().toISOString();
-      proj.updatedAt = new Date().toISOString();
-      proj.projectType = projectData.projectType || 'produce';
-      proj.customColumns = projectData.customColumns ?? [];
-      proj.customColumnTypes = projectData.customColumnTypes ?? {};
-      proj.recordType = projectData.recordType || 'standard';
-      proj.isCompleted = projectData.isCompleted || false;
-      proj.details = projectData.details || (projectData.projectType === 'breeding' ? createDefaultBreedingProjectDetails() : createDefaultProjectDetails());
-      proj.isDeleted = projectData.isDeleted || false;
-      if (projectData.deletedAt) proj.deletedAt = projectData.deletedAt;
-      if (projectData.completedAt) proj.completedAt = projectData.completedAt;
-    });
+    if (existing) {
+      await (existing as any).update(apply);
+    } else {
+      await db.get('projects').create((proj: any) => {
+        proj._raw.id = projectData.id;
+        apply(proj);
+      });
+    }
   });
   return projectData;
 }
