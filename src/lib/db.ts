@@ -402,31 +402,32 @@ export async function createAnimal(
   }
 
   const now = new Date().toISOString();
-  const animal = await db.get('animals').prepareCreate((ani: any) => {
-    ani.id = generateId();
-    ani.projectId = projectId;
-    ani.animalId = data.animalId;
-    ani.sex = data.sex;
-    ani.healthStatus = data.healthStatus;
-    if (data.age !== undefined) ani.age = data.age;
-    if (data.birthDate !== undefined) ani.birthDate = data.birthDate;
-    if (data.breed !== undefined) ani.breed = data.breed;
-    if (data.currentStatus !== undefined) ani.currentStatus = data.currentStatus;
-    if (data.acquisitionCost !== undefined) ani.acquisitionCost = data.acquisitionCost;
-    if (data.notes !== undefined) ani.notes = data.notes;
-    if (data.motherId !== undefined) ani.motherId = data.motherId;
-    if (data.fatherId !== undefined) ani.fatherId = data.fatherId;
-    ani.createdAt = now;
-    ani.updatedAt = now;
-    ani.isLocked = false;
-    ani.matingHistory = [];
-    ani.pregnancyHistory = [];
-    ani.birthRecords = [];
-    ani.deathRecords = [];
-    ani.saleRecords = [];
-    ani.treatmentHistory = [];
-  });
-  await db.write(async () => {});
+  const animal = await db.write(async () =>
+    db.get('animals').create((ani: any) => {
+      ani._raw.id = generateId();
+      ani.projectId = projectId;
+      ani.animalId = data.animalId;
+      ani.sex = data.sex;
+      ani.healthStatus = data.healthStatus;
+      if (data.age !== undefined) ani.age = data.age;
+      if (data.birthDate !== undefined) ani.birthDate = data.birthDate;
+      if (data.breed !== undefined) ani.breed = data.breed;
+      if (data.currentStatus !== undefined) ani.currentStatus = data.currentStatus;
+      if (data.acquisitionCost !== undefined) ani.acquisitionCost = data.acquisitionCost;
+      if (data.notes !== undefined) ani.notes = data.notes;
+      if (data.motherId !== undefined) ani.motherId = data.motherId;
+      if (data.fatherId !== undefined) ani.fatherId = data.fatherId;
+      ani.createdAt = now;
+      ani.updatedAt = now;
+      ani.isLocked = false;
+      ani.matingHistory = [];
+      ani.pregnancyHistory = [];
+      ani.birthRecords = [];
+      ani.deathRecords = [];
+      ani.saleRecords = [];
+      ani.treatmentHistory = [];
+    })
+  );
   return toAnimalPlain(animal as any);
 }
 
