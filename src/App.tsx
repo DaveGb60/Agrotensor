@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,14 +6,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AppShell } from "@/components/AppShell";
-import Landing from "./pages/Landing";
 import Index from "./pages/Index";
-import Trash from "./pages/Trash";
-import CloudBackup from "./pages/CloudBackup";
-import DataRecovery from "./pages/DataRecovery";
-import Admin from "./pages/Admin";
-import AdminAuth from "./pages/AdminAuth";
-import NotFound from "./pages/NotFound";
+
+// Secondary routes are code-split so the first load (which must succeed for the
+// service worker to install on a weak connection) stays as small as possible.
+const Landing = lazy(() => import("./pages/Landing"));
+const Trash = lazy(() => import("./pages/Trash"));
+const CloudBackup = lazy(() => import("./pages/CloudBackup"));
+const DataRecovery = lazy(() => import("./pages/DataRecovery"));
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminAuth = lazy(() => import("./pages/AdminAuth"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 import { getAllProjects } from "@/lib/db";
 
 const queryClient = new QueryClient();
