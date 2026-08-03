@@ -716,27 +716,35 @@ export async function importRecord(record: FarmRecord): Promise<FarmRecord> {
     return toRecordPlain(existingRecord);
   }
 
+  const apply = (rec: any) => {
+    rec.projectId = record.projectId;
+    rec.date = record.date;
+    if (record.item !== undefined) rec.item = record.item;
+    rec.produceAmount = Number(record.produceAmount) || 0;
+    rec.produceRevenue = Number(record.produceRevenue) || 0;
+    rec.comment = record.comment ?? '';
+    rec.isLocked = record.isLocked ?? false;
+    if (record.lockedAt) rec.lockedAt = record.lockedAt;
+    rec.customFields = record.customFields ?? {};
+    rec.createdAt = record.createdAt || new Date().toISOString();
+    rec.updatedAt = new Date().toISOString();
+    if (record.isBatchSale !== undefined) rec.isBatchSale = record.isBatchSale;
+    if (record.isCarriedBalance !== undefined) rec.isCarriedBalance = record.isCarriedBalance;
+    if (record.sourceRecordIds !== undefined) rec.sourceRecordIds = record.sourceRecordIds;
+    if (record.soldQuantity !== undefined) rec.soldQuantity = record.soldQuantity;
+    if (record.availableQuantity !== undefined) rec.availableQuantity = record.availableQuantity;
+    if (record.batchSaleId !== undefined) rec.batchSaleId = record.batchSaleId;
+  };
+
   await db.write(async () => {
-    await db.get('records').prepareCreate((rec: any) => {
-      rec.id = record.id;
-      rec.projectId = record.projectId;
-      rec.date = record.date;
-      if (record.item !== undefined) rec.item = record.item;
-      rec.produceAmount = record.produceAmount;
-      rec.produceRevenue = record.produceRevenue;
-      rec.comment = record.comment;
-      rec.isLocked = record.isLocked;
-      if (record.lockedAt) rec.lockedAt = record.lockedAt;
-      rec.customFields = record.customFields ?? {};
-      rec.createdAt = record.createdAt;
-      rec.updatedAt = new Date().toISOString();
-      if (record.isBatchSale !== undefined) rec.isBatchSale = record.isBatchSale;
-      if (record.isCarriedBalance !== undefined) rec.isCarriedBalance = record.isCarriedBalance;
-      if (record.sourceRecordIds !== undefined) rec.sourceRecordIds = record.sourceRecordIds;
-      if (record.soldQuantity !== undefined) rec.soldQuantity = record.soldQuantity;
-      if (record.availableQuantity !== undefined) rec.availableQuantity = record.availableQuantity;
-      if (record.batchSaleId !== undefined) rec.batchSaleId = record.batchSaleId;
-    });
+    if (existingRecord) {
+      await (existingRecord as any).update(apply);
+    } else {
+      await db.get('records').create((rec: any) => {
+        rec._raw.id = record.id;
+        apply(rec);
+      });
+    }
   });
   return record;
 }
