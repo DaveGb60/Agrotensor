@@ -38,18 +38,18 @@ export function createSyncData(project: FarmProject, records: FarmRecord[], anim
   };
 }
 
-// Validate incoming sync data
+// Validate incoming sync data (accepts legacy FarmDeck-era exports too)
+const LEGACY_SYNC_TYPES = ['agrotensor-sync', 'farmdeck-sync', 'farm-deck-sync', 'farmdeck-backup', 'agrotensor-backup'];
+
 export function validateSyncData(data: unknown): data is SyncData {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
-  const validVersion = d.version === '1.0' || d.version === '2.0';
+  const typeOk = typeof d.type === 'string' && LEGACY_SYNC_TYPES.includes(d.type);
   return (
-    d.type === 'agrotensor-sync' &&
-    validVersion &&
+    typeOk &&
     typeof d.project === 'object' &&
     d.project !== null &&
-    Array.isArray(d.records) &&
-    (d.version === '1.0' || Array.isArray(d.animals))
+    Array.isArray(d.records)
   );
 }
 
