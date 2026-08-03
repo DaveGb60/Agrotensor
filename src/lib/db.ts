@@ -901,27 +901,28 @@ export async function createRecord(
 ): Promise<FarmRecord> {
   const db = await getDB();
   const now = new Date().toISOString();
-  const record = await db.get('records').prepareCreate((rec: any) => {
-    rec.id = generateId();
-    rec.projectId = projectId;
-    rec.date = data.date;
-    if (data.item !== undefined) rec.item = data.item;
-    rec.produceAmount = data.produceAmount;
-    rec.produceRevenue = data.produceRevenue;
-    rec.comment = data.comment;
-    rec.isLocked = false;
-    if (data.lockedAt) rec.lockedAt = data.lockedAt;
-    rec.customFields = data.customFields ?? {};
-    rec.createdAt = now;
-    rec.updatedAt = now;
-    if (data.isBatchSale !== undefined) rec.isBatchSale = data.isBatchSale;
-    if (data.isCarriedBalance !== undefined) rec.isCarriedBalance = data.isCarriedBalance;
-    if (data.sourceRecordIds !== undefined) rec.sourceRecordIds = data.sourceRecordIds;
-    if (data.soldQuantity !== undefined) rec.soldQuantity = data.soldQuantity;
-    if (data.availableQuantity !== undefined) rec.availableQuantity = data.availableQuantity;
-    if (data.batchSaleId !== undefined) rec.batchSaleId = data.batchSaleId;
-  });
-  await db.write(async () => {});
+  const record = await db.write(async () =>
+    db.get('records').create((rec: any) => {
+      rec._raw.id = generateId();
+      rec.projectId = projectId;
+      rec.date = data.date;
+      if (data.item !== undefined) rec.item = data.item;
+      rec.produceAmount = data.produceAmount;
+      rec.produceRevenue = data.produceRevenue;
+      rec.comment = data.comment ?? '';
+      rec.isLocked = false;
+      if (data.lockedAt) rec.lockedAt = data.lockedAt;
+      rec.customFields = data.customFields ?? {};
+      rec.createdAt = now;
+      rec.updatedAt = now;
+      if (data.isBatchSale !== undefined) rec.isBatchSale = data.isBatchSale;
+      if (data.isCarriedBalance !== undefined) rec.isCarriedBalance = data.isCarriedBalance;
+      if (data.sourceRecordIds !== undefined) rec.sourceRecordIds = data.sourceRecordIds;
+      if (data.soldQuantity !== undefined) rec.soldQuantity = data.soldQuantity;
+      if (data.availableQuantity !== undefined) rec.availableQuantity = data.availableQuantity;
+      if (data.batchSaleId !== undefined) rec.batchSaleId = data.batchSaleId;
+    })
+  );
   return toRecordPlain(record as any);
 }
 
