@@ -235,6 +235,8 @@ export async function restoreFromCloud(identity: CloudIdentity): Promise<Restore
           errors.push({ item: `Animal: ${f.item.projectId}/${f.item.animalId}`, error: f.error.message });
         });
 
+        await flushDatabase();
+
         return { 
           importedProjects, 
           importedRecords, 
