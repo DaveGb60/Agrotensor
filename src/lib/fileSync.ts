@@ -1,7 +1,7 @@
 // File Sync Module for AgroTensor
 // Handles file-based data import/export and sharing
 
-import { FarmProject, FarmRecord, FarmAnimal, getProject, importProject, importRecord, importAnimal, getRecordsByProject, getAnimalsByProject } from './db';
+import { FarmProject, FarmRecord, FarmAnimal, getProject, importProject, importRecord, importAnimal, getRecordsByProject, getAnimalsByProject, flushDatabase } from './db';
 
 export interface SyncDataV1 {
   type: 'agrotensor-sync';
@@ -254,6 +254,9 @@ export async function importAnyBackup(input: string | unknown): Promise<BackupIm
       if (result.errors.length < 5) result.errors.push(`Animal ${a.id}: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
+
+  // Make the restore durable immediately so it survives a reload/app close.
+  await flushDatabase();
 
   return result;
 }
