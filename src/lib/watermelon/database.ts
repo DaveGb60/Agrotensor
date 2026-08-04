@@ -61,7 +61,6 @@ function installFlushHooks(adapter: LokiJSAdapter) {
 }
 
 export async function createDatabase(): Promise<Database> {
-  console.trace('CREATE_DATABASE_CALLED');
   const adapter = new LokiJSAdapter({
     schema,
     useWebWorker: false,
@@ -96,6 +95,11 @@ export async function createDatabase(): Promise<Database> {
   });
 
   installFlushHooks(adapter);
+
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__wmdb = database;
+  }
 
   // Expose a flush helper on the database instance for write paths that need
   // an immediate durable checkpoint (imports, restores, migrations).
