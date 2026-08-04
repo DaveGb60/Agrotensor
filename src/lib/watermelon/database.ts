@@ -70,7 +70,7 @@ export async function createDatabase(): Promise<Database> {
     extraLokiOptions: {
       autosave: true,
       autosaveInterval: 250,
-ittle: undefined,
+
     },
     onQuotaExceededError: (error) => {
       console.error('WatermelonDB quota exceeded:', error);
