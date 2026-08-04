@@ -3,6 +3,10 @@ import { field, text, json } from '@nozbe/watermelondb/decorators';
 import { relation } from '@nozbe/watermelondb/decorators';
 import { Project } from './project';
 
+const jsonObject = (raw: unknown) => (raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {});
+const jsonArray = (raw: unknown) => (Array.isArray(raw) ? raw : []);
+
+
 export class Animal extends Model {
   static table = 'animals';
   static associations = {
@@ -26,12 +30,12 @@ export class Animal extends Model {
   @field('updated_at_iso') declare updatedAt: string;
   @field('is_locked') declare isLocked: boolean;
   @field('locked_at') declare lockedAt?: string;
-  @json('mating_history', data => JSON.parse(data)) declare matingHistory: MatingRecord[];
-  @json('pregnancy_history', data => JSON.parse(data)) declare pregnancyHistory: PregnancyRecord[];
-  @json('birth_records', data => JSON.parse(data)) declare birthRecords: BirthRecord[];
-  @json('death_records', data => JSON.parse(data)) declare deathRecords: DeathRecord[];
-  @json('sale_records', data => JSON.parse(data)) declare saleRecords: SaleRecord[];
-  @json('treatment_history', data => JSON.parse(data)) declare treatmentHistory: TreatmentRecord[];
+  @json('mating_history', jsonArray) declare matingHistory: MatingRecord[];
+  @json('pregnancy_history', jsonArray) declare pregnancyHistory: PregnancyRecord[];
+  @json('birth_records', jsonArray) declare birthRecords: BirthRecord[];
+  @json('death_records', jsonArray) declare deathRecords: DeathRecord[];
+  @json('sale_records', jsonArray) declare saleRecords: SaleRecord[];
+  @json('treatment_history', jsonArray) declare treatmentHistory: TreatmentRecord[];
 }
 
 export interface MatingRecord {
