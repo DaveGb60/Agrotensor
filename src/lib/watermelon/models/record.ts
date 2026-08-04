@@ -9,22 +9,22 @@ export class RecordModel extends Model {
     project: { type: 'belongs_to' as const, key: 'project_id' },
   } as const;
 
-  @field('project_id') projectId!: string;
-  @relation('projects', 'project_id') project!: Project;
-  @field('date') date!: string;
-  @field('item') item?: string;
-  @field('produce_amount') produceAmount!: number;
-  @field('produce_revenue') produceRevenue!: number;
-  @text('comment') comment!: string;
-  @field('is_locked') isLocked!: boolean;
-  @field('locked_at') lockedAt?: string;
-  @json('custom_fields', data => JSON.parse(data)) customFields!: Record<string, string | number>;
-  @field('created_at_iso') createdAt!: string;
-  @field('updated_at_iso') updatedAt!: string;
-  @field('is_batch_sale') isBatchSale?: boolean;
-  @field('is_carried_balance') isCarriedBalance?: boolean;
-  @json('source_record_ids', data => JSON.parse(data)) sourceRecordIds?: string[];
-  @field('sold_quantity') soldQuantity?: number;
-  @field('available_quantity') availableQuantity?: number;
-  @field('batch_sale_id') batchSaleId?: string;
+  @field('project_id') declare projectId: string;
+  @relation('projects', 'project_id') declare project: Project;
+  @field('date') declare date: string;
+  @field('item') declare item?: string;
+  @field('produce_amount') declare produceAmount: number;
+  @field('produce_revenue') declare produceRevenue: number;
+  @text('comment') declare comment: string;
+  @field('is_locked') declare isLocked: boolean;
+  @field('locked_at') declare lockedAt?: string;
+  @json('custom_fields', data => JSON.parse(data)) declare customFields: Record<string, string | number>;
+  @field('created_at_iso') declare createdAt: string;
+  @field('updated_at_iso') declare updatedAt: string;
+  @field('is_batch_sale') declare isBatchSale?: boolean;
+  @field('is_carried_balance') declare isCarriedBalance?: boolean;
+  @json('source_record_ids', data => JSON.parse(data)) declare sourceRecordIds?: string[];
+  @field('sold_quantity') declare soldQuantity?: number;
+  @field('available_quantity') declare availableQuantity?: number;
+  @field('batch_sale_id') declare batchSaleId?: string;
 }
