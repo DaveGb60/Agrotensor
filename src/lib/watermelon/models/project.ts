@@ -1,6 +1,10 @@
 import { Model } from '@nozbe/watermelondb';
 import { field, text, json } from '@nozbe/watermelondb/decorators';
 
+const jsonObject = (raw: unknown) => (raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {});
+const jsonArray = (raw: unknown) => (Array.isArray(raw) ? raw : []);
+
+
 export class Project extends Model {
   static table = 'projects';
   static associations = {
@@ -8,17 +12,17 @@ export class Project extends Model {
     animals: { type: 'has_many' as const, foreignKey: 'project_id' },
   } as const;
 
-  @text('title') title!: string;
-  @field('start_date') startDate!: string;
-  @field('created_at_iso') createdAt!: string;
-  @field('updated_at_iso') updatedAt!: string;
-  @field('project_type') projectType!: string;
-  @json('custom_columns', data => JSON.parse(data)) customColumns!: string[];
-  @json('custom_column_types', data => JSON.parse(data)) customColumnTypes!: Record<string, string>;
-  @field('record_type') recordType!: string;
-  @field('is_completed') isCompleted!: boolean;
-  @field('completed_at') completedAt?: string;
-  @json('details', data => JSON.parse(data)) details!: Record<string, any>;
-  @field('deleted_at') deletedAt?: string;
-  @field('is_deleted') isDeleted!: boolean;
+  @text('title') declare title: string;
+  @field('start_date') declare startDate: string;
+  @field('created_at_iso') declare createdAt: string;
+  @field('updated_at_iso') declare updatedAt: string;
+  @field('project_type') declare projectType: string;
+  @json('custom_columns', jsonArray) declare customColumns: string[];
+  @json('custom_column_types', jsonObject) declare customColumnTypes: Record<string, string>;
+  @field('record_type') declare recordType: string;
+  @field('is_completed') declare isCompleted: boolean;
+  @field('completed_at') declare completedAt?: string;
+  @json('details', jsonObject) declare details: Record<string, any>;
+  @field('deleted_at') declare deletedAt?: string;
+  @field('is_deleted') declare isDeleted: boolean;
 }

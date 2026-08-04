@@ -17,6 +17,7 @@ import {
   getAllRecords,
   getAllAnimals,
   normalizeAnimal,
+  flushDatabase,
   createDefaultProjectDetails,
   createDefaultBreedingProjectDetails,
 } from './db';
@@ -290,6 +291,8 @@ export async function restoreFromScan(scans: RecoveryScanResult[]): Promise<Rest
       skipped++;
     }
   }
+
+  await flushDatabase();
 
   return { projectsRestored, recordsRestored, animalsRestored, skipped };
 }

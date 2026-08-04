@@ -5,12 +5,73 @@ import { Project, RecordModel, Animal } from './models';
 
 const MIGRATION_KEY = 'agrotensor-wmdb-migrated';
 
+let flushHooksInstalled = false;
+
+/**
+ * Grab the underlying LokiJS instance so we can force a synchronous-ish flush
+ * to IndexedDB. Without this, writes made shortly before a reload/close can be
+ * lost because Loki's autosave timer never fires.
+ */
+function getLoki(adapter: LokiJSAdapter): { saveDatabase?: (cb?: () => void) => void } | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const driver = (adapter as any)._driver;
+    return driver?.loki ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function flushDatabase(adapter: LokiJSAdapter): Promise<void> {
+  const loki = getLoki(adapter);
+  if (!loki || typeof loki.saveDatabase !== 'function') return Promise.resolve();
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (!done) {
+        done = true;
+        resolve();
+      }
+    };
+    try {
+      loki.saveDatabase!(finish);
+    } catch {
+      finish();
+    }
+    // Never hang the caller on a stuck save
+    setTimeout(finish, 1500);
+  });
+}
+
+function installFlushHooks(adapter: LokiJSAdapter) {
+  if (flushHooksInstalled || typeof window === 'undefined') return;
+  flushHooksInstalled = true;
+
+  const flush = () => {
+    void flushDatabase(adapter);
+  };
+
+  // pagehide/visibilitychange are the reliable "app is going away" signals on
+  // mobile browsers; beforeunload alone is not fired on Android/iOS.
+  window.addEventListener('pagehide', flush);
+  window.addEventListener('beforeunload', flush);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flush();
+  });
+}
+
 export async function createDatabase(): Promise<Database> {
   const adapter = new LokiJSAdapter({
     schema,
     useWebWorker: false,
     useIncrementalIndexedDB: true,
     dbName: 'agrotensor-wmdb',
+    // Persist aggressively — rural users close the app abruptly.
+    extraLokiOptions: {
+      autosave: true,
+      autosaveInterval: 250,
+
+    },
     onQuotaExceededError: (error) => {
       console.error('WatermelonDB quota exceeded:', error);
     },
@@ -33,7 +94,25 @@ export async function createDatabase(): Promise<Database> {
     modelClasses: [Project, RecordModel, Animal],
   });
 
+  installFlushHooks(adapter);
+
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).__wmdb = database;
+  }
+
+  // Expose a flush helper on the database instance for write paths that need
+  // an immediate durable checkpoint (imports, restores, migrations).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (database as any).flush = () => flushDatabase(adapter);
+
   return database;
+}
+
+export async function flushDB(database: Database): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fn = (database as any).flush;
+  if (typeof fn === 'function') await fn();
 }
 
 export async function needsMigration(database: Database): Promise<boolean> {

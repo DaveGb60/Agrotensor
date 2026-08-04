@@ -12,6 +12,7 @@ import {
   FarmProject,
   FarmRecord,
   FarmAnimal,
+  flushDatabase,
 } from './db';
 import { generateRecordFingerprint } from './fileSync';
 import { 
@@ -234,6 +235,8 @@ export async function restoreFromCloud(identity: CloudIdentity): Promise<Restore
         animalResults.failed.forEach(f => {
           errors.push({ item: `Animal: ${f.item.projectId}/${f.item.animalId}`, error: f.error.message });
         });
+
+        await flushDatabase();
 
         return { 
           importedProjects, 
