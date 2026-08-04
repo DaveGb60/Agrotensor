@@ -61,6 +61,7 @@ function installFlushHooks(adapter: LokiJSAdapter) {
 }
 
 export async function createDatabase(): Promise<Database> {
+  console.trace('CREATE_DATABASE_CALLED');
   const adapter = new LokiJSAdapter({
     schema,
     useWebWorker: false,
