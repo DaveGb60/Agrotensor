@@ -2,26 +2,47 @@ import { Database, Q } from '@nozbe/watermelondb';
 import { Project, RecordModel, Animal } from '@/lib/watermelon/models';
 
 let dbInstance: Database | null = null;
+let dbPromise: Promise<Database> | null = null;
 
 export async function getDB(): Promise<Database> {
   if (dbInstance) return dbInstance;
+  if (dbPromise) return dbPromise;
 
-  const { createDatabase } = await import('@/lib/watermelon/database');
-  dbInstance = await createDatabase();
+  dbPromise = (async () => {
+    const { createDatabase, needsMigration, markMigrationComplete } = await import(
+      '@/lib/watermelon/database'
+    );
+    const db = await createDatabase();
 
-  const { needsMigration, markMigrationComplete } = await import('@/lib/watermelon/database');
-  if (await needsMigration(dbInstance)) {
-    try {
-      const { migrateFromIndexedDB } = await import('@/lib/watermelon/migration');
-      await migrateFromIndexedDB(dbInstance);
-      markMigrationComplete();
-    } catch (e) {
-      console.error('Migration from IndexedDB to WatermelonDB failed:', e);
+    if (await needsMigration(db)) {
+      try {
+        const { migrateFromIndexedDB } = await import('@/lib/watermelon/migration');
+        await migrateFromIndexedDB(db);
+        markMigrationComplete();
+      } catch (e) {
+        console.error('Migration from IndexedDB to WatermelonDB failed:', e);
+      }
     }
-  }
 
-  return dbInstance;
+    dbInstance = db;
+    return db;
+  })();
+
+  try {
+    return await dbPromise;
+  } catch (e) {
+    dbPromise = null;
+    throw e;
+  }
 }
+
+/** Force a durable IndexedDB checkpoint (used after imports/restores). */
+export async function flushDatabase(): Promise<void> {
+  if (!dbInstance) return;
+  const { flushDB } = await import('@/lib/watermelon/database');
+  await flushDB(dbInstance);
+}
+
 
 // Input item for project details
 export interface InputItem {
