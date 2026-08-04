@@ -12,6 +12,7 @@ import {
   FarmProject,
   FarmRecord,
   FarmAnimal,
+  flushDatabase,
 } from './db';
 import { generateRecordFingerprint } from './fileSync';
 import { 
