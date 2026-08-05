@@ -1,4 +1,4 @@
-import { Trash2, Sun, Moon, Home, Menu, Heart, ExternalLink, Shield } from 'lucide-react';
+import { Leaf, Menu, Trash2, Sun, Moon, Home, Phone, Mail, Heart, MessageCircle, Cloud, ExternalLink, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from '@/hooks/useTheme';
@@ -25,14 +25,34 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const navItems = [
     { label: 'Projects', path: '/', icon: Home },
-    { label: 'Cloud Backup', path: '/cloud', icon: ExternalLink },
+    { label: 'Cloud Backup', path: '/cloud', icon: Cloud },
     { label: 'Trash', path: '/trash', icon: Trash2 },
     ...(showAdminLink ? [{ label: 'Admin', path: '/admin', icon: Shield }] : []),
   ];
 
+  const ContactInfo = () => (
+    <div className="space-y-3">
+      <h4 className="font-medium text-sm text-foreground">Contact</h4>
+      <div className="space-y-2 text-sm">
+        <a href="tel:0768974474" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <Phone className="h-4 w-4" />
+          0768974474
+        </a>
+        <a href="https://wa.me/254768974474" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-green-600 transition-colors">
+          <MessageCircle className="h-4 w-4" />
+          WhatsApp
+        </a>
+        <a href="mailto:gfibionjoseph@gmail.com" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <Mail className="h-4 w-4" />
+          gfibionjoseph@gmail.com
+        </a>
+      </div>
+    </div>
+  );
+
   const DonateInfo = () => (
     <div className="space-y-3">
-      <h4 className="font-medium text-sm text-foreground">Support AgroTensor</h4>
+      <h4 className="font-medium text-sm text-foreground">Support FarmDeck</h4>
       <p className="text-sm text-muted-foreground">
         Send a tip or donation via card, M-Pesa, mobile money, bank transfer, or USSD. Secured by Paystack.
       </p>
@@ -51,14 +71,14 @@ export function Header({ onMenuClick }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <img 
-            src="/assets/landing/logo.png" 
-            alt="AgroTensor Logo" 
-            className="w-10 h-10 rounded-xl object-contain cursor-pointer"
+          <div 
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-hero shadow-soft cursor-pointer"
             onClick={() => navigate('/')}
-          />
+          >
+            <Leaf className="h-5 w-5 text-primary-foreground" />
+          </div>
           <div className="cursor-pointer" onClick={() => navigate('/')}>
-            <h1 className="font-serif text-xl font-semibold text-foreground">AgroTensor</h1>
+            <h1 className="font-serif text-xl font-semibold text-foreground">FarmDeck</h1>
             <p className="text-xs text-muted-foreground">Offline Farm Records</p>
           </div>
         </div>
@@ -82,6 +102,19 @@ export function Header({ onMenuClick }: HeaderProps) {
           ))}
           <div className="w-px h-6 bg-border mx-2" />
           
+          {/* Contact Popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Phone className="h-4 w-4" />
+                Contact
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64">
+              <ContactInfo />
+            </PopoverContent>
+          </Popover>
+
           {/* Donate Popover */}
           <Popover>
             <PopoverTrigger asChild>
@@ -130,6 +163,13 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {item.label}
                 </Button>
               ))}
+              
+              <div className="h-px bg-border my-4" />
+              
+              {/* Contact Section */}
+              <div className="px-3">
+                <ContactInfo />
+              </div>
               
               <div className="h-px bg-border my-4" />
               

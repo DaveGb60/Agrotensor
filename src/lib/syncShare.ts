@@ -3,12 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   FarmProject,
   FarmRecord,
-  FarmAnimal,
   getRecordsByProject,
-  getAnimalsByProject,
   importProject,
   importRecord,
-  importAnimal,
 } from './db';
 import { generateRecordFingerprint } from './fileSync';
 
@@ -31,25 +28,20 @@ export async function createSyncShare(projectIds: string[], allProjects: FarmPro
   if (selected.length === 0) throw new Error('No projects selected');
 
   const records: (FarmRecord & { fingerprint: string })[] = [];
-  const animals: FarmAnimal[] = [];
   for (const project of selected) {
     const list = await getRecordsByProject(project.id);
     for (const r of list) {
       records.push({ ...r, fingerprint: generateRecordFingerprint(r) });
     }
-    if (project.projectType === 'breeding') {
-      animals.push(...(await getAnimalsByProject(project.id)));
-    }
   }
 
-  return await invoke('create-share', { projects: selected, records, animals });
+  return await invoke('create-share', { projects: selected, records });
 }
 
 export interface ClaimResult {
   importedProjects: number;
   updatedProjects: number;
   importedRecords: number;
-  importedAnimals: number;
   skippedRecords: number;
 }
 
@@ -57,7 +49,6 @@ export async function claimSyncShare(shareCode: string): Promise<ClaimResult> {
   const data = await invoke('claim-share', { share_code: shareCode });
   const projects: FarmProject[] = data.projects || [];
   const records: FarmRecord[] = data.records || [];
-  const animals: FarmAnimal[] = data.animals || [];
 
   // Build dedupe set of local records (per project)
   const localFingerprints = new Set<string>();
@@ -90,15 +81,5 @@ export async function claimSyncShare(shareCode: string): Promise<ClaimResult> {
     localFingerprints.add(key);
   }
 
-  let importedAnimals = 0;
-  for (const animal of animals) {
-    try {
-      await importAnimal(animal);
-      importedAnimals++;
-    } catch {
-      // skip
-    }
-  }
-
-  return { importedProjects, updatedProjects, importedRecords, importedAnimals, skippedRecords };
+  return { importedProjects, updatedProjects, importedRecords, skippedRecords };
 }

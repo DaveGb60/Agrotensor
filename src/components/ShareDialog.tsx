@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { FarmProject, FarmRecord, FarmAnimal } from '@/lib/db';
+import { FarmProject, FarmRecord } from '@/lib/db';
 import {
   downloadJSON,
   shareViaWebShare,
@@ -29,7 +29,6 @@ interface ShareDialogProps {
   onOpenChange: (open: boolean) => void;
   project: FarmProject;
   records: FarmRecord[];
-  animals?: FarmAnimal[];
 }
 
 export function ShareDialog({
@@ -37,24 +36,23 @@ export function ShareDialog({
   onOpenChange,
   project,
   records,
-  animals = [],
 }: ShareDialogProps) {
   const { toast } = useToast();
   const [lastAction, setLastAction] = useState<string | null>(null);
 
   const webShareSupported = typeof navigator !== 'undefined' && 'share' in navigator;
-  const exportData = exportToJSON(project, records, animals);
+  const exportData = exportToJSON(project, records);
   const dataSize = new Blob([exportData]).size;
 
   // File sharing handlers
   const handleDownload = () => {
-    downloadJSON(project, records, animals);
+    downloadJSON(project, records);
     setLastAction('download');
     toast({ title: 'File downloaded' });
   };
 
   const handleWebShare = async () => {
-    const success = await shareViaWebShare(project, records, animals);
+    const success = await shareViaWebShare(project, records);
     if (success) {
       setLastAction('share');
       toast({ title: 'Shared successfully' });
@@ -64,7 +62,7 @@ export function ShareDialog({
   };
 
   const handleCopy = async () => {
-    const success = await copyToClipboard(project, records, animals);
+    const success = await copyToClipboard(project, records);
     if (success) {
       setLastAction('copy');
       toast({ title: 'Copied to clipboard' });
@@ -101,7 +99,7 @@ export function ShareDialog({
               <h4 className="font-medium">{project.title}</h4>
             </div>
             <div className="text-sm text-muted-foreground space-y-1">
-              <p>Records: {records.length}{animals.length > 0 ? ` • Animals: ${animals.length}` : ''}</p>
+              <p>Records: {records.length}</p>
               <p>Data size: {(dataSize / 1024).toFixed(1)} KB</p>
               <p className="font-mono text-xs">ID: {project.id.slice(0, 12)}...</p>
             </div>
@@ -161,7 +159,7 @@ export function ShareDialog({
             <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
               <li>Download or share the file</li>
               <li>Send to other device (AirDrop, email, messaging)</li>
-              <li>On receiving device, open AgroTensor → Import</li>
+              <li>On receiving device, open FarmDeck → Import</li>
             </ol>
           </div>
         </div>

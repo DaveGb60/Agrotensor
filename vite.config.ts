@@ -18,10 +18,10 @@ export default defineConfig(({ mode }) => ({
       injectRegister: null,
       devOptions: { enabled: false },
       filename: "sw.js",
-      includeAssets: ["assets/landing/logo.png"],
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       manifest: {
-        name: "AgroTensor - Offline Farm Records",
-        short_name: "AgroTensor",
+        name: "FarmDeck - Offline Farm Records",
+        short_name: "FarmDeck",
         description:
           "Track your farm projects, operations, and finances offline. Secure, private, and always available.",
         theme_color: "#3d6b4f",
@@ -31,14 +31,10 @@ export default defineConfig(({ mode }) => ({
         scope: "/",
         start_url: "/",
         icons: [
-          { src: "/assets/landing/logo.png", sizes: "16x16", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "32x32", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "48x48", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "180x180", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "192x192", type: "image/png" },
-          { src: "/assets/landing/logo.png", sizes: "512x512", type: "image/png" },
+          { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+          { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
           {
-            src: "/assets/landing/logo.png",
+            src: "/pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable",

@@ -2,8 +2,8 @@
 // Stored in localStorage. The device_id is a random opaque value (no PII)
 // that lets the server recognise this browser on future visits.
 
-const DEVICE_KEY = 'agrotensor.admin.device_id';
-const SESSION_KEY = 'agrotensor.admin.session_id';
+const DEVICE_KEY = 'farmdeck.admin.device_id';
+const SESSION_KEY = 'farmdeck.admin.session_id';
 
 function uuid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {

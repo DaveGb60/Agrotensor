@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
-import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Trash from "./pages/Trash";
 import CloudBackup from "./pages/CloudBackup";
@@ -22,7 +21,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/landing" element={<Landing />} />
             <Route path="/" element={<Index />} />
             <Route path="/trash" element={<Trash />} />
             <Route path="/cloud" element={<CloudBackup />} />
