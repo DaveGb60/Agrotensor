@@ -1,15 +1,15 @@
-import { Home, Trash2, Cloud, Shield, Heart, LifeBuoy } from "lucide-react";
+import { Home, Trash2, Cloud, Shield, Settings } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { DonateDialog } from "@/components/DonateDialog";
+import { MobileSettingsSheet } from "@/components/MobileSettingsSheet";
 import { cn } from "@/lib/utils";
 
 const primaryItems = [
   { label: "Projects", path: "/app", icon: Home },
   { label: "Cloud", path: "/cloud", icon: Cloud },
-  { label: "Recover", path: "/recover", icon: LifeBuoy },
   { label: "Trash", path: "/trash", icon: Trash2 },
 ];
+
 
 /**
  * Fixed bottom navigation bar for mobile screens. Hidden on md+ where the
@@ -53,17 +53,19 @@ export function MobileNavBar() {
           );
         })}
         <li className="flex-1">
-          <DonateDialog
+          <MobileSettingsSheet
             trigger={
               <button
                 type="button"
+                aria-label="Settings"
                 className="w-full h-full flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Heart className="h-5 w-5" />
-                <span>Support</span>
+                <Settings className="h-5 w-5" />
+                <span>Settings</span>
               </button>
             }
           />
+
         </li>
       </ul>
     </nav>
