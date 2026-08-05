@@ -739,6 +739,10 @@ const Index = () => {
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <h2 className="font-serif text-xl font-semibold">Your Projects</h2>
             <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsImportOpen(true)}>
+                <Upload className="h-4 w-4 mr-2" />
+                Import
+              </Button>
               <Button variant="outline" onClick={() => setIsSyncOpen(true)}>
                 <Share2 className="h-4 w-4 mr-2" />
                 Sync
