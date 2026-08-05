@@ -768,6 +768,10 @@ const Index = () => {
                 Create your first farm project to start tracking records.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button variant="outline" onClick={() => setIsImportOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Project File
+                </Button>
                 <Button variant="outline" onClick={() => setIsSyncOpen(true)}>
                   <Share2 className="h-4 w-4 mr-2" />
                   Sync with Device
