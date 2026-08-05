@@ -1,0 +1,13 @@
+.fd-hero{background-image:url('/assets/landing/hero_wide.svg');background-size:cover;background-position:center;padding:64px 18px 120px;color:#fff}
+.fd-hero__overlay{background:linear-gradient(rgba(8,18,8,0.35),rgba(8,18,8,0.12));}
+.fd-hero__container{max-width:1100px;margin:0 auto;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.fd-hero__left{flex:1 1 420px}
+.fd-eyebrow{display:inline-block;background:rgba(255,255,255,0.06);padding:6px 12px;border-radius:999px;font-weight:700;color:#eaf7ea;margin-bottom:18px}
+.fd-lead{color:rgba(255,255,255,0.9);font-size:18px}
+.fd-badges{display:flex;gap:10px;margin-top:10px}
+.fd-badge{background:rgba(255,255,255,0.08);padding:6px 10px;border-radius:999px;font-weight:700}
+.fd-cta{display:flex;gap:12px;margin-top:18px}
+.fd-btn{background:#2f7a2f;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700}
+.fd-btn--alt{background:transparent;border:2px solid rgba(255,255,255,0.14)}
+.fd-hero__right{flex:0 1 420px;display:flex;justify-content:center}
+.fd-mock{width:100%;max-width:420px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35)}

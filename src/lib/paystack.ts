@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { isNetworkOnline } from './networkStatus';
 
 let publicKeyCache: string | null = null;
 let scriptPromise: Promise<void> | null = null;
@@ -7,7 +6,6 @@ let scriptPromise: Promise<void> | null = null;
 const PAYSTACK_SCRIPT = "https://js.paystack.co/v2/inline.js";
 
 export async function getPaystackPublicKey(): Promise<string> {
-  if (!isNetworkOnline()) throw new Error('Paystack requires an internet connection');
   if (publicKeyCache) return publicKeyCache;
   const { data, error } = await supabase.functions.invoke("paystack?action=config", {
     method: "GET",
@@ -20,7 +18,6 @@ export async function getPaystackPublicKey(): Promise<string> {
 
 export function loadPaystackScript(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
-  if (!isNetworkOnline()) return Promise.reject(new Error('Paystack requires an internet connection'));
   if ((window as any).PaystackPop) return Promise.resolve();
   if (scriptPromise) return scriptPromise;
   scriptPromise = new Promise((resolve, reject) => {
@@ -38,7 +35,6 @@ export function loadPaystackScript(): Promise<void> {
 }
 
 export async function verifyPaystackTransaction(reference: string) {
-  if (!isNetworkOnline()) throw new Error('Paystack verification requires an internet connection');
   const { data, error } = await supabase.functions.invoke("paystack?action=verify", {
     method: "POST",
     body: { reference },

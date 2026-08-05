@@ -1,103 +1,66 @@
-// Guarded service-worker registration.
-// The app-shell service worker must NEVER register in dev, iframes, or Lovable
-// preview hosts — otherwise stale HTML/chunks get served while building.
+// Guarded service worker registration for offline support.
+// Refuses to register in dev, Lovable preview, iframes, or when ?sw=off is set.
+// Unregisters any matching stale registration in refused contexts.
 
 const SW_URL = "/sw.js";
-const LEGACY_SW_URLS = ["/sw.js", "/service-worker.js"];
 
-function isPreviewHost(hostname: string): boolean {
-  return (
-    hostname.startsWith("id-preview--") ||
-    hostname.startsWith("preview--") ||
-    hostname === "lovableproject.com" ||
-    hostname.endsWith(".lovableproject.com") ||
-    hostname === "lovableproject-dev.com" ||
-    hostname.endsWith(".lovableproject-dev.com") ||
-    hostname === "beta.lovable.dev" ||
-    hostname.endsWith(".beta.lovable.dev")
-  );
-}
-
-function shouldRegister(): boolean {
-  if (typeof window === "undefined") return false;
-  if (!("serviceWorker" in navigator)) return false;
-  if (!import.meta.env.PROD) return false;
-  if (window.self !== window.top) return false;
-  if (isPreviewHost(window.location.hostname)) return false;
-  if (new URLSearchParams(window.location.search).has("sw")) {
-    if (new URLSearchParams(window.location.search).get("sw") === "off") return false;
-  }
-  return true;
-}
-
-async function unregisterAppWorkers(): Promise<void> {
+function isRefusedContext(): boolean {
   try {
-    const registrations = await navigator.serviceWorker.getRegistrations();
+    if (!import.meta.env.PROD) return true;
+    if (typeof window === "undefined") return true;
+    if (window.top !== window.self) return true;
+
+    const host = window.location.hostname;
+    if (
+      host.startsWith("id-preview--") ||
+      host.startsWith("preview--") ||
+      host === "lovableproject.com" ||
+      host.endsWith(".lovableproject.com") ||
+      host === "lovableproject-dev.com" ||
+      host.endsWith(".lovableproject-dev.com") ||
+      host === "beta.lovable.dev" ||
+      host.endsWith(".beta.lovable.dev")
+    ) {
+      return true;
+    }
+
+    if (new URL(window.location.href).searchParams.get("sw") === "off") {
+      return true;
+    }
+  } catch {
+    return true;
+  }
+  return false;
+}
+
+async function unregisterMatching() {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
     await Promise.allSettled(
-      registrations
-        .filter((reg) => {
-          const url = reg.active?.scriptURL || reg.waiting?.scriptURL || reg.installing?.scriptURL || "";
-          return LEGACY_SW_URLS.some((path) => url.endsWith(path));
+      regs
+        .filter((r) => {
+          const url = r.active?.scriptURL || r.installing?.scriptURL || r.waiting?.scriptURL || "";
+          return url.endsWith(SW_URL);
         })
-        .map((reg) => reg.unregister()),
+        .map((r) => r.unregister())
     );
   } catch {
-    /* ignore */
+    // no-op
   }
 }
 
-let reloading = false;
+export async function registerServiceWorker() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
 
-async function installServiceWorker(): Promise<void> {
-  try {
-    const registration = await navigator.serviceWorker.register(SW_URL, { scope: "/" });
-
-    // Activate a waiting worker immediately so users never sit on stale code.
-    const promote = () => {
-      registration.waiting?.postMessage({ type: "SKIP_WAITING" });
-    };
-    promote();
-    registration.addEventListener("updatefound", () => {
-      const installing = registration.installing;
-      if (!installing) return;
-      installing.addEventListener("statechange", () => {
-        if (installing.state === "installed" && navigator.serviceWorker.controller) {
-          promote();
-        }
-      });
-    });
-
-    const checkForUpdate = () => {
-      if (document.visibilityState === "visible" && navigator.onLine) {
-        registration.update().catch(() => {
-          /* offline is expected */
-        });
-      }
-    };
-    document.addEventListener("visibilitychange", checkForUpdate);
-    window.addEventListener("focus", checkForUpdate);
-  } catch (error) {
-    console.error("Service worker registration failed:", error);
-  }
-}
-
-export function registerServiceWorker(): void {
-  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
-
-  if (!shouldRegister()) {
-    void unregisterAppWorkers();
+  if (isRefusedContext()) {
+    await unregisterMatching();
     return;
   }
 
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (reloading) return;
-    reloading = true;
-    window.location.reload();
-  });
-
-  if (document.readyState === "complete") {
-    void installServiceWorker();
-  } else {
-    window.addEventListener("load", () => void installServiceWorker(), { once: true });
+  try {
+    await navigator.serviceWorker.register(SW_URL, { scope: "/" });
+  } catch (err) {
+    console.warn("Service worker registration failed:", err);
   }
 }

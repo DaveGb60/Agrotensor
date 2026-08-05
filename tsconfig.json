@@ -14,8 +14,6 @@
         "./src/*"
       ]
     },
-    "useDefineForClassFields": false,
-    "experimentalDecorators": true,
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,

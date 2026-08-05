@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { FarmProject, FarmAnimal, BreedingProjectDetails } from '@/lib/db';
-// jsPDF is heavy: loaded on demand so the first-load bundle stays small.
+import { generateBreedingPDF } from '@/lib/breedingPDFExport';
 import { FileText, Download, Users, CalendarDays, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +32,6 @@ export function BreedingPDFExportDialog({
   const handleExport = async (type: 'full' | 'animals' | 'events' | 'financial') => {
     setIsExporting(true);
     try {
-      const { generateBreedingPDF } = await import('@/lib/breedingPDFExport');
       generateBreedingPDF({ project, animals, details, type });
       onOpenChange(false);
     } finally {

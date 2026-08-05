@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Header } from '@/components/Header';
 import { ProjectCard } from '@/components/ProjectCard';
 import { CreateProjectDialog } from '@/components/CreateProjectDialog';
 import { RecordTable } from '@/components/RecordTable';
 import { DelayedRevenueRecordTable } from '@/components/DelayedRevenueRecordTable';
 import { MonthlySummary } from '@/components/MonthlySummary';
 import { ProjectDetailsSection } from '@/components/ProjectDetailsSection';
+import { ShareDialog } from '@/components/ShareDialog';
 import { BreedingProjectDetails } from '@/components/BreedingProjectDetails';
 import { LivestockRecordManager } from '@/components/LivestockRecordManager';
 import { BreedingDashboard } from '@/components/breeding/BreedingDashboard';
@@ -15,7 +17,6 @@ import { BreedingCalendar } from '@/components/breeding/BreedingCalendar';
 
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
-import { shareProjectFile } from '@/lib/fileSync';
 import { SyncShareDialog } from '@/components/SyncShareDialog';
 import { ColumnManagerDropdown, CustomColumn, ColumnType } from '@/components/ColumnManagerDropdown';
 import { Button } from '@/components/ui/button';
@@ -70,13 +71,14 @@ const Index = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [shareProject, setShareProject] = useState<{ project: FarmProject; records: FarmRecord[]; animals: FarmAnimal[] } | null>(null);
   const [breedingRefreshKey, setBreedingRefreshKey] = useState(0);
   const [breedingAnimals, setBreedingAnimals] = useState<FarmAnimal[]>([]);
   
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
   const [isBreedingPDFOpen, setIsBreedingPDFOpen] = useState(false);
   const [isSyncOpen, setIsSyncOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<'details' | 'components' | 'timeline' | 'calendar'>('details');
+  const [activeSection, setActiveSection] = useState<'details' | 'components'>('details');
   const [customColumnTypes, setCustomColumnTypes] = useState<Record<string, ColumnType>>({});
   const { toast } = useToast();
 
@@ -88,7 +90,7 @@ const Index = () => {
   // Load records when project is selected
   useEffect(() => {
     if (selectedProject) {
-      loadRecords(selectedProject.id, selectedProject.details as ProjectDetails, selectedProject.customColumnTypes);
+      loadRecords(selectedProject.id, selectedProject.details, selectedProject.customColumnTypes);
     }
   }, [selectedProject]);
 
@@ -134,15 +136,9 @@ const Index = () => {
     }
   };
 
-  const handleCreateProject = async (
-    title: string,
-    startDate: string,
-    customColumns: string[],
-    projectType: ProjectType = 'produce',
-    recordType: RecordType = 'standard',
-  ) => {
+  const handleCreateProject = async (title: string, startDate: string, customColumns: string[], projectType: ProjectType = 'produce') => {
     try {
-      const newProject = await createProject(title, startDate, customColumns, undefined, recordType, projectType);
+      const newProject = await createProject(title, startDate, customColumns, undefined, 'standard', projectType);
       setProjects([newProject, ...projects]);
       setRecordCounts({ ...recordCounts, [newProject.id]: 0 });
       toast({ title: 'Project created successfully' });
@@ -175,25 +171,13 @@ const Index = () => {
     }
   };
 
-  const shareProjectData = async (project: FarmProject, projectRecords: FarmRecord[], animals: FarmAnimal[]) => {
-    const { saved, shared } = await shareProjectFile(project, projectRecords, animals);
-    toast({
-      title: shared ? 'Project shared' : 'Project file saved',
-      description: saved
-        ? shared
-          ? 'A copy was also saved to your device storage.'
-          : 'Saved to your device storage — share it from your files app.'
-        : 'Could not save the file.',
-      variant: saved || shared ? undefined : 'destructive',
-    });
-  };
-
   const handleShareProject = async (id: string) => {
     const project = await getProject(id);
-    if (!project) return;
-    const projectRecords = await getRecordsByProject(id);
-    const animals = project.projectType === 'breeding' ? await getAnimalsByProject(id) : [];
-    await shareProjectData(project, projectRecords, animals);
+    if (project) {
+      const projectRecords = await getRecordsByProject(id);
+      const animals = project.projectType === 'breeding' ? await getAnimalsByProject(id) : [];
+      setShareProject({ project, records: projectRecords, animals });
+    }
   };
 
   const handleAddRecord = async (data: Omit<FarmRecord, 'id' | 'projectId' | 'isLocked' | 'createdAt' | 'updatedAt'>) => {
@@ -202,7 +186,7 @@ const Index = () => {
       const newRecord = await createRecord(selectedProject.id, data);
       setRecords([newRecord, ...records]);
       setRecordCounts({ ...recordCounts, [selectedProject.id]: (recordCounts[selectedProject.id] || 0) + 1 });
-      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record added' });
     } catch (error) {
@@ -214,7 +198,7 @@ const Index = () => {
     try {
       await updateRecord(record);
       setRecords(records.map(r => r.id === record.id ? record : r));
-      const aggs = await getMonthlyAggregation(selectedProject!.id, selectedProject?.details as ProjectDetails | undefined, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject!.id, selectedProject?.details, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record updated' });
     } catch (error) {
@@ -228,7 +212,7 @@ const Index = () => {
       await deleteRecord(id);
       setRecords(records.filter(r => r.id !== id));
       setRecordCounts({ ...recordCounts, [selectedProject.id]: Math.max(0, (recordCounts[selectedProject.id] || 1) - 1) });
-      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record deleted' });
     } catch (error) {
@@ -407,7 +391,7 @@ const Index = () => {
       }
 
       // Reload records
-      await loadRecords(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
+      await loadRecords(selectedProject.id, selectedProject.details, customColumnTypes);
       
       if (remainingToSell > 0) {
         toast({ 
@@ -431,7 +415,7 @@ const Index = () => {
     return (
       <TooltipProvider delayDuration={300}>
         <div className="min-h-screen bg-gradient-earth">
-          
+          <Header />
           <main className="container px-4 py-6 space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
@@ -467,10 +451,8 @@ const Index = () => {
               <Button
                 variant="outline"
                 onClick={async () => {
-                  const animals = selectedProject.projectType === 'breeding'
-                    ? await getAnimalsByProject(selectedProject.id)
-                    : [];
-                  await shareProjectData(selectedProject, records, animals);
+                  const animals = await getAnimalsByProject(selectedProject.id);
+                  setShareProject({ project: selectedProject, records, animals });
                 }}
               >
                 <Share2 className="h-4 w-4 mr-2" />
@@ -566,12 +548,12 @@ const Index = () => {
                 />
                 <NotesEditor
                   notes={selectedProject.details.notes || ''}
-                  onChange={(notes) => handleUpdateProjectDetails({ ...(selectedProject.details as ProjectDetails), notes })}
+                  onChange={(notes) => handleUpdateProjectDetails({ ...selectedProject.details, notes })}
                   readOnly={selectedProject.isCompleted}
                 />
                 <MonthlySummary 
                   aggregations={aggregations} 
-                  projectDetails={selectedProject.details as ProjectDetails} 
+                  projectDetails={selectedProject.details} 
                   isCompleted={selectedProject.isCompleted}
                 />
               </TabsContent>
@@ -685,6 +667,15 @@ const Index = () => {
           )}
         </main>
 
+        {shareProject && (
+          <ShareDialog
+            open={!!shareProject}
+            onOpenChange={() => setShareProject(null)}
+            project={shareProject.project}
+            records={shareProject.records}
+            animals={shareProject.animals}
+          />
+        )}
 
         <PDFExportDialog
           open={isPDFExportOpen}
@@ -701,7 +692,7 @@ const Index = () => {
   // Projects List View
   return (
     <div className="min-h-screen bg-gradient-earth">
-      
+      <Header />
       
       <main className="container px-4 py-8">
         {/* Hero Section */}
@@ -713,7 +704,7 @@ const Index = () => {
             Welcome to AgroTensor
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto mb-6">
-            The intelligent, offline-first command center for modern farms—unify livestock, crops, operations and finance in one secure workspace on your device.
+            Your offline farm records platform. Track projects, operations, and finances—all stored securely on your device.
           </p>
           
           <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-8">
@@ -811,6 +802,14 @@ const Index = () => {
         onSyncComplete={loadProjects}
       />
 
+      {shareProject && (
+        <ShareDialog
+          open={!!shareProject}
+          onOpenChange={() => setShareProject(null)}
+          project={shareProject.project}
+          records={shareProject.records}
+        />
+      )}
 
       <AlertDialog open={!!deleteProjectId} onOpenChange={() => setDeleteProjectId(null)}>
         <AlertDialogContent>

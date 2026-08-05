@@ -1,5 +1,4 @@
-/* Fonts are self-hosted via @fontsource imports in src/main.tsx so the app
-   never depends on a third-party CDN round trip (critical for offline/2G). */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;

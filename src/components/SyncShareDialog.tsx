@@ -67,8 +67,7 @@ export function SyncShareDialog({ open, onOpenChange, projects, onSyncComplete }
 
   const toggle = (id: string) => {
     const s = new Set(selected);
-    if (s.has(id)) s.delete(id);
-    else s.add(id);
+    s.has(id) ? s.delete(id) : s.add(id);
     setSelected(s);
   };
 
