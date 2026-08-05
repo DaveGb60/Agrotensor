@@ -77,6 +77,7 @@ const Index = () => {
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
   const [isBreedingPDFOpen, setIsBreedingPDFOpen] = useState(false);
   const [isSyncOpen, setIsSyncOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<'details' | 'components' | 'timeline' | 'calendar'>('details');
   const [customColumnTypes, setCustomColumnTypes] = useState<Record<string, ColumnType>>({});
   const { toast } = useToast();
