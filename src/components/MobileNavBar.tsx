@@ -53,17 +53,19 @@ export function MobileNavBar() {
           );
         })}
         <li className="flex-1">
-          <DonateDialog
+          <MobileSettingsSheet
             trigger={
               <button
                 type="button"
+                aria-label="Settings"
                 className="w-full h-full flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Heart className="h-5 w-5" />
-                <span>Support</span>
+                <Settings className="h-5 w-5" />
+                <span>Settings</span>
               </button>
             }
           />
+
         </li>
       </ul>
     </nav>
