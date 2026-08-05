@@ -1,8 +1,41 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
+import "@fontsource/dm-sans/400.css";
+import "@fontsource/dm-sans/500.css";
+import "@fontsource/dm-sans/700.css";
+import "@fontsource/playfair-display/500.css";
+import "@fontsource/playfair-display/600.css";
+import "@fontsource/playfair-display/700.css";
 import "./index.css";
+import { startSyncService } from "./lib/syncService";
+import { scheduleAutoSnapshot } from "./lib/dataRecovery";
+import { getDB } from "./lib/db";
 import { registerServiceWorker } from "./lib/registerSW";
 
 createRoot(document.getElementById("root")!).render(<App />);
 
 registerServiceWorker();
+
+
+startSyncService({
+  autoRetry: true,
+  autoRetryInterval: 30000,
+  maxConcurrent: 3,
+});
+
+if (typeof navigator !== "undefined" && navigator.storage?.persist) {
+  navigator.storage.persist().catch(() => {
+    /* ignore */
+  });
+}
+
+getDB().catch((error) => {
+  console.error("Failed to initialize database:", error);
+});
+
+scheduleAutoSnapshot(5000);
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") scheduleAutoSnapshot(0);
+  });
+}

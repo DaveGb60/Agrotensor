@@ -13,7 +13,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('farmdeck-theme') as Theme;
+      const saved = localStorage.getItem('agrotensor-theme') as Theme;
       if (saved) return saved;
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
@@ -27,7 +27,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('farmdeck-theme', theme);
+    localStorage.setItem('agrotensor-theme', theme);
   }, [theme]);
 
   const setTheme = (newTheme: Theme) => {

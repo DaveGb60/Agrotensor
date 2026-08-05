@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
 import { ProjectCard } from '@/components/ProjectCard';
 import { CreateProjectDialog } from '@/components/CreateProjectDialog';
 import { RecordTable } from '@/components/RecordTable';
 import { DelayedRevenueRecordTable } from '@/components/DelayedRevenueRecordTable';
 import { MonthlySummary } from '@/components/MonthlySummary';
 import { ProjectDetailsSection } from '@/components/ProjectDetailsSection';
-import { ShareDialog } from '@/components/ShareDialog';
+import { BreedingProjectDetails } from '@/components/BreedingProjectDetails';
+import { LivestockRecordManager } from '@/components/LivestockRecordManager';
+import { BreedingDashboard } from '@/components/breeding/BreedingDashboard';
+import { BreedingMonthlySummary } from '@/components/breeding/BreedingMonthlySummary';
+import { BreedingPDFExportDialog } from '@/components/breeding/BreedingPDFExportDialog';
+import { BreedingTimeline } from '@/components/breeding/BreedingTimeline';
+import { BreedingCalendar } from '@/components/breeding/BreedingCalendar';
 
 import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
+import { shareProjectFile } from '@/lib/fileSync';
 import { SyncShareDialog } from '@/components/SyncShareDialog';
 import { ColumnManagerDropdown, CustomColumn, ColumnType } from '@/components/ColumnManagerDropdown';
 import { Button } from '@/components/ui/button';
@@ -32,6 +38,7 @@ import {
   MonthlyAggregation,
   ProjectDetails,
   RecordType,
+  ProjectType,
   getAllProjects,
   createProject,
   deleteProject,
@@ -45,10 +52,13 @@ import {
   updateProjectDetails,
   completeProject,
   updateProject,
+  BreedingProjectDetails as BreedingDetailsType,
+  getAnimalsByProject,
+  FarmAnimal,
   generateId,
 } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw } from 'lucide-react';
+import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw, Users, Calendar as CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -60,11 +70,13 @@ const Index = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [shareProject, setShareProject] = useState<{ project: FarmProject; records: FarmRecord[] } | null>(null);
+  const [breedingRefreshKey, setBreedingRefreshKey] = useState(0);
+  const [breedingAnimals, setBreedingAnimals] = useState<FarmAnimal[]>([]);
   
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
+  const [isBreedingPDFOpen, setIsBreedingPDFOpen] = useState(false);
   const [isSyncOpen, setIsSyncOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<'details' | 'components'>('details');
+  const [activeSection, setActiveSection] = useState<'details' | 'components' | 'timeline' | 'calendar'>('details');
   const [customColumnTypes, setCustomColumnTypes] = useState<Record<string, ColumnType>>({});
   const { toast } = useToast();
 
@@ -76,9 +88,15 @@ const Index = () => {
   // Load records when project is selected
   useEffect(() => {
     if (selectedProject) {
-      loadRecords(selectedProject.id, selectedProject.details, selectedProject.customColumnTypes);
+      loadRecords(selectedProject.id, selectedProject.details as ProjectDetails, selectedProject.customColumnTypes);
     }
   }, [selectedProject]);
+
+  useEffect(() => {
+    if (selectedProject?.projectType === 'breeding') {
+      getAnimalsByProject(selectedProject.id).then(setBreedingAnimals);
+    }
+  }, [selectedProject, breedingRefreshKey]);
 
   const loadProjects = async () => {
     try {
@@ -89,8 +107,13 @@ const Index = () => {
       // Get record counts for each project
       const counts: Record<string, number> = {};
       for (const project of allProjects) {
-        const projectRecords = await getRecordsByProject(project.id);
-        counts[project.id] = projectRecords.length;
+        if (project.projectType === 'breeding') {
+          const animals = await getAnimalsByProject(project.id);
+          counts[project.id] = animals.length;
+        } else {
+          const projectRecords = await getRecordsByProject(project.id);
+          counts[project.id] = projectRecords.length;
+        }
       }
       setRecordCounts(counts);
     } catch (error) {
@@ -111,9 +134,15 @@ const Index = () => {
     }
   };
 
-  const handleCreateProject = async (title: string, startDate: string, customColumns: string[]) => {
+  const handleCreateProject = async (
+    title: string,
+    startDate: string,
+    customColumns: string[],
+    projectType: ProjectType = 'produce',
+    recordType: RecordType = 'standard',
+  ) => {
     try {
-      const newProject = await createProject(title, startDate, customColumns);
+      const newProject = await createProject(title, startDate, customColumns, undefined, recordType, projectType);
       setProjects([newProject, ...projects]);
       setRecordCounts({ ...recordCounts, [newProject.id]: 0 });
       toast({ title: 'Project created successfully' });
@@ -146,12 +175,25 @@ const Index = () => {
     }
   };
 
+  const shareProjectData = async (project: FarmProject, projectRecords: FarmRecord[], animals: FarmAnimal[]) => {
+    const { saved, shared } = await shareProjectFile(project, projectRecords, animals);
+    toast({
+      title: shared ? 'Project shared' : 'Project file saved',
+      description: saved
+        ? shared
+          ? 'A copy was also saved to your device storage.'
+          : 'Saved to your device storage — share it from your files app.'
+        : 'Could not save the file.',
+      variant: saved || shared ? undefined : 'destructive',
+    });
+  };
+
   const handleShareProject = async (id: string) => {
     const project = await getProject(id);
-    if (project) {
-      const projectRecords = await getRecordsByProject(id);
-      setShareProject({ project, records: projectRecords });
-    }
+    if (!project) return;
+    const projectRecords = await getRecordsByProject(id);
+    const animals = project.projectType === 'breeding' ? await getAnimalsByProject(id) : [];
+    await shareProjectData(project, projectRecords, animals);
   };
 
   const handleAddRecord = async (data: Omit<FarmRecord, 'id' | 'projectId' | 'isLocked' | 'createdAt' | 'updatedAt'>) => {
@@ -160,7 +202,7 @@ const Index = () => {
       const newRecord = await createRecord(selectedProject.id, data);
       setRecords([newRecord, ...records]);
       setRecordCounts({ ...recordCounts, [selectedProject.id]: (recordCounts[selectedProject.id] || 0) + 1 });
-      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record added' });
     } catch (error) {
@@ -172,7 +214,7 @@ const Index = () => {
     try {
       await updateRecord(record);
       setRecords(records.map(r => r.id === record.id ? record : r));
-      const aggs = await getMonthlyAggregation(selectedProject!.id, selectedProject?.details, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject!.id, selectedProject?.details as ProjectDetails | undefined, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record updated' });
     } catch (error) {
@@ -186,7 +228,7 @@ const Index = () => {
       await deleteRecord(id);
       setRecords(records.filter(r => r.id !== id));
       setRecordCounts({ ...recordCounts, [selectedProject.id]: Math.max(0, (recordCounts[selectedProject.id] || 1) - 1) });
-      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details, customColumnTypes);
+      const aggs = await getMonthlyAggregation(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
       setAggregations(aggs);
       toast({ title: 'Record deleted' });
     } catch (error) {
@@ -365,7 +407,7 @@ const Index = () => {
       }
 
       // Reload records
-      await loadRecords(selectedProject.id, selectedProject.details, customColumnTypes);
+      await loadRecords(selectedProject.id, selectedProject.details as ProjectDetails, customColumnTypes);
       
       if (remainingToSell > 0) {
         toast({ 
@@ -389,7 +431,7 @@ const Index = () => {
     return (
       <TooltipProvider delayDuration={300}>
         <div className="min-h-screen bg-gradient-earth">
-          <Header />
+          
           <main className="container px-4 py-6 space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
@@ -398,20 +440,38 @@ const Index = () => {
               </Button>
               <div>
                 <h2 className="font-serif text-2xl font-semibold">{selectedProject.title}</h2>
-                <p className="text-sm text-muted-foreground font-mono">ID: {selectedProject.id.slice(0, 8)}</p>
+                <p className="text-sm text-muted-foreground font-mono">
+                  {selectedProject.projectType === 'breeding' ? 'Breeding Project' : 'Produce Project'} • ID: {selectedProject.id.slice(0, 8)}
+                </p>
               </div>
             </div>
             <div className="flex gap-2">
+              {selectedProject.projectType === 'produce' && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPDFExportOpen(true)}
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Export PDF
+                </Button>
+              )}
+              {selectedProject.projectType === 'breeding' && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsBreedingPDFOpen(true)}
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Export PDF
+                </Button>
+              )}
               <Button
                 variant="outline"
-                onClick={() => setIsPDFExportOpen(true)}
-              >
-                <FileDown className="h-4 w-4 mr-2" />
-                Export PDF
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShareProject({ project: selectedProject, records })}
+                onClick={async () => {
+                  const animals = selectedProject.projectType === 'breeding'
+                    ? await getAnimalsByProject(selectedProject.id)
+                    : [];
+                  await shareProjectData(selectedProject, records, animals);
+                }}
               >
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
@@ -419,84 +479,149 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Dual Section Tabs */}
-          <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as 'details' | 'components')} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-md">
-              <TabsTrigger value="details" className="gap-2">
-                <ClipboardList className="h-4 w-4" />
-                Project Details
-              </TabsTrigger>
-              <TabsTrigger value="components" className="gap-2">
-                <Table2 className="h-4 w-4" />
-                Records
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Section 1: Project Main Details */}
-            <TabsContent value="details" className="space-y-6 mt-6">
-              <ProjectDetailsSection
-                project={selectedProject}
-                onUpdateDetails={handleUpdateProjectDetails}
-                onCompleteProject={handleCompleteProject}
-              />
+          {/* Breeding Project UI */}
+          {selectedProject.projectType === 'breeding' ? (
+            <div className="space-y-6">
+              <BreedingDashboard project={selectedProject} refreshKey={breedingRefreshKey} />
+              <BreedingProjectDetails project={selectedProject} onUpdate={() => { loadProjects(); setBreedingRefreshKey((k) => k + 1); }} />
               <NotesEditor
-                notes={selectedProject.details.notes || ''}
-                onChange={(notes) => handleUpdateProjectDetails({ ...selectedProject.details, notes })}
+                notes={(selectedProject.details as BreedingDetailsType).notes || ''}
+                onChange={async (notes) => {
+                  const updated = {
+                    ...selectedProject,
+                    details: { ...selectedProject.details, notes },
+                  };
+                  await updateProject(updated);
+                  setSelectedProject(updated);
+                }}
                 readOnly={selectedProject.isCompleted}
               />
-              <MonthlySummary 
-                aggregations={aggregations} 
-                projectDetails={selectedProject.details} 
-                isCompleted={selectedProject.isCompleted}
-              />
-            </TabsContent>
+              <BreedingMonthlySummary project={selectedProject} refreshKey={breedingRefreshKey} />
 
-            {/* Section 2: Project Records */}
-            <TabsContent value="components" className="space-y-6 mt-6">
-              <div>
-                <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-serif text-lg font-semibold">Project Records</h3>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-7 px-2" disabled={selectedProject.isCompleted}>
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="bg-popover z-50 w-72">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuItem 
-                              onClick={() => handleChangeRecordType('standard')}
-                              className={cn(
-                                "flex flex-col items-start gap-1 py-3",
-                                selectedProject.recordType === 'standard' && 'bg-accent'
-                              )}
-                            >
-                              <div className="flex items-center gap-2">
-                                <Zap className="h-4 w-4" />
-                                <span className="font-medium">Standard (Immediate Revenue)</span>
-                              </div>
-                              <span className="text-xs text-muted-foreground ml-6">
-                                Revenue recorded when production occurs
-                              </span>
-                            </DropdownMenuItem>
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="max-w-xs">
-                            <p className="text-sm">
-                              <strong>Standard Records:</strong> Use when revenue is received immediately upon production or harvest. Ideal for direct sales, daily market sales, or products sold on-the-spot.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuItem 
-                              onClick={() => handleChangeRecordType('delayed_revenue')}
-                              className={cn(
-                                "flex flex-col items-start gap-1 py-3",
-                                selectedProject.recordType === 'delayed_revenue' && 'bg-accent'
-                              )}
-                            >
+              <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as 'details' | 'timeline' | 'calendar')} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 max-w-lg">
+                  <TabsTrigger value="details" className="gap-2">
+                    <Users className="h-4 w-4" />
+                    Livestock
+                  </TabsTrigger>
+                  <TabsTrigger value="timeline" className="gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    Timeline
+                  </TabsTrigger>
+                  <TabsTrigger value="calendar" className="gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    Calendar
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="details" className="space-y-6 mt-6">
+                  <LivestockRecordManager project={selectedProject} onAnimalsChange={() => setBreedingRefreshKey((k) => k + 1)} />
+                </TabsContent>
+
+                <TabsContent value="timeline" className="mt-6">
+                  <BreedingTimeline
+                    project={selectedProject}
+                    animals={breedingAnimals}
+                    details={selectedProject.details as BreedingDetailsType}
+                  />
+                </TabsContent>
+
+                <TabsContent value="calendar" className="mt-6">
+                  <BreedingCalendar
+                    project={selectedProject}
+                    animals={breedingAnimals}
+                    details={selectedProject.details as BreedingDetailsType}
+                  />
+                </TabsContent>
+              </Tabs>
+
+              <BreedingPDFExportDialog
+                open={isBreedingPDFOpen}
+                onOpenChange={setIsBreedingPDFOpen}
+                project={selectedProject}
+                animals={breedingAnimals}
+                details={selectedProject.details as BreedingDetailsType}
+              />
+            </div>
+          ) : (
+            /* Produce Project UI */
+            <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as 'details' | 'components')} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 max-w-md">
+                <TabsTrigger value="details" className="gap-2">
+                  <ClipboardList className="h-4 w-4" />
+                  Project Details
+                </TabsTrigger>
+                <TabsTrigger value="components" className="gap-2">
+                  <Table2 className="h-4 w-4" />
+                  Records
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Section 1: Project Main Details */}
+              <TabsContent value="details" className="space-y-6 mt-6">
+                <ProjectDetailsSection
+                  project={selectedProject}
+                  onUpdateDetails={handleUpdateProjectDetails}
+                  onCompleteProject={handleCompleteProject}
+                />
+                <NotesEditor
+                  notes={selectedProject.details.notes || ''}
+                  onChange={(notes) => handleUpdateProjectDetails({ ...(selectedProject.details as ProjectDetails), notes })}
+                  readOnly={selectedProject.isCompleted}
+                />
+                <MonthlySummary 
+                  aggregations={aggregations} 
+                  projectDetails={selectedProject.details as ProjectDetails} 
+                  isCompleted={selectedProject.isCompleted}
+                />
+              </TabsContent>
+
+              {/* Section 2: Project Records */}
+              <TabsContent value="components" className="space-y-6 mt-6">
+                <div>
+                  <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-serif text-lg font-semibold">Project Records</h3>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-7 px-2" disabled={selectedProject.isCompleted}>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="bg-popover z-50 w-72">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuItem 
+                                onClick={() => handleChangeRecordType('standard')}
+                                className={cn(
+                                  "flex flex-col items-start gap-1 py-3",
+                                  selectedProject.recordType === 'standard' && 'bg-accent'
+                                )}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Zap className="h-4 w-4" />
+                                  <span className="font-medium">Standard (Immediate Revenue)</span>
+                                </div>
+                                <span className="text-xs text-muted-foreground ml-6">
+                                  Revenue recorded when production occurs
+                                </span>
+                              </DropdownMenuItem>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs">
+                              <p className="text-sm">
+                                <strong>Standard Records:</strong> Use when revenue is received immediately upon production or harvest. Ideal for direct sales, daily market sales, or products sold on-the-spot.
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuItem 
+                                onClick={() => handleChangeRecordType('delayed_revenue')}
+                                className={cn(
+                                  "flex flex-col items-start gap-1 py-3",
+                                  selectedProject.recordType === 'delayed_revenue' && 'bg-accent'
+                                )}
+                              >
                               <div className="flex items-center gap-2">
                                 <Package className="h-4 w-4" />
                                 <span className="font-medium">Delayed Revenue (Batch Sales)</span>
@@ -557,16 +682,9 @@ const Index = () => {
               </div>
             </TabsContent>
           </Tabs>
+          )}
         </main>
 
-        {shareProject && (
-          <ShareDialog
-            open={!!shareProject}
-            onOpenChange={() => setShareProject(null)}
-            project={shareProject.project}
-            records={shareProject.records}
-          />
-        )}
 
         <PDFExportDialog
           open={isPDFExportOpen}
@@ -583,7 +701,7 @@ const Index = () => {
   // Projects List View
   return (
     <div className="min-h-screen bg-gradient-earth">
-      <Header />
+      
       
       <main className="container px-4 py-8">
         {/* Hero Section */}
@@ -592,10 +710,10 @@ const Index = () => {
             <Leaf className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Welcome to FarmDeck
+            Welcome to AgroTensor
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto mb-6">
-            Your offline farm records platform. Track projects, operations, and finances—all stored securely on your device.
+            The intelligent, offline-first command center for modern farms—unify livestock, crops, operations and finance in one secure workspace on your device.
           </p>
           
           <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-8">
@@ -693,14 +811,6 @@ const Index = () => {
         onSyncComplete={loadProjects}
       />
 
-      {shareProject && (
-        <ShareDialog
-          open={!!shareProject}
-          onOpenChange={() => setShareProject(null)}
-          project={shareProject.project}
-          records={shareProject.records}
-        />
-      )}
 
       <AlertDialog open={!!deleteProjectId} onOpenChange={() => setDeleteProjectId(null)}>
         <AlertDialogContent>

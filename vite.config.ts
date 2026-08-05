@@ -4,94 +4,92 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
   },
   plugins: [
-    react(),
+    react({ tsDecorators: true }),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: null,
       devOptions: { enabled: false },
       filename: "sw.js",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
+
+      
       manifest: {
-        name: "FarmDeck - Offline Farm Records",
-        short_name: "FarmDeck",
+        name: "AgroTensor — Smart Farm Intelligence",
+        short_name: "AgroTensor",
         description:
-          "Track your farm projects, operations, and finances offline. Secure, private, and always available.",
+          "The intelligent, offline-first command center for modern farms. Unify livestock, crops, operations and finance—secure, private, and always available.",
         theme_color: "#3d6b4f",
         background_color: "#f5f2eb",
         display: "standalone",
         orientation: "portrait",
+        id: "/",
         scope: "/",
         start_url: "/",
         icons: [
-          { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
-          { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
           {
-            src: "/pwa-512x512.png",
+            src: "/icons/icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/icons/icon-512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "any maskable",
+          },
+          {
+            src: "/icons/icon-512-maskable.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
           },
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // The generated manifest is injected by vite-plugin-pwa. Public images
+        // are discovered here exactly once so conflicting precache revisions
+        // cannot abort service-worker installation.
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff2}"],
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
+        // Offline launches (installed app, deep links) fall back to the cached shell.
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
         runtimeCaching: [
           {
-            // HTML navigations: always try network first so updates roll out.
-            urlPattern: ({ request, url }) =>
-              request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
+            // HTML navigations: fresh when online, cached shell when offline.
+            urlPattern: ({ request }) => request.mode === "navigate",
             handler: "NetworkFirst",
             options: {
               cacheName: "html-navigations",
               networkTimeoutSeconds: 4,
-              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
           {
-            // Same-origin hashed static assets.
-            urlPattern: ({ request, sameOrigin }) =>
+            // Same-origin hashed build assets.
+            urlPattern: ({ url, request, sameOrigin }) =>
               sameOrigin &&
-              ["script", "style", "worker", "font", "image"].includes(request.destination),
+              url.pathname.startsWith("/assets/") &&
+              ["script", "style", "font", "image"].includes(request.destination),
             handler: "CacheFirst",
             options: {
               cacheName: "static-assets",
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 365 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "google-fonts-cache",
-              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "gstatic-fonts-cache",
-              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
+          // Fonts are self-hosted under /assets/, covered by the rule above.
         ],
       },
+
     }),
   ].filter(Boolean),
   resolve: {
