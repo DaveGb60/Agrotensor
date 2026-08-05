@@ -1,15 +1,15 @@
-import { Home, Trash2, Cloud, Shield, Heart, LifeBuoy } from "lucide-react";
+import { Home, Trash2, Cloud, Shield, Settings } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { DonateDialog } from "@/components/DonateDialog";
+import { MobileSettingsSheet } from "@/components/MobileSettingsSheet";
 import { cn } from "@/lib/utils";
 
 const primaryItems = [
   { label: "Projects", path: "/app", icon: Home },
   { label: "Cloud", path: "/cloud", icon: Cloud },
-  { label: "Recover", path: "/recover", icon: LifeBuoy },
   { label: "Trash", path: "/trash", icon: Trash2 },
 ];
+
 
 /**
  * Fixed bottom navigation bar for mobile screens. Hidden on md+ where the
