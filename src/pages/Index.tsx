@@ -709,8 +709,14 @@ const Index = () => {
       <main className="container px-4 py-8">
         {/* Hero Section */}
         <section className="text-center mb-12 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-hero shadow-elevated mb-4">
-            <Leaf className="h-8 w-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-hero shadow-elevated mb-4 overflow-hidden ring-2 ring-white/20">
+            <img
+              src={brand.logo}
+              alt="AgroTensor logo"
+              className="w-full h-full object-contain p-2"
+              width={80}
+              height={80}
+            />
           </div>
           <h1 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-3">
             Welcome to AgroTensor
