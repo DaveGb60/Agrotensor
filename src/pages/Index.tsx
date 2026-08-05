@@ -17,6 +17,7 @@ import { PDFExportDialog } from '@/components/PDFExportDialog';
 import { NotesEditor } from '@/components/NotesEditor';
 import { shareProjectFile } from '@/lib/fileSync';
 import { SyncShareDialog } from '@/components/SyncShareDialog';
+import { ImportProjectDialog } from '@/components/ImportProjectDialog';
 import { ColumnManagerDropdown, CustomColumn, ColumnType } from '@/components/ColumnManagerDropdown';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -58,7 +59,7 @@ import {
   generateId,
 } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw, Users, Calendar as CalendarIcon, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -76,6 +77,7 @@ const Index = () => {
   const [isPDFExportOpen, setIsPDFExportOpen] = useState(false);
   const [isBreedingPDFOpen, setIsBreedingPDFOpen] = useState(false);
   const [isSyncOpen, setIsSyncOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<'details' | 'components' | 'timeline' | 'calendar'>('details');
   const [customColumnTypes, setCustomColumnTypes] = useState<Record<string, ColumnType>>({});
   const { toast } = useToast();
@@ -737,6 +739,10 @@ const Index = () => {
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <h2 className="font-serif text-xl font-semibold">Your Projects</h2>
             <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsImportOpen(true)}>
+                <Upload className="h-4 w-4 mr-2" />
+                Import
+              </Button>
               <Button variant="outline" onClick={() => setIsSyncOpen(true)}>
                 <Share2 className="h-4 w-4 mr-2" />
                 Sync
@@ -762,6 +768,10 @@ const Index = () => {
                 Create your first farm project to start tracking records.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button variant="outline" onClick={() => setIsImportOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Project File
+                </Button>
                 <Button variant="outline" onClick={() => setIsSyncOpen(true)}>
                   <Share2 className="h-4 w-4 mr-2" />
                   Sync with Device
@@ -810,6 +820,13 @@ const Index = () => {
         projects={projects}
         onSyncComplete={loadProjects}
       />
+
+      <ImportProjectDialog
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        onImported={loadProjects}
+      />
+
 
 
       <AlertDialog open={!!deleteProjectId} onOpenChange={() => setDeleteProjectId(null)}>
