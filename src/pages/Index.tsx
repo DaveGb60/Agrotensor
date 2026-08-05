@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { brand } from '@/components/landing/brandAssets';
 import { ProjectCard } from '@/components/ProjectCard';
 import { CreateProjectDialog } from '@/components/CreateProjectDialog';
 import { RecordTable } from '@/components/RecordTable';
