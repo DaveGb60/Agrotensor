@@ -59,7 +59,7 @@ import {
   generateId,
 } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw, Users, Calendar as CalendarIcon, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
