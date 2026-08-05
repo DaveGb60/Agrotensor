@@ -821,6 +821,13 @@ const Index = () => {
         onSyncComplete={loadProjects}
       />
 
+      <ImportProjectDialog
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        onImported={loadProjects}
+      />
+
+
 
       <AlertDialog open={!!deleteProjectId} onOpenChange={() => setDeleteProjectId(null)}>
         <AlertDialogContent>
