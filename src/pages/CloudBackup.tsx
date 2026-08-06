@@ -20,13 +20,13 @@ import {
   verifyAndStoreIdentity,
 } from '@/lib/cloudBackup';
 import {
-import { friendlyError } from '@/lib/errorMessages';
   createVault,
   unlockVault,
   hasVault,
   clearVault,
   isPlatformAuthenticatorAvailable,
 } from '@/lib/webauthnVault';
+import { friendlyError } from '@/lib/errorMessages';
 
 export default function CloudBackup() {
   const [identity, setIdentity] = useState<CloudIdentity | null>(null);
