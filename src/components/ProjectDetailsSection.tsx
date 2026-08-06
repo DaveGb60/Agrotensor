@@ -10,6 +10,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Save, Lock, DollarSign, Package, TrendingUp, Plus, X, ShoppingCart, Coins, Calendar, Repeat } from 'lucide-react';
 import { formatDate, differenceInMonths } from 'date-fns';
 import { Switch } from '@/components/ui/switch';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 
 interface ProjectDetailsSectionProps {
@@ -41,6 +51,7 @@ export function ProjectDetailsSection({
   const [newInputDate, setNewInputDate] = useState('');
   const [newInputIsRecurring, setNewInputIsRecurring] = useState(false);
   const [newInputEndDate, setNewInputEndDate] = useState('');
+  const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
 
   const handleSave = () => {
     onUpdateDetails(editData);
@@ -167,7 +178,7 @@ export function ProjectDetailsSection({
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={onCompleteProject}
+                      onClick={() => setConfirmCompleteOpen(true)}
                     >
                       <Lock className="h-4 w-4 mr-1" />
                       Complete Project
