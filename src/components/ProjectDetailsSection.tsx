@@ -502,6 +502,30 @@ export function ProjectDetailsSection({
 
         </CardContent>
       </Card>
+
+      <AlertDialog open={confirmCompleteOpen} onOpenChange={setConfirmCompleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Complete this project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Completing "{project.title}" closes it for good. Project details, notes and records
+              become read-only, and no new records can be added. You can still view, export and
+              share everything.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmCompleteOpen(false);
+                onCompleteProject();
+              }}
+            >
+              Yes, complete project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   );
 }
