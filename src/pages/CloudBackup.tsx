@@ -26,6 +26,7 @@ import {
   clearVault,
   isPlatformAuthenticatorAvailable,
 } from '@/lib/webauthnVault';
+import { friendlyError } from '@/lib/errorMessages';
 
 export default function CloudBackup() {
   const [identity, setIdentity] = useState<CloudIdentity | null>(null);
@@ -59,7 +60,7 @@ export default function CloudBackup() {
       const s = await getCloudStatus(id);
       setStatus(s);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(friendlyError(e));
     } finally {
       setLoading(false);
     }
@@ -72,7 +73,7 @@ export default function CloudBackup() {
       setVaultPresent(true);
       if (!silent) toast.success('Cloud ID protected with device biometrics');
     } catch (e) {
-      toast.error(`Biometric protection failed: ${(e as Error).message}`);
+      toast.error('Biometric protection failed', { description: friendlyError(e) });
     }
   }
 
@@ -89,7 +90,7 @@ export default function CloudBackup() {
       }
       toast.success('Cloud identity created');
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(friendlyError(e));
     } finally {
       setLoading(false);
     }
@@ -102,7 +103,7 @@ export default function CloudBackup() {
       setIdentity(id);
       await refreshStatus(id);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(friendlyError(e));
     } finally {
       setUnlocking(false);
     }
@@ -126,7 +127,7 @@ export default function CloudBackup() {
       }
       toast.success('Cloud identity restored');
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(friendlyError(e));
     } finally {
       setLoading(false);
     }
@@ -140,7 +141,7 @@ export default function CloudBackup() {
       toast.success(`Backed up ${r.project_count} projects, ${r.record_count} records`);
       await refreshStatus(identity);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(friendlyError(e));
     } finally {
       setBusy(null);
     }
@@ -156,7 +157,7 @@ export default function CloudBackup() {
       );
       await refreshStatus(identity);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(friendlyError(e));
     } finally {
       setBusy(null);
     }

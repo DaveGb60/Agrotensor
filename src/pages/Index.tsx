@@ -62,6 +62,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Plus, ArrowLeft, Leaf, Database, Lock, Share2, FileDown, ClipboardList, Table2, ChevronRight, Package, Zap, RefreshCw, Users, Calendar as CalendarIcon, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { friendlyError } from '@/lib/errorMessages';
 
 const Index = () => {
   const [projects, setProjects] = useState<FarmProject[]>([]);
@@ -424,7 +425,7 @@ const Index = () => {
       console.error('[BatchSale] Error:', error);
       toast({ 
         title: 'Error recording batch sale', 
-        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        description: friendlyError(error),
         variant: 'destructive' 
       });
     }

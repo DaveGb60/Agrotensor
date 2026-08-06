@@ -14,8 +14,8 @@ export class Project extends Model {
 
   @text('title') declare title: string;
   @field('start_date') declare startDate: string;
-  @field('created_at_iso') declare createdAt: string;
-  @field('updated_at_iso') declare updatedAt: string;
+  @field('created_at_iso') declare createdAtIso: string;
+  @field('updated_at_iso') declare updatedAtIso: string;
   @field('project_type') declare projectType: string;
   @json('custom_columns', jsonArray) declare customColumns: string[];
   @json('custom_column_types', jsonObject) declare customColumnTypes: Record<string, string>;

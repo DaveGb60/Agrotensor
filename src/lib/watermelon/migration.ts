@@ -30,8 +30,8 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
           proj._raw.id = p.id;
           proj.title = p.title;
           proj.startDate = p.startDate;
-          proj.createdAt = p.createdAt;
-          proj.updatedAt = p.updatedAt;
+          proj.createdAtIso = p.createdAt;
+          proj.updatedAtIso = p.updatedAt;
           proj.projectType = projectType;
           proj.customColumns = p.customColumns ?? [];
           proj.customColumnTypes = p.customColumnTypes ?? {};
@@ -57,8 +57,8 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
           rec.isLocked = r.isLocked;
           if (r.lockedAt) rec.lockedAt = r.lockedAt;
           rec.customFields = r.customFields ?? {};
-          rec.createdAt = r.createdAt;
-          rec.updatedAt = r.updatedAt;
+          rec.createdAtIso = r.createdAt;
+          rec.updatedAtIso = r.updatedAt;
           if (r.isBatchSale !== undefined) rec.isBatchSale = r.isBatchSale;
           if (r.isCarriedBalance !== undefined) rec.isCarriedBalance = r.isCarriedBalance;
           if (r.sourceRecordIds !== undefined) rec.sourceRecordIds = r.sourceRecordIds;
@@ -85,8 +85,8 @@ export async function migrateFromIndexedDB(database: Database): Promise<{
           if (normalized.notes !== undefined) ani.notes = normalized.notes;
           if (normalized.motherId !== undefined) ani.motherId = normalized.motherId;
           if (normalized.fatherId !== undefined) ani.fatherId = normalized.fatherId;
-          ani.createdAt = normalized.createdAt;
-          ani.updatedAt = normalized.updatedAt;
+          ani.createdAtIso = normalized.createdAt;
+          ani.updatedAtIso = normalized.updatedAt;
           ani.isLocked = normalized.isLocked;
           if (normalized.lockedAt) ani.lockedAt = normalized.lockedAt;
           ani.matingHistory = normalized.matingHistory ?? [];

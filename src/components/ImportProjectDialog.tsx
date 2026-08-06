@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Upload, FileJson, ClipboardPaste, Loader2 } from 'lucide-react';
 import { importAnyBackup } from '@/lib/fileSync';
 import { useToast } from '@/hooks/use-toast';
+import { friendlyError } from '@/lib/errorMessages';
 
 interface ImportProjectDialogProps {
   open: boolean;
@@ -42,7 +43,7 @@ export const ImportProjectDialog = ({ open, onOpenChange, onImported }: ImportPr
     } catch (error) {
       toast({
         title: 'Import failed',
-        description: error instanceof Error ? error.message : 'Could not read that file.',
+        description: friendlyError(error, 'Could not read that file.'),
         variant: 'destructive',
       });
     } finally {

@@ -21,6 +21,7 @@ import { AddAnimalDialog } from '@/components/breeding/AddAnimalDialog';
 import { AnimalDetailDialog } from '@/components/breeding/AnimalDetailDialog';
 import { PostCreationWizard } from '@/components/breeding/PostCreationWizard';
 import { RecordDialogType } from '@/components/breeding/RecordDialog';
+import { friendlyError } from '@/lib/errorMessages';
 
 interface LivestockRecordManagerProps {
   project: FarmProject;
@@ -62,7 +63,7 @@ export function LivestockRecordManager({ project, onAnimalsChange }: LivestockRe
     } catch (error) {
       toast({
         title: 'Failed to add animal',
-        description: error instanceof Error ? error.message : undefined,
+        description: friendlyError(error),
         variant: 'destructive',
       });
     }
@@ -85,7 +86,7 @@ export function LivestockRecordManager({ project, onAnimalsChange }: LivestockRe
     } catch (error) {
       toast({
         title: 'Failed to update animal',
-        description: error instanceof Error ? error.message : undefined,
+        description: friendlyError(error),
         variant: 'destructive',
       });
     }
@@ -101,7 +102,7 @@ export function LivestockRecordManager({ project, onAnimalsChange }: LivestockRe
     } catch (error) {
       toast({
         title: 'Failed to update animal',
-        description: error instanceof Error ? error.message : undefined,
+        description: friendlyError(error),
         variant: 'destructive',
       });
     }
@@ -130,7 +131,7 @@ export function LivestockRecordManager({ project, onAnimalsChange }: LivestockRe
     } catch (error) {
       toast({
         title: 'Failed to record birth',
-        description: error instanceof Error ? error.message : undefined,
+        description: friendlyError(error),
         variant: 'destructive',
       });
       throw error;

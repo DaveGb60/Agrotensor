@@ -14,6 +14,7 @@ import {
 } from '@/lib/dataRecovery';
 import { importAnyBackup } from '@/lib/fileSync';
 import { toast } from 'sonner';
+import { friendlyError } from '@/lib/errorMessages';
 
 export default function DataRecovery() {
   const [scanning, setScanning] = useState(false);
@@ -35,7 +36,7 @@ export default function DataRecovery() {
       await writeAutoSnapshot();
       await runScan();
     } catch (e) {
-      toast.error('Restore failed', { description: e instanceof Error ? e.message : String(e) });
+      toast.error('Restore failed', { description: friendlyError(e) });
     } finally {
       setFileBusy(false);
     }
@@ -49,7 +50,7 @@ export default function DataRecovery() {
       const s = await scanForRecoverableData();
       setSummary(s);
     } catch (e) {
-      toast.error('Scan failed', { description: e instanceof Error ? e.message : String(e) });
+      toast.error('Scan failed', { description: friendlyError(e) });
     } finally {
       setScanning(false);
     }
@@ -78,7 +79,7 @@ export default function DataRecovery() {
       await writeAutoSnapshot();
       await runScan();
     } catch (e) {
-      toast.error('Restore failed', { description: e instanceof Error ? e.message : String(e) });
+      toast.error('Restore failed', { description: friendlyError(e) });
     } finally {
       setRestoring(false);
     }
