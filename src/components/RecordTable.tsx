@@ -54,6 +54,7 @@ export function RecordTable({
   onLockRecord,
   customColumnTypes = {},
 }: RecordTableProps) {
+  const isCompleted = !!project.isCompleted;
   const [newRecord, setNewRecord] = useState<NewRecordState>({
     date: new Date().toISOString().split('T')[0],
     item: '',
@@ -126,7 +127,7 @@ export function RecordTable({
   };
 
   const startEditing = (record: FarmRecord) => {
-    if (record.isLocked) return;
+    if (record.isLocked || isCompleted) return;
     setEditingRecord(record.id);
     setEditData({ ...record });
   };
@@ -255,6 +256,7 @@ export function RecordTable({
             </TableHeader>
             <TableBody>
               {/* New Record Row */}
+              {!isCompleted && (
               <TableRow className="bg-success/5 border-l-4 border-l-success">
                 <TableCell>
                   <Input
@@ -325,6 +327,7 @@ export function RecordTable({
                   </Button>
                 </TableCell>
               </TableRow>
+              )}
 
               {/* Existing Records */}
               {sortedRecords.map((record, index) => (
@@ -415,6 +418,7 @@ export function RecordTable({
                         ) : (
                           <Checkbox
                             checked={false}
+                            disabled={isCompleted}
                             onCheckedChange={() => onLockRecord(record.id)}
                             className="mx-auto"
                           />
@@ -427,7 +431,7 @@ export function RecordTable({
                               <Save className="h-4 w-4" />
                             </Button>
                           ) : (
-                            !record.isLocked && (
+                            !record.isLocked && !isCompleted && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="icon" className="h-7 w-7">
@@ -472,7 +476,7 @@ export function RecordTable({
               {records.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={colSpan + 2} className="h-24 text-center text-muted-foreground">
-                    No records yet. Add your first entry above.
+                    {isCompleted ? 'This project is completed — no records were added.' : 'No records yet. Add your first entry above.'}
                   </TableCell>
                 </TableRow>
               )}
