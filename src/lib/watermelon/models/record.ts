@@ -23,8 +23,8 @@ export class RecordModel extends Model {
   @field('is_locked') declare isLocked: boolean;
   @field('locked_at') declare lockedAt?: string;
   @json('custom_fields', jsonObject) declare customFields: Record<string, string | number>;
-  @field('created_at_iso') declare createdAt: string;
-  @field('updated_at_iso') declare updatedAt: string;
+  @field('created_at_iso') declare createdAtIso: string;
+  @field('updated_at_iso') declare updatedAtIso: string;
   @field('is_batch_sale') declare isBatchSale?: boolean;
   @field('is_carried_balance') declare isCarriedBalance?: boolean;
   @json('source_record_ids', jsonArray) declare sourceRecordIds?: string[];
