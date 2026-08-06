@@ -276,8 +276,8 @@ function toProjectPlain(p: Project): FarmProject {
     id: p.id,
     title: p.title,
     startDate: p.startDate,
-    createdAt: p.createdAt,
-    updatedAt: p.updatedAt,
+    createdAt: p.createdAtIso,
+    updatedAt: p.updatedAtIso,
     projectType: p.projectType as FarmProject['projectType'],
     customColumns: p.customColumns ?? [],
     customColumnTypes: (p.customColumnTypes ?? {}) as Record<string, ColumnType>,
@@ -302,8 +302,8 @@ function toRecordPlain(r: RecordModel): FarmRecord {
     isLocked: r.isLocked,
     lockedAt: r.lockedAt,
     customFields: r.customFields ?? {},
-    createdAt: r.createdAt,
-    updatedAt: r.updatedAt,
+    createdAt: r.createdAtIso,
+    updatedAt: r.updatedAtIso,
     isBatchSale: r.isBatchSale,
     isCarriedBalance: r.isCarriedBalance,
     sourceRecordIds: r.sourceRecordIds,
@@ -328,8 +328,8 @@ function toAnimalPlain(a: Animal): FarmAnimal {
     notes: a.notes,
     motherId: a.motherId,
     fatherId: a.fatherId,
-    createdAt: a.createdAt,
-    updatedAt: a.updatedAt,
+    createdAt: a.createdAtIso,
+    updatedAt: a.updatedAtIso,
     isLocked: a.isLocked,
     lockedAt: a.lockedAt,
     matingHistory: a.matingHistory ?? [],
@@ -393,8 +393,8 @@ export async function createProject(
       proj._raw.id = existingId || generateId();
       proj.title = title;
       proj.startDate = startDate;
-      proj.createdAt = now;
-      proj.updatedAt = now;
+      proj.createdAtIso = now;
+      proj.updatedAtIso = now;
       proj.projectType = projectType;
       proj.customColumns = customColumns;
       proj.customColumnTypes = {};
@@ -438,8 +438,8 @@ export async function createAnimal(
       if (data.notes !== undefined) ani.notes = data.notes;
       if (data.motherId !== undefined) ani.motherId = data.motherId;
       if (data.fatherId !== undefined) ani.fatherId = data.fatherId;
-      ani.createdAt = now;
-      ani.updatedAt = now;
+      ani.createdAtIso = now;
+      ani.updatedAtIso = now;
       ani.isLocked = false;
       ani.matingHistory = [];
       ani.pregnancyHistory = [];
@@ -471,8 +471,8 @@ export async function importAnimal(animal: FarmAnimal): Promise<FarmAnimal> {
     if (imported.notes !== undefined) ani.notes = imported.notes;
     if (imported.motherId !== undefined) ani.motherId = imported.motherId;
     if (imported.fatherId !== undefined) ani.fatherId = imported.fatherId;
-    ani.createdAt = imported.createdAt;
-    ani.updatedAt = new Date().toISOString();
+    ani.createdAtIso = imported.createdAt;
+    ani.updatedAtIso = new Date().toISOString();
     ani.isLocked = imported.isLocked;
     if (imported.lockedAt) ani.lockedAt = imported.lockedAt;
     ani.matingHistory = imported.matingHistory ?? [];
@@ -531,7 +531,7 @@ export async function updateAnimal(animal: FarmAnimal): Promise<void> {
       if (animal.notes !== undefined) ani.notes = animal.notes;
       if (animal.motherId !== undefined) ani.motherId = animal.motherId;
       if (animal.fatherId !== undefined) ani.fatherId = animal.fatherId;
-      ani.updatedAt = new Date().toISOString();
+      ani.updatedAtIso = new Date().toISOString();
     });
   });
 }
@@ -544,7 +544,7 @@ export async function lockAnimal(id: string): Promise<void> {
     await animal.update((ani: any) => {
       ani.isLocked = true;
       ani.lockedAt = new Date().toISOString();
-      ani.updatedAt = new Date().toISOString();
+      ani.updatedAtIso = new Date().toISOString();
     });
   });
 }
@@ -659,7 +659,7 @@ export async function recordBirthWithOffspring(
     const m = await db.get('animals').find(motherInternalId);
     await m.update((ani: any) => {
       ani.birthRecords = [...(ani.birthRecords ?? []), birthRecord];
-      ani.updatedAt = new Date().toISOString();
+      ani.updatedAtIso = new Date().toISOString();
     });
     return toAnimalPlain(m as any);
   });
@@ -675,8 +675,8 @@ export async function importProject(projectData: FarmProject): Promise<FarmProje
   const apply = (proj: any) => {
     proj.title = projectData.title;
     proj.startDate = projectData.startDate;
-    proj.createdAt = projectData.createdAt || new Date().toISOString();
-    proj.updatedAt = new Date().toISOString();
+    proj.createdAtIso = projectData.createdAt || new Date().toISOString();
+    proj.updatedAtIso = new Date().toISOString();
     proj.projectType = projectData.projectType || 'produce';
     proj.customColumns = projectData.customColumns ?? [];
     proj.customColumnTypes = projectData.customColumnTypes ?? {};
@@ -710,7 +710,7 @@ export async function updateProjectDetails(projectId: string, details: ProjectDe
   await db.write(async () => {
     await project.update((p: any) => {
       p.details = details;
-      p.updatedAt = new Date().toISOString();
+      p.updatedAtIso = new Date().toISOString();
     });
   });
 }
@@ -724,7 +724,7 @@ export async function completeProject(projectId: string): Promise<void> {
     await project.update((p: any) => {
       p.isCompleted = true;
       p.completedAt = new Date().toISOString();
-      p.updatedAt = new Date().toISOString();
+      p.updatedAtIso = new Date().toISOString();
     });
   });
 }
@@ -747,8 +747,8 @@ export async function importRecord(record: FarmRecord): Promise<FarmRecord> {
     rec.isLocked = record.isLocked ?? false;
     if (record.lockedAt) rec.lockedAt = record.lockedAt;
     rec.customFields = record.customFields ?? {};
-    rec.createdAt = record.createdAt || new Date().toISOString();
-    rec.updatedAt = new Date().toISOString();
+    rec.createdAtIso = record.createdAt || new Date().toISOString();
+    rec.updatedAtIso = new Date().toISOString();
     if (record.isBatchSale !== undefined) rec.isBatchSale = record.isBatchSale;
     if (record.isCarriedBalance !== undefined) rec.isCarriedBalance = record.isCarriedBalance;
     if (record.sourceRecordIds !== undefined) rec.sourceRecordIds = record.sourceRecordIds;
@@ -846,7 +846,7 @@ export async function updateProject(project: FarmProject): Promise<void> {
       p.details = project.details;
       if (project.deletedAt != null) p.deletedAt = project.deletedAt;
       p.isDeleted = project.isDeleted;
-      p.updatedAt = new Date().toISOString();
+      p.updatedAtIso = new Date().toISOString();
     });
   });
 }
@@ -860,7 +860,7 @@ export async function deleteProject(id: string): Promise<void> {
     await project.update((p: any) => {
       p.isDeleted = true;
       p.deletedAt = new Date().toISOString();
-      p.updatedAt = new Date().toISOString();
+      p.updatedAtIso = new Date().toISOString();
     });
   });
 }
@@ -874,7 +874,7 @@ export async function restoreProject(id: string): Promise<void> {
     await project.update((p: any) => {
       p.isDeleted = false;
       p.deletedAt = undefined;
-      p.updatedAt = new Date().toISOString();
+      p.updatedAtIso = new Date().toISOString();
     });
   });
 }
@@ -934,8 +934,8 @@ export async function createRecord(
       rec.isLocked = false;
       if (data.lockedAt) rec.lockedAt = data.lockedAt;
       rec.customFields = data.customFields ?? {};
-      rec.createdAt = now;
-      rec.updatedAt = now;
+      rec.createdAtIso = now;
+      rec.updatedAtIso = now;
       if (data.isBatchSale !== undefined) rec.isBatchSale = data.isBatchSale;
       if (data.isCarriedBalance !== undefined) rec.isCarriedBalance = data.isCarriedBalance;
       if (data.sourceRecordIds !== undefined) rec.sourceRecordIds = data.sourceRecordIds;
@@ -991,7 +991,7 @@ export async function updateRecord(record: FarmRecord): Promise<void> {
       if (record.soldQuantity !== undefined) rec.soldQuantity = record.soldQuantity;
       if (record.availableQuantity !== undefined) rec.availableQuantity = record.availableQuantity;
       if (record.batchSaleId !== undefined) rec.batchSaleId = record.batchSaleId;
-      rec.updatedAt = new Date().toISOString();
+      rec.updatedAtIso = new Date().toISOString();
     });
   });
 }
@@ -1004,7 +1004,7 @@ export async function lockRecord(id: string): Promise<void> {
     await record.update((rec: any) => {
       rec.isLocked = true;
       rec.lockedAt = new Date().toISOString();
-      rec.updatedAt = new Date().toISOString();
+      rec.updatedAtIso = new Date().toISOString();
     });
   });
 }
