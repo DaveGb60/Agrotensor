@@ -149,7 +149,7 @@ export function DelayedRevenueRecordTable({
   };
 
   const startEditing = (record: FarmRecord) => {
-    if (record.isLocked || record.isBatchSale || record.isCarriedBalance) return;
+    if (record.isLocked || record.isBatchSale || record.isCarriedBalance || project.isCompleted) return;
     setEditingRecord(record.id);
     setEditData({ ...record });
   };
@@ -564,7 +564,7 @@ export function DelayedRevenueRecordTable({
                                 <Save className="h-4 w-4" />
                               </Button>
                             ) : (
-                              !record.isLocked && !record.isBatchSale && !record.isCarriedBalance && (
+                              !record.isLocked && !record.isBatchSale && !record.isCarriedBalance && !project.isCompleted && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="h-7 w-7">
