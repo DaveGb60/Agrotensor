@@ -147,6 +147,16 @@ export function getBreedingMonthlyAggregation(
       data.totalInputCost += treatment.cost;
       data.recordCount += 1;
     }
+
+    // Include acquisition cost for purchased animals (if any).
+    // Use the animal.createdAt month as the acquisition month.
+    if (animal.acquisitionCost && animal.acquisitionCost > 0 && animal.createdAt) {
+      const acqMonth = getMonthFromDate(animal.createdAt);
+      const data = ensureMonth(acqMonth);
+      data.totalInputCost += animal.acquisitionCost;
+      // optional: count as a finance record
+      data.recordCount += 1;
+    }
   }
 
   for (const month of Object.keys(monthlyData)) {
