@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Moon, Sun, Heart, LifeBuoy, Info } from "lucide-react";
+import { Moon, Sun, LifeBuoy, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -13,7 +13,6 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useTheme } from "@/hooks/useTheme";
-import { DonateDialog } from "@/components/DonateDialog";
 
 interface MobileSettingsSheetProps {
   trigger: ReactNode;
@@ -68,15 +67,6 @@ export function MobileSettingsSheet({ trigger }: MobileSettingsSheetProps) {
             <LifeBuoy className="h-4 w-4" />
             Data recovery
           </Button>
-
-          <DonateDialog
-            trigger={
-              <Button variant="ghost" className="w-full justify-start gap-3">
-                <Heart className="h-4 w-4" />
-                Support AgroTensor
-              </Button>
-            }
-          />
 
           <div className="flex items-center gap-3 px-3 pt-3 text-xs text-muted-foreground">
             <Info className="h-3.5 w-3.5" />
