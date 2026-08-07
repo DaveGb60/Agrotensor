@@ -133,38 +133,6 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.text(`+${details.estimatedRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, startX + (boxWidth + 4) * 3 + 3, yPos + 18);
     
     yPos += boxHeight + 8;
-
-    // Inputs Section
-    if (details.inputs && details.inputs.length > 0) {
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(100, 100, 100);
-      doc.text('Inputs:', 14, yPos);
-      yPos += 5;
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(0, 0, 0);
-      details.inputs.forEach((input) => {
-        doc.text(`• ${input.name}: ${input.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 18, yPos);
-        yPos += 4;
-      });
-      yPos += 4;
-    }
-
-    // Challenges Summary
-    if (details.challengesSummary) {
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(100, 100, 100);
-      doc.text('Challenges:', 14, yPos);
-      yPos += 5;
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(0, 0, 0);
-      const challengeLines = doc.splitTextToSize(details.challengesSummary, 180);
-      doc.text(challengeLines, 14, yPos);
-      yPos += challengeLines.length * 4 + 4;
-    }
-    
-    yPos += 8;
   }
   
   // Summary Section
@@ -180,7 +148,6 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     const totalProjectCosts = produceDetails ? calculateTotalProjectCosts(produceDetails) : 0;
     const capital = produceDetails?.capital || 0;
 
-    
     const totals = filteredAggregations.reduce(
       (acc, agg) => ({
         revenue: acc.revenue + agg.totalRevenue,
@@ -190,27 +157,36 @@ export function generateProjectPDF(options: PDFExportOptions): void {
       { revenue: 0, produce: 0, records: 0 }
     );
     
-    // Net profit = Revenue - Total Costs - Capital
-    const netProfit = totals.revenue - totalProjectCosts - capital;
+    // Net realized profit (Realized P/L) = Total Revenue - Total Costs - Capital
+    const totalAllCosts = totalProjectCosts + capital;
+    const netProfit = totals.revenue - totalAllCosts;
     
-    // Summary boxes
+    // Projected P/L = Estimated Revenue - Total Costs (including capital)
+    const projectedPL = (produceDetails?.estimatedRevenue || 0) - totalAllCosts;
+    
+    // Deficit/Surplus = Realized P/L - Projected P/L (positive = surplus)
+    const deficitSurplus = netProfit - projectedPL;
+    const isSurplus = deficitSurplus > 0;
+    const isDeficit = deficitSurplus < 0;
+
+    // Summary boxes layout
     const boxWidth = 44;
     const boxHeight = 24;
     const startX = 14;
-    
-    // Total Records
-    doc.setFillColor(245, 245, 245);
+
+    // Total Revenue
+    doc.setFillColor(220, 252, 231);
     doc.roundedRect(startX, yPos, boxWidth, boxHeight, 2, 2, 'F');
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 100, 100);
-    doc.text('Total Records', startX + 3, yPos + 7);
+    doc.text('Total Revenue', startX + 3, yPos + 7);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
-    doc.text(totals.records.toString(), startX + 3, yPos + 18);
-    
-    // Total Produce
+    doc.setTextColor(22, 163, 74);
+    doc.text(`+${totals.revenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, startX + 3, yPos + 18);
+
+    // Total Produce (same as before)
     doc.setFillColor(245, 245, 245);
     doc.roundedRect(startX + boxWidth + 4, yPos, boxWidth, boxHeight, 2, 2, 'F');
     doc.setFontSize(8);
@@ -223,7 +199,6 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.text(totals.produce.toLocaleString(), startX + boxWidth + 7, yPos + 18);
     
     // Total Costs (including capital)
-    const totalAllCosts = totalProjectCosts + capital;
     doc.setFillColor(254, 226, 226);
     doc.roundedRect(startX + (boxWidth + 4) * 2, yPos, boxWidth, boxHeight, 2, 2, 'F');
     doc.setFontSize(8);
@@ -235,14 +210,14 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.setTextColor(220, 38, 38);
     doc.text(`-${totalAllCosts.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, startX + (boxWidth + 4) * 2 + 3, yPos + 18);
     
-    // Net Profit
+    // Net Profit (Realized P/L)
     const isProfit = netProfit >= 0;
     doc.setFillColor(isProfit ? 220 : 254, isProfit ? 252 : 226, isProfit ? 231 : 226);
     doc.roundedRect(startX + (boxWidth + 4) * 3, yPos, boxWidth, boxHeight, 2, 2, 'F');
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 100, 100);
-    doc.text('Net Profit', startX + (boxWidth + 4) * 3 + 3, yPos + 7);
+    doc.text('Realized P/L', startX + (boxWidth + 4) * 3 + 3, yPos + 7);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(isProfit ? 22 : 220, isProfit ? 163 : 38, isProfit ? 74 : 38);
@@ -251,8 +226,43 @@ export function generateProjectPDF(options: PDFExportOptions): void {
       startX + (boxWidth + 4) * 3 + 3,
       yPos + 18
     );
+
+    yPos += boxHeight + 8;
+
+    // Second row: Projected P/L and Deficit/Surplus
+    // Projected P/L
+    doc.setFillColor(220, 252, 231);
+    doc.roundedRect(startX, yPos, boxWidth, boxHeight, 2, 2, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text('Projected P/L', startX + 3, yPos + 7);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(projectedPL >= 0 ? [22, 163, 74] : [220, 38, 38]);
+    doc.text(`${projectedPL >= 0 ? '+' : ''}${projectedPL.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, startX + 3, yPos + 16);
+
+    // Deficit/Surplus (Realized - Projected)
+    doc.setFillColor(isSurplus ? 220 : 254, isSurplus ? 252 : 226, isSurplus ? 231 : 226);
+    doc.roundedRect(startX + boxWidth + 4, yPos, boxWidth, boxHeight, 2, 2, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text('Deficit/Surplus', startX + boxWidth + 7, yPos + 7);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(isSurplus ? [22, 163, 74] : [220, 38, 38]);
+    doc.text(`${deficitSurplus >= 0 ? '+' : ''}${deficitSurplus.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, startX + boxWidth + 7, yPos + 16);
     
-    yPos += boxHeight + 12;
+    // Add short descriptive computations
+    yPos += boxHeight + 6;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text('Realized P/L = Total Revenue - Total Costs', 14, yPos);
+    yPos += 5;
+    doc.text('Projected P/L = Estimated Revenue - Total Costs', 14, yPos);
+    yPos += 8;
   }
   
   // Monthly Breakdown Table (for full reports)
