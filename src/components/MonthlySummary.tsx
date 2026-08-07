@@ -80,6 +80,7 @@ export function MonthlySummary({ aggregations, projectDetails, isCompleted = fal
                   {overallProfit > 0 ? '+' : ''}{overallProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
               </div>
+              <p className="text-[10px] text-muted-foreground mt-1">(Realized P/L = Total Revenue - Total Costs)</p>
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Total Records</p>
@@ -105,6 +106,7 @@ export function MonthlySummary({ aggregations, projectDetails, isCompleted = fal
                   )}>
                     {projectedPL > 0 ? '+' : ''}{projectedPL.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">(Projected P/L = Estimated Revenue - Total Costs)</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">
@@ -150,10 +152,13 @@ export function MonthlySummary({ aggregations, projectDetails, isCompleted = fal
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-muted-foreground text-xs">Total Produce</p>
-                    <p className="font-semibold tabular-nums">{agg.totalProduceAmount.toLocaleString()}</p>
-                  </div>
+                  {/* Hide total produce for projects that don't track produce (breeding) */}
+                  { !(projectDetails?.totalItemCount === 0) && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">Total Produce</p>
+                      <p className="font-semibold tabular-nums">{agg.totalProduceAmount.toLocaleString()}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-muted-foreground text-xs">Gross Revenue</p>
                     <p className="font-semibold tabular-nums text-success">
