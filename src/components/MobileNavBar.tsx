@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { MobileSettingsSheet } from "@/components/MobileSettingsSheet";
 import { cn } from "@/lib/utils";
+import { DonateDialog } from "@/components/DonateDialog";
 
 const primaryItems = [
   { label: "Projects", path: "/app", icon: Home },
@@ -33,10 +34,28 @@ export function MobileNavBar() {
       aria-label="Primary"
     >
       <ul className="flex items-stretch justify-around">
-        {items.map((item) => {
+        {items.map((item, idx) => {
           const active = isActive(item.path);
+          const middleIndex = Math.floor(items.length / 2);
           return (
             <li key={item.path} className="flex-1">
+              {/* Insert Donate button in the visual middle */}
+              {idx === middleIndex && (
+                <div className="flex-1">
+                  <DonateDialog
+                    trigger={
+                      <button
+                        type="button"
+                        aria-label="Support AgroTensor"
+                        className="w-full h-full flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <span className="h-5 w-5 inline-block">💚</span>
+                        <span>Support</span>
+                      </button>
+                    }
+                  />
+                </div>
+              )}
               <NavLink
                 to={item.path}
                 className={cn(
