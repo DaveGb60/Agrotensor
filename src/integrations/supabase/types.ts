@@ -197,6 +197,24 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          bucket_key: string
+          hits: number
+          window_start: string
+        }
+        Insert: {
+          bucket_key: string
+          hits?: number
+          window_start: string
+        }
+        Update: {
+          bucket_key?: string
+          hits?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       sync_shares: {
         Row: {
           claim_count: number
@@ -265,6 +283,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: { p_key: string; p_limit: number; p_window_seconds: number }
+        Returns: boolean
+      }
       claim_admin_session: {
         Args: {
           p_device_id: string
@@ -280,6 +302,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_share_claim: {
+        Args: { p_code: string; p_max?: number }
+        Returns: number
       }
       is_any_admin: { Args: { _user_id: string }; Returns: boolean }
       is_device_trusted: { Args: { p_device_id: string }; Returns: boolean }
