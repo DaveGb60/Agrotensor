@@ -1,12 +1,7 @@
 // Admin edge function
 // Routes: stats, list-identities, invite-admin, remove-admin, list-admins
 import { createClient } from 'npm:@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+import { corsHeadersFor, trustedClientIp, logAndGenericError, allowRequest } from '../_shared/security.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -14,12 +9,6 @@ const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
 
 async function getCaller(req: Request, requireAdmin = true) {
   const authHeader = req.headers.get('Authorization');
@@ -43,16 +32,22 @@ async function getCaller(req: Request, requireAdmin = true) {
   };
 }
 
-function getClientIp(req: Request): string | null {
-  const xf = req.headers.get('x-forwarded-for');
-  if (xf) return xf.split(',')[0].trim();
-  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || null;
-}
-
 Deno.serve(async (req) => {
+  const corsHeaders = corsHeadersFor(req);
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    const ip = trustedClientIp(req);
+    if (!(await allowRequest(admin, { key: `admin:${ip}`, limit: 120, windowSeconds: 3600 }))) {
+      return json({ error: 'Too many requests. Please try again later.' }, 429);
+    }
+
     const caller = await getCaller(req);
     if (!caller || !caller.isAdmin) return json({ error: 'Forbidden' }, 403);
 
@@ -95,7 +90,7 @@ Deno.serve(async (req) => {
         .select('id, created_at, last_seen_at')
         .order('last_seen_at', { ascending: false })
         .limit(200);
-      if (error) return json({ error: error.message }, 500);
+      if (error) return json({ error: logAndGenericError('admin', error) }, 500);
 
       // attach backup counts per identity
       const ids = (data || []).map((d) => d.id);
@@ -126,7 +121,7 @@ Deno.serve(async (req) => {
         .from('user_roles')
         .select('id, user_id, role, email, invited_by, created_at')
         .order('created_at', { ascending: true });
-      if (error) return json({ error: error.message }, 500);
+      if (error) return json({ error: logAndGenericError('admin', error) }, 500);
       return json({ admins: data || [] });
     }
 
@@ -146,7 +141,7 @@ Deno.serve(async (req) => {
 
       // Look up the user by email (must already have signed up)
       const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-      if (listErr) return json({ error: listErr.message }, 500);
+      if (listErr) return json({ error: logAndGenericError('admin', listErr) }, 500);
       const user = list.users.find((u) => (u.email || '').toLowerCase() === email);
       if (!user) {
         return json({ error: 'No account with that email exists yet. Ask them to sign up first.' }, 404);
@@ -158,7 +153,7 @@ Deno.serve(async (req) => {
         email,
         invited_by: caller.id,
       });
-      if (insErr) return json({ error: insErr.message }, 400);
+      if (insErr) return json({ error: logAndGenericError('admin', insErr) }, 400);
       return json({ ok: true });
     }
 
@@ -171,12 +166,11 @@ Deno.serve(async (req) => {
         .delete()
         .eq('user_id', userId)
         .eq('role', 'admin');
-      if (error) return json({ error: error.message }, 400);
+      if (error) return json({ error: logAndGenericError('admin', error) }, 400);
       return json({ ok: true });
     }
 
     if (action === 'record-session-ip') {
-      const ip = getClientIp(req);
       const deviceId = String(payload.device_id || '');
       if (!deviceId) return json({ error: 'device_id required' }, 400);
       await admin
@@ -193,6 +187,6 @@ Deno.serve(async (req) => {
 
     return json({ error: 'Unknown action' }, 400);
   } catch (e) {
-    return json({ error: (e as Error).message }, 500);
+    return json({ error: logAndGenericError('admin', e) }, 500);
   }
 });
