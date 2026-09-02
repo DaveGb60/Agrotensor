@@ -8,10 +8,10 @@ const FirstUseSection = () => {
     'Install & open — Download AgroTensor and open the app. No signup required to explore.',
     'Create your farm — Add your farm name and basic details to spin up a local database.',
     'Work offline — Enter livestock, crop and financial records with or without internet.',
-    'Back up securely — Encrypted backups stored locally or in your cloud of choice.',
+    'Back up securely — Save backups on your device or to the cloud storage you choose.',
     'Sync devices — Pair devices with a secure code to keep the team in sync.',
     'Invite your team — Add users and set roles for the right level of access.',
-    'Get insights — Financial summaries, productivity reports and tamper-proof logs.',
+    'Get insights — Financial summaries, productivity reports and locked record history.',
   ];
 
   return (
@@ -33,9 +33,9 @@ const FirstUseSection = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
               {[
-                { icon: ShieldCheck, label: 'End-to-end encrypted' },
-                { icon: RefreshCw, label: 'Secure device sync' },
-                { icon: FileCheck2, label: 'Tamper-proof logs' },
+                { icon: ShieldCheck, label: 'Data stays on your device' },
+                { icon: RefreshCw, label: 'Direct device-to-device sync' },
+                { icon: FileCheck2, label: 'Locked record history' },
               ].map(({ icon: Icon, label }) => (
                 <div
                   key={label}
@@ -123,8 +123,8 @@ const FirstUseSection = () => {
                   {[
                     'Free to start — core features stay free',
                     'Works offline in the field',
-                    'Encrypted backup & sync',
-                    'Tamper-proof audit trail',
+                    'Backup & sync you control',
+                    'Locked records & audit trail',
                     'Simple, touch-friendly interface',
                   ].map((b) => (
                     <li key={b} className="flex items-start gap-2">
