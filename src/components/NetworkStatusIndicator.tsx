@@ -1,83 +1,66 @@
-import { useOfflineIndicator, useSyncStatus } from '@/hooks/useNetworkStatus';
-import { AlertCircle, WifiOff, RefreshCw, CheckCircle2 } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useSyncStatus } from '@/hooks/useNetworkStatus';
+
+const LONG_PRESS_MS = 500;
+const TOOLTIP_HOLD_MS = 1500;
 
 export function NetworkStatusIndicator() {
-  const { isOffline, hasPending, message } = useOfflineIndicator();
-  const { totalPending, failedCount, retryingCount } = useSyncStatus();
+  const { isOnline } = useSyncStatus();
+  const [showDescription, setShowDescription] = useState(false);
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  if (!isOffline && !hasPending) {
-    return null; // Don't show anything when everything is fine
-  }
+  const clearTimers = useCallback(() => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+  }, []);
 
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium ${
-            failedCount > 0
-              ? 'bg-destructive/10 text-destructive border border-destructive/20'
-              : isOffline
-              ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800'
-              : 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800'
-          }`}>
-            {failedCount > 0 ? (
-              <AlertCircle className="h-3.5 w-3.5" />
-            ) : isOffline ? (
-              <WifiOff className="h-3.5 w-3.5" />
-            ) : (
-              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-            )}
-            <span>{message}</span>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" className="max-w-xs">
-          <div className="space-y-1 text-xs">
-            <p>Status: {isOffline ? 'Offline' : 'Online'}</p>
-            {totalPending > 0 && (
-              <>
-                <p>Pending changes: {totalPending}</p>
-                {retryingCount > 0 && <p>Retrying: {retryingCount}</p>}
-                {failedCount > 0 && <p className="text-destructive">Failed: {failedCount}</p>}
-              </>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
+  useEffect(() => clearTimers, [clearTimers]);
 
-export function SyncStatusBadge() {
-  const { isOnline, isPending, totalPending, failedCount } = useSyncStatus();
+  const handlePointerDown = useCallback(() => {
+    clearTimers();
+    pressTimer.current = setTimeout(() => {
+      setShowDescription(true);
+      hideTimer.current = setTimeout(() => setShowDescription(false), TOOLTIP_HOLD_MS);
+    }, LONG_PRESS_MS);
+  }, [clearTimers]);
 
-  if (!isPending && isOnline) {
-    return null;
-  }
+  const handlePointerUpLeave = useCallback(() => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  }, []);
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
-      {failedCount > 0 ? (
-        <>
-          <AlertCircle className="h-4 w-4 text-destructive" />
-          <span className="text-sm text-destructive font-medium">{failedCount} sync error(s)</span>
-        </>
-      ) : isPending ? (
-        <>
-          <RefreshCw className="h-4 w-4 text-blue-600 animate-spin" />
-          <span className="text-sm text-blue-600 font-medium">Syncing {totalPending} changes...</span>
-        </>
-      ) : !isOnline ? (
-        <>
-          <WifiOff className="h-4 w-4 text-amber-600" />
-          <span className="text-sm text-amber-600 font-medium">Offline mode</span>
-        </>
-      ) : (
-        <>
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <span className="text-sm text-green-600 font-medium">Synced</span>
-        </>
+    <button
+      type="button"
+      aria-label={isOnline ? 'Online' : 'Offline'}
+      className="relative inline-flex h-8 w-8 select-none items-center justify-center rounded-md text-muted-foreground hover:bg-accent transition-colors"
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUpLeave}
+      onPointerLeave={handlePointerUpLeave}
+      onPointerCancel={handlePointerUpLeave}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      <span
+        className={`inline-block h-2.5 w-2.5 rounded-full ${
+          isOnline ? 'bg-green-500' : 'bg-red-500'
+        }`}
+      />
+      {showDescription && (
+        <span className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
+          {isOnline
+            ? 'You are online. Data will sync automatically.'
+            : 'You are offline. Changes are saved locally and will sync when you reconnect.'}
+        </span>
       )}
-    </div>
+    </button>
   );
 }
