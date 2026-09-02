@@ -1,8 +1,11 @@
 import { ReactNode } from "react";
+import { Settings } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileNavBar } from "@/components/MobileNavBar";
+import { MobileSettingsSheet } from "@/components/MobileSettingsSheet";
 import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
+
 
 interface AppShellProps {
   children: ReactNode;
