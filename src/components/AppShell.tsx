@@ -25,12 +25,26 @@ export function AppShell({ children }: AppShellProps) {
         </div>
         <div className="flex-1 flex flex-col min-w-0">
           <div className="sticky top-0 z-40 flex h-10 items-center justify-between gap-2 border-b border-border/60 bg-background/80 px-2 backdrop-blur">
-            <div className="hidden md:flex items-center gap-2">
-              <SidebarTrigger />
-              <span className="text-xs text-muted-foreground">
-                Toggle navigation
-              </span>
+            <div className="flex items-center gap-2">
+              <MobileSettingsSheet
+                trigger={
+                  <button
+                    type="button"
+                    aria-label="Settings"
+                    className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  >
+                    <Settings className="h-5 w-5" />
+                  </button>
+                }
+              />
+              <div className="hidden md:flex items-center gap-2">
+                <SidebarTrigger />
+                <span className="text-xs text-muted-foreground">
+                  Toggle navigation
+                </span>
+              </div>
             </div>
+
             <div className="ml-auto">
               <NetworkStatusIndicator />
             </div>
