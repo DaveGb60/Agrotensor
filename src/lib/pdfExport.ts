@@ -239,7 +239,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.text('Projected P/L', startX + 3, yPos + 7);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(projectedPL >= 0 ? [22, 163, 74] : [220, 38, 38]);
+    projectedPL >= 0 ? doc.setTextColor(22, 163, 74) : doc.setTextColor(220, 38, 38);
     doc.text(`${projectedPL >= 0 ? '+' : ''}${projectedPL.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, startX + 3, yPos + 16);
 
     // Deficit/Surplus (Realized - Projected)
@@ -251,7 +251,7 @@ export function generateProjectPDF(options: PDFExportOptions): void {
     doc.text('Deficit/Surplus', startX + boxWidth + 7, yPos + 7);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(isSurplus ? [22, 163, 74] : [220, 38, 38]);
+    isSurplus ? doc.setTextColor(22, 163, 74) : doc.setTextColor(220, 38, 38);
     doc.text(`${deficitSurplus >= 0 ? '+' : ''}${deficitSurplus.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, startX + boxWidth + 7, yPos + 16);
     
     // Add short descriptive computations

@@ -33,7 +33,7 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-wrap gap-2">
-            {['Free', 'Offline-first', 'End-to-end encrypted'].map((t) => (
+            {['Free', 'Offline-first', 'Private by default'].map((t) => (
               <div
                 key={t}
                 className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full text-white/90 text-sm border border-white/15"

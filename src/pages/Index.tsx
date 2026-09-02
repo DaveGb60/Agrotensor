@@ -272,7 +272,7 @@ const Index = () => {
     try {
       await lockRecord(id);
       setRecords(records.map(r => r.id === id ? { ...r, isLocked: true, lockedAt: new Date().toISOString() } : r));
-      toast({ title: 'Record locked and encrypted' });
+      toast({ title: 'Record locked' });
     } catch (error) {
       toast({ title: 'Error locking record', variant: 'destructive' });
     }
@@ -733,7 +733,7 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-full shadow-card">
               <Lock className="h-4 w-4 text-primary" />
-              <span>Tamper-Proof Records</span>
+              <span>Locked Records</span>
             </div>
             <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-full shadow-card">
               <RefreshCw className="h-4 w-4 text-primary" />

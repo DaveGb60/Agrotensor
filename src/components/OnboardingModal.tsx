@@ -9,10 +9,10 @@ const STEPS = [
   },
   { title: 'Create your farm', body: "Add your farm name and basic details. This creates a local database on your device." },
   { title: 'Work offline', body: 'Enter livestock, crop, and financial records even without internet. Changes sync when online.' },
-  { title: 'Back up securely', body: 'Create encrypted backups stored locally or to your preferred cloud.' },
+  { title: 'Back up securely', body: 'Create backups stored on your device or in the cloud storage you choose.' },
   { title: 'Sync devices', body: 'Connect other devices with a secure pairing code to keep teams in sync.' },
   { title: 'Invite your team', body: 'Add users and set roles for the right level of access.' },
-  { title: 'Get insights', body: 'View financial summaries, productivity reports, and tamper-proof audit logs.' }
+  { title: 'Get insights', body: 'View financial summaries, productivity reports, and locked record history.' }
 ];
 
 const OnboardingModal: React.FC = () => {
