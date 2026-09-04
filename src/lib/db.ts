@@ -410,8 +410,10 @@ export async function createProject(
 
 export async function isAnimalTagUnique(projectId: string, animalTag: string, excludeId?: string): Promise<boolean> {
   const animals = await getAnimalsByProject(projectId);
-  return !animals.some((a) => a.animalId === animalTag && a.id !== excludeId);
+  const target = (animalTag || '').trim().toLowerCase();
+  return !animals.some((a) => (a.animalId || '').trim().toLowerCase() === target && a.id !== excludeId);
 }
+
 
 export async function createAnimal(
   projectId: string,
