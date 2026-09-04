@@ -517,23 +517,31 @@ export async function updateAnimal(animal: FarmAnimal): Promise<void> {
   if (!unique) {
     throw new Error(`Animal ID "${animal.animalId}" already exists in this project`);
   }
+  const normalized = normalizeAnimal(animal);
   await db.write(async () => {
     const existing = await db.get('animals').find(animal.id);
     await existing.update((ani: any) => {
-      ani.animalId = animal.animalId;
-      ani.sex = animal.sex;
-      ani.healthStatus = animal.healthStatus;
-      if (animal.age !== undefined) ani.age = animal.age;
-      if (animal.birthDate !== undefined) ani.birthDate = animal.birthDate;
-      if (animal.breed !== undefined) ani.breed = animal.breed;
-      if (animal.currentStatus !== undefined) ani.currentStatus = animal.currentStatus;
-      if (animal.acquisitionCost !== undefined) ani.acquisitionCost = animal.acquisitionCost;
-      if (animal.notes !== undefined) ani.notes = animal.notes;
-      if (animal.motherId !== undefined) ani.motherId = animal.motherId;
-      if (animal.fatherId !== undefined) ani.fatherId = animal.fatherId;
+      ani.animalId = normalized.animalId;
+      ani.sex = normalized.sex;
+      ani.healthStatus = normalized.healthStatus;
+      ani.age = normalized.age ?? '';
+      ani.birthDate = normalized.birthDate ?? '';
+      ani.breed = normalized.breed ?? '';
+      ani.currentStatus = normalized.currentStatus ?? 'active';
+      ani.acquisitionCost = normalized.acquisitionCost ?? 0;
+      ani.notes = normalized.notes ?? '';
+      ani.motherId = normalized.motherId ?? '';
+      ani.fatherId = normalized.fatherId ?? '';
+      ani.matingHistory = normalized.matingHistory;
+      ani.pregnancyHistory = normalized.pregnancyHistory;
+      ani.birthRecords = normalized.birthRecords;
+      ani.deathRecords = normalized.deathRecords;
+      ani.saleRecords = normalized.saleRecords;
+      ani.treatmentHistory = normalized.treatmentHistory;
       ani.updatedAtIso = new Date().toISOString();
     });
   });
+
 }
 
 export async function lockAnimal(id: string): Promise<void> {
