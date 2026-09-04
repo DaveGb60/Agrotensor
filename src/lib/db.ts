@@ -610,14 +610,18 @@ export async function getAnimalLineage(animalId: string, projectId?: string): Pr
   getAncestors(animalId);
 
   const descendants: FarmAnimal[] = [];
+  const seenDescendants = new Set<string>([animalId]);
   const getDescendants = (id: string) => {
     const offspring = (allAnimals as any[]).filter((a) => a.motherId === id || a.fatherId === id);
     for (const child of offspring) {
+      if (seenDescendants.has(child.id)) continue;
+      seenDescendants.add(child.id);
       descendants.push(toAnimalPlain(child as any));
       getDescendants(child.id);
     }
   };
   getDescendants(animalId);
+
 
   return { ancestors, descendants };
 }
