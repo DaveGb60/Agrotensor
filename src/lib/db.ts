@@ -520,7 +520,17 @@ export async function updateAnimal(animal: FarmAnimal): Promise<void> {
   if (!unique) {
     throw new Error(`Animal ID "${animal.animalId}" already exists in this project`);
   }
-  const normalized = normalizeAnimal(animal);
+  const normalized: FarmAnimal = {
+    ...animal,
+    animalId: (animal.animalId || '').trim(),
+    matingHistory: animal.matingHistory || [],
+    pregnancyHistory: animal.pregnancyHistory || [],
+    birthRecords: animal.birthRecords || [],
+    deathRecords: animal.deathRecords || [],
+    saleRecords: animal.saleRecords || [],
+    treatmentHistory: animal.treatmentHistory || [],
+  };
+
   await db.write(async () => {
     const existing = await db.get('animals').find(animal.id);
     await existing.update((ani: any) => {
