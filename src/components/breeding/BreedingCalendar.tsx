@@ -158,10 +158,10 @@ export function BreedingCalendar({ project, animals, details }: BreedingCalendar
                 event: "after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-primary",
               }}
               classNames={{
-                ...Calendar,
                 cell: "h-9 w-9 text-center text-sm p-0 relative",
                 day: cn("h-9 w-9 p-0 font-normal aria-selected:opacity-100"),
               }}
+
             />
           </div>
 

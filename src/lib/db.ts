@@ -319,15 +319,16 @@ function toAnimalPlain(a: Animal): FarmAnimal {
     projectId: a.projectId,
     animalId: a.animalId,
     sex: a.sex as FarmAnimal['sex'],
-    age: a.age,
-    birthDate: a.birthDate,
-    breed: a.breed,
+    age: a.age || undefined,
+    birthDate: a.birthDate || undefined,
+    breed: a.breed || undefined,
     healthStatus: a.healthStatus as FarmAnimal['healthStatus'],
-    currentStatus: a.currentStatus as FarmAnimal['currentStatus'],
-    acquisitionCost: a.acquisitionCost,
-    notes: a.notes,
-    motherId: a.motherId,
-    fatherId: a.fatherId,
+    currentStatus: (a.currentStatus || 'active') as FarmAnimal['currentStatus'],
+    acquisitionCost: a.acquisitionCost || undefined,
+    notes: a.notes || undefined,
+    motherId: a.motherId || undefined,
+    fatherId: a.fatherId || undefined,
+
     createdAt: a.createdAtIso,
     updatedAt: a.updatedAtIso,
     isLocked: a.isLocked,
@@ -409,8 +410,10 @@ export async function createProject(
 
 export async function isAnimalTagUnique(projectId: string, animalTag: string, excludeId?: string): Promise<boolean> {
   const animals = await getAnimalsByProject(projectId);
-  return !animals.some((a) => a.animalId === animalTag && a.id !== excludeId);
+  const target = (animalTag || '').trim().toLowerCase();
+  return !animals.some((a) => (a.animalId || '').trim().toLowerCase() === target && a.id !== excludeId);
 }
+
 
 export async function createAnimal(
   projectId: string,
@@ -517,23 +520,41 @@ export async function updateAnimal(animal: FarmAnimal): Promise<void> {
   if (!unique) {
     throw new Error(`Animal ID "${animal.animalId}" already exists in this project`);
   }
+  const normalized: FarmAnimal = {
+    ...animal,
+    animalId: (animal.animalId || '').trim(),
+    matingHistory: animal.matingHistory || [],
+    pregnancyHistory: animal.pregnancyHistory || [],
+    birthRecords: animal.birthRecords || [],
+    deathRecords: animal.deathRecords || [],
+    saleRecords: animal.saleRecords || [],
+    treatmentHistory: animal.treatmentHistory || [],
+  };
+
   await db.write(async () => {
     const existing = await db.get('animals').find(animal.id);
     await existing.update((ani: any) => {
-      ani.animalId = animal.animalId;
-      ani.sex = animal.sex;
-      ani.healthStatus = animal.healthStatus;
-      if (animal.age !== undefined) ani.age = animal.age;
-      if (animal.birthDate !== undefined) ani.birthDate = animal.birthDate;
-      if (animal.breed !== undefined) ani.breed = animal.breed;
-      if (animal.currentStatus !== undefined) ani.currentStatus = animal.currentStatus;
-      if (animal.acquisitionCost !== undefined) ani.acquisitionCost = animal.acquisitionCost;
-      if (animal.notes !== undefined) ani.notes = animal.notes;
-      if (animal.motherId !== undefined) ani.motherId = animal.motherId;
-      if (animal.fatherId !== undefined) ani.fatherId = animal.fatherId;
+      ani.animalId = normalized.animalId;
+      ani.sex = normalized.sex;
+      ani.healthStatus = normalized.healthStatus;
+      ani.age = normalized.age ?? '';
+      ani.birthDate = normalized.birthDate ?? '';
+      ani.breed = normalized.breed ?? '';
+      ani.currentStatus = normalized.currentStatus ?? 'active';
+      ani.acquisitionCost = normalized.acquisitionCost ?? 0;
+      ani.notes = normalized.notes ?? '';
+      ani.motherId = normalized.motherId ?? '';
+      ani.fatherId = normalized.fatherId ?? '';
+      ani.matingHistory = normalized.matingHistory;
+      ani.pregnancyHistory = normalized.pregnancyHistory;
+      ani.birthRecords = normalized.birthRecords;
+      ani.deathRecords = normalized.deathRecords;
+      ani.saleRecords = normalized.saleRecords;
+      ani.treatmentHistory = normalized.treatmentHistory;
       ani.updatedAtIso = new Date().toISOString();
     });
   });
+
 }
 
 export async function lockAnimal(id: string): Promise<void> {
@@ -601,14 +622,18 @@ export async function getAnimalLineage(animalId: string, projectId?: string): Pr
   getAncestors(animalId);
 
   const descendants: FarmAnimal[] = [];
+  const seenDescendants = new Set<string>([animalId]);
   const getDescendants = (id: string) => {
     const offspring = (allAnimals as any[]).filter((a) => a.motherId === id || a.fatherId === id);
     for (const child of offspring) {
+      if (seenDescendants.has(child.id)) continue;
+      seenDescendants.add(child.id);
       descendants.push(toAnimalPlain(child as any));
       getDescendants(child.id);
     }
   };
   getDescendants(animalId);
+
 
   return { ancestors, descendants };
 }
