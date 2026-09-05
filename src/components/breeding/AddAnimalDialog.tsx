@@ -21,8 +21,11 @@ export function AddAnimalDialog({ open, onOpenChange, onSubmit, existingAnimals,
   const [birthDate, setBirthDate] = useState('');
   const [breed, setBreed] = useState(defaultBreed || '');
   const [healthStatus, setHealthStatus] = useState<HealthStatus>('healthy');
+  const [acquisitionCost, setAcquisitionCost] = useState('');
+  const [notes, setNotes] = useState('');
   const [motherId, setMotherId] = useState<string | undefined>();
   const [fatherId, setFatherId] = useState<string | undefined>();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -32,13 +35,24 @@ export function AddAnimalDialog({ open, onOpenChange, onSubmit, existingAnimals,
       setBirthDate('');
       setBreed(defaultBreed || '');
       setHealthStatus('healthy');
+      setAcquisitionCost('');
+      setNotes('');
       setMotherId(undefined);
       setFatherId(undefined);
+      setError(null);
     }
   }, [open, defaultBreed]);
 
   const handleSubmit = () => {
     if (!animalId.trim()) return;
+    const taken = existingAnimals.some(
+      (a) => a.animalId.trim().toLowerCase() === animalId.trim().toLowerCase()
+    );
+    if (taken) {
+      setError('An animal with this ID already exists.');
+      return;
+    }
+    setError(null);
     onSubmit({
       animalId: animalId.trim(),
       sex,
@@ -47,6 +61,8 @@ export function AddAnimalDialog({ open, onOpenChange, onSubmit, existingAnimals,
       breed: breed || undefined,
       healthStatus,
       currentStatus: 'active',
+      acquisitionCost: acquisitionCost.trim() === '' ? undefined : Number(acquisitionCost),
+      notes: notes.trim() || undefined,
       motherId,
       fatherId,
     });
@@ -99,10 +115,21 @@ export function AddAnimalDialog({ open, onOpenChange, onSubmit, existingAnimals,
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
+              <Label htmlFor="acqCost">Purchase Cost</Label>
+              <Input id="acqCost" type="number" min="0" step="0.01" value={acquisitionCost} onChange={(e) => setAcquisitionCost(e.target.value)} placeholder="0.00" className="bg-background" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="animalNotes">Notes</Label>
+              <Input id="animalNotes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional" className="bg-background" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label>Dam (Mother)</Label>
-              <Select value={motherId || ''} onValueChange={(v) => setMotherId(v || undefined)}>
+              <Select value={motherId || '__none__'} onValueChange={(v) => setMotherId(v === '__none__' ? undefined : v)}>
                 <SelectTrigger className="bg-background"><SelectValue placeholder="Optional" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
                   {existingAnimals.filter((a) => a.sex === 'female').map((a) => (
                     <SelectItem key={a.id} value={a.id}>{a.animalId}</SelectItem>
                   ))}
@@ -111,9 +138,10 @@ export function AddAnimalDialog({ open, onOpenChange, onSubmit, existingAnimals,
             </div>
             <div className="space-y-2">
               <Label>Sire (Father)</Label>
-              <Select value={fatherId || ''} onValueChange={(v) => setFatherId(v || undefined)}>
+              <Select value={fatherId || '__none__'} onValueChange={(v) => setFatherId(v === '__none__' ? undefined : v)}>
                 <SelectTrigger className="bg-background"><SelectValue placeholder="Optional" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
                   {existingAnimals.filter((a) => a.sex === 'male').map((a) => (
                     <SelectItem key={a.id} value={a.id}>{a.animalId}</SelectItem>
                   ))}
@@ -122,6 +150,7 @@ export function AddAnimalDialog({ open, onOpenChange, onSubmit, existingAnimals,
             </div>
           </div>
         </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button variant="hero" onClick={handleSubmit} disabled={!animalId.trim()}>Add Animal</Button>
