@@ -170,9 +170,7 @@ export function getBreedingMonthlyAggregation(
 
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(amount || 0);
 }
