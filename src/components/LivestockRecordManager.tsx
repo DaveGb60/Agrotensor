@@ -146,7 +146,7 @@ export function LivestockRecordManager({ project, onAnimalsChange }: LivestockRe
       setSelectedAnimal(null);
       loadAnimals();
     } catch (error) {
-      toast({ title: 'Failed to delete animal', variant: 'destructive' });
+      toast({ title: 'Failed to delete animal', description: friendlyError(error), variant: 'destructive' });
     }
   };
 
@@ -156,7 +156,7 @@ export function LivestockRecordManager({ project, onAnimalsChange }: LivestockRe
       toast({ title: 'Animal locked successfully' });
       loadAnimals();
     } catch (error) {
-      toast({ title: 'Failed to lock animal', variant: 'destructive' });
+      toast({ title: 'Failed to lock animal', description: friendlyError(error), variant: 'destructive' });
     }
   };
 
@@ -275,6 +275,7 @@ export function LivestockRecordManager({ project, onAnimalsChange }: LivestockRe
           onBirth={handleBirth}
           onSelectAnimal={(a) => openAnimal(a)}
           initialRecordType={initialRecordType}
+          readOnly={project.isCompleted}
         />
       )}
     </div>
