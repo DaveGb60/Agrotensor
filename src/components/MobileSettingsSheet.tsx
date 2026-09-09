@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Moon, Sun, LifeBuoy, Info } from "lucide-react";
+import { Moon, Sun, LifeBuoy, Info, Shield, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -66,6 +66,24 @@ export function MobileSettingsSheet({ trigger }: MobileSettingsSheetProps) {
           >
             <LifeBuoy className="h-4 w-4" />
             Data recovery
+          </Button>
+
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3"
+            onClick={() => navigate("/privacy")}
+          >
+            <Shield className="h-4 w-4" />
+            Privacy Policy
+          </Button>
+
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3"
+            onClick={() => navigate("/terms")}
+          >
+            <FileText className="h-4 w-4" />
+            Terms of Service
           </Button>
 
           <div className="flex items-center gap-3 px-3 pt-3 text-xs text-muted-foreground">

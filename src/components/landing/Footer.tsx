@@ -56,6 +56,8 @@ const LandingFooter = () => {
               <li><a href="#philosophy" className="hover:text-green-300 transition-colors">Philosophy</a></li>
               <li><a href="#first-use" className="hover:text-green-300 transition-colors">First Use</a></li>
               <li><a href="/app" className="hover:text-green-300 transition-colors">Open App</a></li>
+              <li><a href="/privacy" className="hover:text-green-300 transition-colors">Privacy Policy</a></li>
+              <li><a href="/terms" className="hover:text-green-300 transition-colors">Terms of Service</a></li>
             </ul>
           </div>
         </div>
