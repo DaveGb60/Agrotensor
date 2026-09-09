@@ -17,6 +17,8 @@ const DataRecovery = lazy(() => import("./pages/DataRecovery"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminAuth = lazy(() => import("./pages/AdminAuth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/Terms"));
 import { getAllProjects } from "@/lib/db";
 
 const queryClient = new QueryClient();
@@ -93,6 +95,8 @@ const App = () => (
               <Route path="/recover" element={<AppLayout><DataRecovery /></AppLayout>} />
               <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
               <Route path="/admin-auth" element={<AdminAuth />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<Terms />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
