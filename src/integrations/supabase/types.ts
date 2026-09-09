@@ -80,6 +80,98 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          preview: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          preview?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          preview?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_daily_usage: {
+        Row: {
+          day: string
+          image_count: number
+          message_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          day?: string
+          image_count?: number
+          message_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          day?: string
+          image_count?: number
+          message_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_messages: {
+        Row: {
+          attachments: Json
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+          status: string
+          text: string
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+          status?: string
+          text?: string
+          user_id: string
+        }
+        Update: {
+          attachments?: Json
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          status?: string
+          text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cloud_backups: {
         Row: {
           cloud_id: string
@@ -283,6 +375,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ai_consume_quota: {
+        Args: {
+          _image_limit?: number
+          _images?: number
+          _message_limit?: number
+          _messages?: number
+          _user_id: string
+        }
+        Returns: Json
+      }
       check_rate_limit: {
         Args: { p_key: string; p_limit: number; p_window_seconds: number }
         Returns: boolean
