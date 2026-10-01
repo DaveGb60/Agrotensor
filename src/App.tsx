@@ -19,6 +19,7 @@ const AdminAuth = lazy(() => import("./pages/AdminAuth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
+const AgroAI = lazy(() => import("./pages/AgroAI"));
 import { getAllProjects } from "@/lib/db";
 
 const queryClient = new QueryClient();
@@ -94,6 +95,8 @@ const App = () => (
               <Route path="/cloud" element={<AppLayout><CloudBackup /></AppLayout>} />
               <Route path="/recover" element={<AppLayout><DataRecovery /></AppLayout>} />
               <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
+              <Route path="/ai" element={<AppLayout><AgroAI /></AppLayout>} />
+              <Route path="/ai/:conversationId" element={<AppLayout><AgroAI /></AppLayout>} />
               <Route path="/admin-auth" element={<AdminAuth />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />

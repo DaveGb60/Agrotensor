@@ -1,4 +1,4 @@
-import { Home, Trash2, Cloud, Shield, Heart, Sun, Moon, LifeBuoy } from "lucide-react";
+import { Sprout, Home, Trash2, Cloud, Shield, Heart, Sun, Moon, LifeBuoy } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 
 const primaryItems = [
   { label: "Projects", path: "/app", icon: Home },
+  { label: "AgroTensor AI", path: "/ai", icon: Sprout },
   { label: "Cloud Backup", path: "/cloud", icon: Cloud },
   { label: "Data Recovery", path: "/recover", icon: LifeBuoy },
   { label: "Trash", path: "/trash", icon: Trash2 },
@@ -39,7 +40,7 @@ export function AppSidebar() {
     ...(showAdminLink ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
   ];
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname === path || (path === "/ai" && pathname.startsWith("/ai/"));
 
   return (
     <Sidebar collapsible="icon">

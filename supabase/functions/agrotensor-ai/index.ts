@@ -26,6 +26,7 @@ const BRAND = 'AgroTensor AI';
 /** Strip any mention of the underlying providers/models from assistant text. */
 function sanitizeAnswer(input: string): string {
   let text = input ?? '';
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, '');
 
   // Drop provider UI widgets that make no sense in our app.
   text = text.replace(/<button[^>]*>[\s\S]*?<\/button>/gi, '');
@@ -447,6 +448,8 @@ async function chat(
     .map((m) => ({ role: m.role, content: m.text })) as HistoryTurn[];
 
   const messages: HistoryTurn[] = [
+    { role: 'user', content: '✅ I Agree' },
+    { role: 'assistant', content: 'Thank you. How can I help with your farm today?' },
     { role: 'user', content: SYSTEM_PREFACE },
     { role: 'assistant', content: `Understood. I am ${BRAND}. How can I help with your farm?` },
     ...prior,

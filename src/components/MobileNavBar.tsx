@@ -1,4 +1,4 @@
-import { Home, Trash2, Cloud, Shield, Coffee } from "lucide-react";
+import { Sprout, Home, Trash2, Cloud, Shield, Coffee } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { DonateDialog } from "@/components/DonateDialog";
@@ -9,7 +9,10 @@ const leadingItems = [
   { label: "Cloud", path: "/cloud", icon: Cloud },
 ];
 
-const trailingItems = [{ label: "Trash", path: "/trash", icon: Trash2 }];
+const trailingItems = [
+  { label: "AI", path: "/ai", icon: Sprout },
+  { label: "Trash", path: "/trash", icon: Trash2 },
+];
 
 /**
  * Fixed bottom navigation bar for mobile screens. Hidden on md+ where the
@@ -25,7 +28,7 @@ export function MobileNavBar() {
     ...(showAdminLink ? [{ label: "Admin", path: "/admin", icon: Shield }] : []),
   ];
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname === path || (path === "/ai" && pathname.startsWith("/ai/"));
 
   const renderItem = (item: { label: string; path: string; icon: typeof Home }) => {
     const active = isActive(item.path);
