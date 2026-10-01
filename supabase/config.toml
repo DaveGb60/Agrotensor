@@ -2,3 +2,6 @@ project_id = "iixwxvhkqnimaftzqpuh"
 
 [functions.paystack]
 verify_jwt = false
+
+[functions.agrotensor-ai]
+verify_jwt = false
