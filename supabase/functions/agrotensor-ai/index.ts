@@ -27,8 +27,9 @@ const BRAND = 'AgroTensor AI';
 function sanitizeAnswer(input: string): string {
   let text = input ?? '';
   text = text.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  text = text.replace(/\s*\[\d+\](\s*\[\d+\])*/g, '');
   // Drop meta remarks about the retrieval context (e.g. "The provided search results do not ...").
-  text = text.replace(/[^.!?\n]*\b(supplied|provided|given|available|retrieved|above)\s+(search\s+results?|documents?|sources?|context|information|knowledge\s*base|passages?)\b[^.!?\n]*[.!?:]?[ \t]*\n?/gi, '');
+  text = text.replace(/[^.!?\n]*\b(supplied|provided|given|available|retrieved|above)\s+((search|web)\s+)?(results?|documents?|references?|materials?|excerpts?|snippets?|sources?|context|information|knowledge\s*base|passages?)\b[^.!?\n]*[.!?:]?[ \t]*\n?/gi, '');
   text = text.replace(/[^.!?\n]*\b(search\s+results?|knowledge\s*base)\s+(do(es)?\s+not|don't|doesn't)\b[^.!?\n]*[.!?:]?[ \t]*\n?/gi, '');
 
   // Drop provider UI widgets that make no sense in our app.
