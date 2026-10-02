@@ -129,7 +129,7 @@ export async function sendChat(
   const res = await fetch(FN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', apikey: ANON, Authorization: `Bearer ${ANON}` },
-    body: JSON.stringify({ action: 'chat', userId: getDeviceId(), ...params }),
+    body: JSON.stringify({ action: 'chat', userId: getDeviceId(), profile: profileToText(getProfile()), ...params }),
   });
   if (!res.ok || !res.body) {
     const data = await res.json().catch(() => ({}));
@@ -179,4 +179,22 @@ export function fileToDataUrl(file: File, maxSide = 1600): Promise<string> {
     img.onerror = () => reject(new Error('Could not read that photo.'));
     img.src = url;
   });
+}
+
+/* ---------------- Optional farm profile ---------------- */
+const PROFILE_KEY = 'agrotensor-ai-profile';
+export interface FarmProfile { location: string; farmType: string; crops: string; size: string; notes: string }
+export function getProfile(): FarmProfile | null {
+  try { const r = localStorage.getItem(PROFILE_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
+}
+export function saveProfile(p: FarmProfile | null) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(p ?? { location: '', farmType: '', crops: '', size: '', notes: '' }));
+}
+export function hasSeenProfilePrompt() { return localStorage.getItem(PROFILE_KEY) !== null; }
+export function profileToText(p: FarmProfile | null): string {
+  if (!p) return '';
+  return [
+    p.location && `Location: ${p.location}`, p.farmType && `Farming type: ${p.farmType}`,
+    p.crops && `Crops/livestock: ${p.crops}`, p.size && `Farm size: ${p.size}`, p.notes && `Notes: ${p.notes}`,
+  ].filter(Boolean).join('; ');
 }
