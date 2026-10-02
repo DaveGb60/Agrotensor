@@ -1,5 +1,7 @@
-import { ReactNode } from "react";
-import { Settings } from "lucide-react";
+import { ReactNode, useState } from "react";
+import { Settings, BarChart3 } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { FarmInsightsDialog } from "@/components/insights/FarmInsightsDialog";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileNavBar } from "@/components/MobileNavBar";
@@ -17,6 +19,8 @@ interface AppShellProps {
  * fixed bottom navigation bar.
  */
 export function AppShell({ children }: AppShellProps) {
+  const [insightsOpen, setInsightsOpen] = useState(false);
+  const { pathname } = useLocation();
   return (
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full bg-background">
@@ -45,13 +49,24 @@ export function AppShell({ children }: AppShellProps) {
               </div>
             </div>
 
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-3">
+              {!pathname.startsWith("/ai") && (
+                <button
+                  type="button"
+                  onClick={() => setInsightsOpen(true)}
+                  className="inline-flex h-7 items-center gap-1.5 rounded-full border border-border px-2.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+                >
+                  <BarChart3 className="h-3.5 w-3.5 text-primary" />
+                  Farm Insights
+                </button>
+              )}
               <NetworkStatusIndicator />
             </div>
           </div>
           <div className="flex-1 min-w-0 pb-16 md:pb-0">{children}</div>
         </div>
         <MobileNavBar />
+        <FarmInsightsDialog open={insightsOpen} onOpenChange={setInsightsOpen} />
       </div>
     </SidebarProvider>
   );
