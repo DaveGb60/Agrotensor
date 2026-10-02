@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
-import { ImagePlus, Loader2, MoreVertical, Plus, RotateCw, Search, Send, X, Sprout, AlertCircle } from 'lucide-react';
+import { ImagePlus, Loader2, MoreVertical, Plus, RotateCw, Search, Send, X, Sprout, AlertCircle, UserCog } from 'lucide-react';
+import { FarmProfileDialog } from '@/components/FarmProfileDialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -13,7 +14,7 @@ import { cn } from '@/lib/utils';
 import {
   AIConversation, AIMessage, AIQuota, deleteConversation, fetchConversations, fetchMessages, fetchUsage,
   fileToDataUrl, getLocalConversations, getLocalMessages, isCloudOnly, removeLocalChat, saveLocalChat,
-  searchConversations, sendChat, setCloudOnly, signPaths, uploadImage,
+  searchConversations, sendChat, setCloudOnly, signPaths, hasSeenProfilePrompt, uploadImage,
 } from '@/lib/agroAI';
 
 function renderMarkdown(text: string) {
@@ -55,6 +56,7 @@ export default function AgroAI() {
   const [moreCursor, setMoreCursor] = useState<string | null>(null);
   const [listOpen, setListOpen] = useState(false);
   const [cloudOnly, setCloudOnlyState] = useState(isCloudOnly());
+  const [profileOpen, setProfileOpen] = useState(() => !hasSeenProfilePrompt());
   const [lastFailed, setLastFailed] = useState<{ text: string; attachments: string[] } | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -264,6 +266,7 @@ export default function AgroAI() {
   return (
     <div className="flex h-[calc(100dvh-8rem)] md:h-[calc(100dvh-4rem)] border border-border rounded-lg overflow-hidden bg-card">
       <aside className="hidden lg:flex w-72 border-r border-border flex-col">{list}</aside>
+      <FarmProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       <Sheet open={listOpen} onOpenChange={setListOpen}>
         <SheetContent side="left" className="p-0 w-80 flex flex-col">
           <SheetHeader className="p-3 border-b"><SheetTitle>Chats</SheetTitle></SheetHeader>
@@ -281,6 +284,7 @@ export default function AgroAI() {
               {remaining !== null ? `${remaining}/${quota!.messageLimit} questions · ${Math.max(0, quota!.imageLimit - quota!.imagesUsed)}/${quota!.imageLimit} photos left today` : 'Your farming assistant'}
             </p>
           </div>
+          <Button variant="ghost" size="icon" onClick={() => setProfileOpen(true)} aria-label="My farm details" title="My farm details"><UserCog className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => navigate('/ai')} aria-label="New chat"><Plus className="h-4 w-4" /></Button>
         </header>
 
