@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.agrotensor-ai]
 verify_jwt = false
+
+[functions.farm-insights]
+verify_jwt = false
