@@ -478,7 +478,12 @@ async function chat(
   let failed = false;
 
   try {
-    answer = await askUpstream(text || 'Please analyse the attached photo.', messages, imageUrls);
+    const note = profileNote(body.profile);
+    const prompt = (text || 'Please analyse the attached photo.') +
+      (note
+        ? `\n\n[${note.trim()}]`
+        : '\n\n[The user prefers not to share location, gender or farm details. Do not ask for them. Answer now with practical general advice.]');
+    answer = await askUpstream(prompt, messages, imageUrls);
   } catch (err) {
     failed = true;
     logAndGenericError('agrotensor-ai:upstream', err);
