@@ -12,6 +12,7 @@ const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/farm-insights`
 const ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 const SUGGESTIONS = [
+  'Run a full project audit: inputs, outputs, costs, revenue and profit — show my strengths, money leaks and what to fix first, with tables and charts',
   'Show my monthly costs vs revenue as a chart',
   'Where am I spending the most? Give a table',
   'How are my yields trending, and how can I improve them?',
