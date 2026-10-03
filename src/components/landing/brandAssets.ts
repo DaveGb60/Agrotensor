@@ -1,19 +1,14 @@
-import hero from '@/assets/landing-brand/hero.jpg.asset.json';
-import bgPattern from '@/assets/landing-brand/bg-pattern.jpg.asset.json';
-import appPreview from '@/assets/landing-brand/app-preview.jpg.asset.json';
-import serviceScape from '@/assets/landing-brand/service-scape.jpg.asset.json';
-import scenesStrip from '@/assets/landing-brand/scenes-strip.jpg.asset.json';
-import about from '@/assets/landing-brand/about.jpg.asset.json';
-import icon from '@/assets/landing-brand/icon.png.asset.json';
-import logo from '@/assets/landing-brand/logo.png.asset.json';
+// Brand images live in public/assets/landing-brand so they are served by
+// whatever host deploys the app (Lovable preview, Vercel, custom domain).
+const base = '/assets/landing-brand';
 
 export const brand = {
-  hero: hero.url,
-  bgPattern: bgPattern.url,
-  appPreview: appPreview.url,
-  serviceScape: serviceScape.url,
-  scenesStrip: scenesStrip.url,
-  about: about.url,
-  icon: icon.url,
-  logo: logo.url,
+  hero: `${base}/hero.jpg`,
+  bgPattern: `${base}/bg-pattern.jpg`,
+  appPreview: `${base}/app-preview.jpg`,
+  serviceScape: `${base}/service-scape.jpg`,
+  scenesStrip: `${base}/scenes-strip.jpg`,
+  about: `${base}/about.jpg`,
+  icon: `${base}/icon.png`,
+  logo: `${base}/logo.png`,
 };
