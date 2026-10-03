@@ -53,6 +53,7 @@ const Landing = () => {
 
 
       <FeaturesSection />
+      <AISection />
       <PhilosophySection />
       <FirstUseSection />
       <ValuesSection />
