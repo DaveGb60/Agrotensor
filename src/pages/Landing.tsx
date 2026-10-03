@@ -1,6 +1,7 @@
 import LandingNav from '@/components/landing/LandingNav';
 import HeroSection from '@/components/landing/HeroSection';
 import FeaturesSection from '@/components/landing/FeaturesSection';
+import AISection from '@/components/landing/AISection';
 import PhilosophySection from '@/components/landing/PhilosophySection';
 import FirstUseSection from '@/components/landing/FirstUseSection';
 import ValuesSection from '@/components/landing/ValuesSection';
@@ -52,6 +53,7 @@ const Landing = () => {
 
 
       <FeaturesSection />
+      <AISection />
       <PhilosophySection />
       <FirstUseSection />
       <ValuesSection />

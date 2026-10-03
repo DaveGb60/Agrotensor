@@ -22,6 +22,9 @@ const LandingNav = () => {
         <a href="#features" className="text-white/90 hover:text-white font-semibold transition-colors">
           Features
         </a>
+        <a href="#ai" className="text-white/90 hover:text-white font-semibold transition-colors">
+          AI
+        </a>
         <a href="#philosophy" className="text-white/90 hover:text-white font-semibold transition-colors">
           Philosophy
         </a>

@@ -1,16 +1,20 @@
-import { Sprout, Beef, ClipboardList, LineChart, Package, Wallet, WifiOff, ShieldCheck } from 'lucide-react';
+import { Sprout, Beef, ClipboardList, LineChart, Wallet, WifiOff, ShieldCheck, Sparkles, BarChart3, CloudUpload, FileDown, Trash2 } from 'lucide-react';
 import PatternBackdrop from './PatternBackdrop';
 import { brand } from './brandAssets';
 
 const features = [
   { icon: Sprout, title: 'Crop Management', desc: 'Plan, monitor and record every crop activity.' },
-  { icon: Beef, title: 'Livestock Management', desc: 'Track health, breeding and production.' },
-  { icon: ClipboardList, title: 'Farm Records', desc: 'Keep expenses, inventory and notes organized.' },
+  { icon: Beef, title: 'Livestock & Breeding', desc: 'Track animals, breeding cycles and production.' },
+  { icon: ClipboardList, title: 'Farm Records', desc: 'Keep expenses, sales and notes organized.' },
+  { icon: Wallet, title: 'Profit & Loss', desc: 'Monthly statements, costs and profitability.' },
+  { icon: Sparkles, title: 'AI Farm Advisor', desc: 'Chat with AgroTensor AI — text or photos.' },
+  { icon: BarChart3, title: 'AI Farm Insights', desc: 'Audit any project with charts and tables.' },
+  { icon: WifiOff, title: 'Offline First', desc: 'Works fully offline; syncs when connected.' },
+  { icon: CloudUpload, title: 'Cloud Backup', desc: 'Back up and restore your data safely.' },
+  { icon: FileDown, title: 'Share & Import', desc: 'Send projects as files, import them anywhere.' },
+  { icon: Trash2, title: 'Trash & Recovery', desc: 'Deleted projects restorable for 30 days.' },
   { icon: LineChart, title: 'Reports & Analytics', desc: 'Turn field data into clear insights.' },
-  { icon: Package, title: 'Inventory', desc: 'Know what you have, what to reorder.' },
-  { icon: Wallet, title: 'Expense Tracking', desc: 'Control costs and forecast profitability.' },
-  { icon: WifiOff, title: 'Offline First', desc: 'Work in the field, sync when connected.' },
-  { icon: ShieldCheck, title: 'Secure & Reliable', desc: 'Your data is private, safe and yours.' },
+  { icon: ShieldCheck, title: 'Private & Secure', desc: 'Your data is private, safe and yours.' },
 ];
 
 const FeaturesSection = () => {
