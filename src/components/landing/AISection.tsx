@@ -17,7 +17,7 @@ const insightsPoints = [
 
 const AISection = () => {
   return (
-    <PatternBackdrop id="ai" variant="dark" className="py-20 px-6">
+    <PatternBackdrop id="ai" variant="deep" className="py-20 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
           <span className="uppercase tracking-[0.25em] text-xs font-semibold text-emerald-300/80 inline-flex items-center gap-2">
