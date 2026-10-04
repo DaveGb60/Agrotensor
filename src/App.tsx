@@ -47,25 +47,12 @@ const AppEntryGate = () => {
         return;
       }
 
+      // Only the installed app (standalone display mode) skips the landing page.
+      // In a browser, "/" always shows the landing page — never force-redirect to /app.
       const isStandalone = window.matchMedia("(display-mode: standalone)").matches || Boolean((window.navigator as Navigator & { standalone?: boolean }).standalone);
-      const hasSkippedLanding = localStorage.getItem("agrotensor_skip_landing") === "true";
-      const hasSeenApp = localStorage.getItem("agrotensor_seen_app") === "true";
 
-      if (isStandalone || hasSkippedLanding || hasSeenApp) {
-        setShowLanding(false);
-        setIsChecking(false);
-        return;
-      }
-
-      try {
-        const projects = await getAllProjects();
-        const hasExistingData = projects.length > 0;
-        setShowLanding(!hasExistingData);
-      } catch {
-        setShowLanding(true);
-      } finally {
-        setIsChecking(false);
-      }
+      setShowLanding(!isStandalone);
+      setIsChecking(false);
     };
 
     determineEntry();
