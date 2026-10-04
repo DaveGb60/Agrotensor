@@ -20,18 +20,9 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const AgroAI = lazy(() => import("./pages/AgroAI"));
-import { getAllProjects } from "@/lib/db";
-
 const queryClient = new QueryClient();
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("agrotensor_skip_landing", "true");
-      localStorage.setItem("agrotensor_seen_app", "true");
-    }
-  }, []);
-
   return <AppShell>{children}</AppShell>;
 };
 
