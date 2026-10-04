@@ -94,12 +94,12 @@ const Trash = () => {
         
         <main className="container px-4 py-6 space-y-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => setViewingProject(null)}>
+            <Button variant="ghost" size="icon" aria-label="Back to trash" onClick={() => setViewingProject(null)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
               <div className="flex items-center gap-3">
-                <h2 className="font-serif text-2xl font-semibold">{viewingProject.project.title}</h2>
+                <h1 className="font-serif text-2xl font-semibold">{viewingProject.project.title}</h1>
                 <Badge variant="secondary" className="bg-destructive/10 text-destructive">
                   <Trash2 className="h-3 w-3 mr-1" />
                   In Trash
@@ -182,7 +182,7 @@ const Trash = () => {
       
       <main className="container px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+          <Button variant="ghost" size="icon" aria-label="Back to projects" onClick={() => navigate("/")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

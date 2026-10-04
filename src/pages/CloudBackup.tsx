@@ -255,6 +255,7 @@ export default function CloudBackup() {
                   <Button
                     variant="outline"
                     size="icon"
+                    aria-label="Copy Cloud ID"
                     onClick={() => copy(encodeIdentityToken(identity), 'Cloud ID')}
                   >
                     <Copy className="h-4 w-4" />
@@ -337,6 +338,7 @@ export default function CloudBackup() {
                 <Button
                   variant="outline"
                   size="icon"
+                  aria-label="Copy Cloud ID"
                   onClick={() => copy(encodeIdentityToken(showNewIdentity), 'Cloud ID')}
                 >
                   <Copy className="h-4 w-4" />
