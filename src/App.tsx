@@ -20,18 +20,9 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const AgroAI = lazy(() => import("./pages/AgroAI"));
-import { getAllProjects } from "@/lib/db";
-
 const queryClient = new QueryClient();
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("agrotensor_skip_landing", "true");
-      localStorage.setItem("agrotensor_seen_app", "true");
-    }
-  }, []);
-
   return <AppShell>{children}</AppShell>;
 };
 
@@ -47,25 +38,12 @@ const AppEntryGate = () => {
         return;
       }
 
+      // Only the installed app (standalone display mode) skips the landing page.
+      // In a browser, "/" always shows the landing page — never force-redirect to /app.
       const isStandalone = window.matchMedia("(display-mode: standalone)").matches || Boolean((window.navigator as Navigator & { standalone?: boolean }).standalone);
-      const hasSkippedLanding = localStorage.getItem("agrotensor_skip_landing") === "true";
-      const hasSeenApp = localStorage.getItem("agrotensor_seen_app") === "true";
 
-      if (isStandalone || hasSkippedLanding || hasSeenApp) {
-        setShowLanding(false);
-        setIsChecking(false);
-        return;
-      }
-
-      try {
-        const projects = await getAllProjects();
-        const hasExistingData = projects.length > 0;
-        setShowLanding(!hasExistingData);
-      } catch {
-        setShowLanding(true);
-      } finally {
-        setIsChecking(false);
-      }
+      setShowLanding(!isStandalone);
+      setIsChecking(false);
     };
 
     determineEntry();
