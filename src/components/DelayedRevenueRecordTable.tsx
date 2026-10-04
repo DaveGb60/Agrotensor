@@ -539,7 +539,7 @@ export function DelayedRevenueRecordTable({
                         <TableCell>
                           {record.comment && (
                             <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleComment(record.id)}>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Toggle comment" onClick={() => toggleComment(record.id)}>
                                 <MessageSquare className={cn("h-4 w-4", expandedComments.has(record.id) && "text-primary")} />
                               </Button>
                             </CollapsibleTrigger>
@@ -560,14 +560,14 @@ export function DelayedRevenueRecordTable({
                         <TableCell>
                           <div className="flex gap-1">
                             {editingRecord === record.id ? (
-                              <Button variant="success" size="icon" className="h-7 w-7" onClick={saveEdit}>
+                              <Button variant="success" size="icon" className="h-7 w-7" aria-label="Save changes" onClick={saveEdit}>
                                 <Save className="h-4 w-4" />
                               </Button>
                             ) : (
                               !record.isLocked && !record.isBatchSale && !record.isCarriedBalance && !project.isCompleted && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="More options">
                                       <MoreVertical className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
