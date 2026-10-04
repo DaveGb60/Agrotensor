@@ -99,7 +99,7 @@ const Trash = () => {
             </Button>
             <div>
               <div className="flex items-center gap-3">
-                <h2 className="font-serif text-2xl font-semibold">{viewingProject.project.title}</h2>
+                <h1 className="font-serif text-2xl font-semibold">{viewingProject.project.title}</h1>
                 <Badge variant="secondary" className="bg-destructive/10 text-destructive">
                   <Trash2 className="h-3 w-3 mr-1" />
                   In Trash

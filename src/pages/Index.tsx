@@ -443,7 +443,7 @@ const Index = () => {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h2 className="font-serif text-2xl font-semibold">{selectedProject.title}</h2>
+                <h1 className="font-serif text-2xl font-semibold">{selectedProject.title}</h1>
                 <p className="text-sm text-muted-foreground font-mono">
                   {selectedProject.projectType === 'breeding' ? 'Breeding Project' : 'Produce Project'} • ID: {selectedProject.id.slice(0, 8)}
                 </p>

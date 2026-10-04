@@ -1,0 +1,12 @@
+# AgroTensor
+
+> Smart farm intelligence: an offline-first app for managing livestock, crops, breeding, operations and farm finances.
+
+AgroTensor works on any device, even without internet. Farmers record costs and revenue, track breeding animals, see monthly profit and loss, back up to the cloud, and ask AgroTensor AI for farming advice and project audits with charts and tables.
+
+## Pages
+
+- [Home](https://agrotensor.vercel.app/): Overview of features, AI services and how to get started.
+- [Open the app](https://agrotensor.vercel.app/app): The farm projects workspace.
+- [Privacy Policy](https://agrotensor.vercel.app/privacy): How data is stored and protected.
+- [Terms of Service](https://agrotensor.vercel.app/terms): Rules for using AgroTensor.
