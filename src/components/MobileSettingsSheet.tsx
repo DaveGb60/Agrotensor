@@ -71,7 +71,7 @@ export function MobileSettingsSheet({ trigger }: MobileSettingsSheetProps) {
           <Button
             variant="ghost"
             className="w-full justify-start gap-3"
-            onClick={() => navigate("/")}
+            onClick={() => window.open("https://agrotensor.vercel.app", "_blank", "noopener,noreferrer")}
           >
             <Globe className="h-4 w-4" />
             Visit website
