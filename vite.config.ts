@@ -61,11 +61,14 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         // Offline launches (installed app, deep links) fall back to the cached shell.
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
+        // Static files (sitemap.xml, robots.txt, verification .html, etc.) must
+        // always come from the network, never the SPA shell.
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /\.[a-zA-Z0-9]+$/],
         runtimeCaching: [
           {
-            // HTML navigations: fresh when online, cached shell when offline.
-            urlPattern: ({ request }) => request.mode === "navigate",
+            // HTML navigations to app routes only (no file extensions).
+            urlPattern: ({ request, url }) =>
+              request.mode === "navigate" && !/\.[a-zA-Z0-9]+$/.test(url.pathname),
             handler: "NetworkFirst",
             options: {
               cacheName: "html-navigations",

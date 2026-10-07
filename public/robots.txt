@@ -4,6 +4,14 @@
 User-agent: *
 Allow: /
 Allow: /app
+Allow: /privacy
+Allow: /terms
+Disallow: /admin
+Disallow: /admin-auth
+Disallow: /trash
+Disallow: /cloud
+Disallow: /recover
+
 
 
 # Major search engines
