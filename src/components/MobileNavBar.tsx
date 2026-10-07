@@ -1,4 +1,5 @@
-import { Sprout, Home, Trash2, Cloud, Shield, Coffee } from "lucide-react";
+import { Home, Trash2, Cloud, Shield, Coffee } from "lucide-react";
+import { AIIcon } from "@/components/AIIcon";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { DonateDialog } from "@/components/DonateDialog";
@@ -10,7 +11,7 @@ const leadingItems = [
 ];
 
 const trailingItems = [
-  { label: "AI", path: "/ai", icon: Sprout },
+  { label: "AI", path: "/ai", icon: AIIcon as unknown as typeof Home },
   { label: "Trash", path: "/trash", icon: Trash2 },
 ];
 
