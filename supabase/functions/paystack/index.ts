@@ -40,6 +40,24 @@ function timingSafe(a: string, b: string): boolean {
   return diff === 0;
 }
 
+async function recordDonation(d: any) {
+  if (!d?.reference || d?.status !== 'success') return;
+  const fields = d?.metadata?.custom_fields ?? [];
+  const field = (k: string) => fields.find?.((f: any) => f?.variable_name === k)?.value ?? null;
+  const { error } = await supabase.from('donations').upsert({
+    reference: String(d.reference).slice(0, 200),
+    email: d?.customer?.email ?? null,
+    donor_name: field('name'),
+    message: field('message') ? String(field('message')).slice(0, 1000) : null,
+    amount_minor: Number(d.amount) || 0,
+    currency: String(d.currency || 'KES'),
+    channel: d.channel ?? null,
+    status: 'success',
+    paid_at: d.paid_at ?? d.paidAt ?? new Date().toISOString(),
+  }, { onConflict: 'reference' });
+  if (error) console.error('[paystack-record]', error.message);
+}
+
 Deno.serve(async (req) => {
   const cors = corsHeadersFor(req);
   const json = (body: unknown, status = 200) =>
@@ -67,6 +85,7 @@ Deno.serve(async (req) => {
       let event: any = {};
       try { event = JSON.parse(raw); } catch { /* ignore */ }
       console.log('[paystack-webhook]', event?.event, event?.data?.reference, event?.data?.amount);
+      if (event?.event === 'charge.success') await recordDonation(event.data);
       return json({ received: true });
     }
 
@@ -102,6 +121,7 @@ Deno.serve(async (req) => {
         return json({ error: 'We could not verify that payment.' }, 502);
       }
       const status = data?.data?.status;
+      await recordDonation(data?.data);
       return json({
         success: status === 'success',
         status,

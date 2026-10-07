@@ -170,6 +170,26 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
+    if (action === 'donations') {
+      const { data, error } = await admin
+        .from('donations')
+        .select('reference, email, donor_name, message, amount_minor, currency, channel, paid_at, created_at')
+        .eq('status', 'success')
+        .order('paid_at', { ascending: false })
+        .limit(1000);
+      if (error) return json({ error: logAndGenericError('admin', error) }, 500);
+      const totals: Record<string, number> = {};
+      const monthStart = new Date(); monthStart.setUTCDate(1); monthStart.setUTCHours(0, 0, 0, 0);
+      const month: Record<string, number> = {};
+      const donors = new Set<string>();
+      for (const d of data || []) {
+        totals[d.currency] = (totals[d.currency] || 0) + Number(d.amount_minor);
+        if (d.paid_at && new Date(d.paid_at) >= monthStart) month[d.currency] = (month[d.currency] || 0) + Number(d.amount_minor);
+        if (d.email) donors.add(d.email.toLowerCase());
+      }
+      return json({ count: (data || []).length, donors: donors.size, totals, month, recent: (data || []).slice(0, 100) });
+    }
+
     if (action === 'record-session-ip') {
       const deviceId = String(payload.device_id || '');
       if (!deviceId) return json({ error: 'device_id required' }, 400);
