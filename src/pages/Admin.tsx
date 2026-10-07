@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Loader2, Shield, Users, Cloud, Database, Share2, LogOut, UserPlus, Trash2, RefreshCw, Crown, KeyRound, Smartphone } from 'lucide-react';
 import { getDeviceId } from '@/lib/adminDevice';
+import { DonationsPanel } from '@/components/admin/DonationsPanel';
 
 interface Stats {
   counts: { identities: number; backups: number; projects: number; records: number; shares: number };
@@ -222,13 +223,18 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="backups">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="backups">Backups</TabsTrigger>
+            <TabsTrigger value="donations">Donations</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="shares">Active Shares</TabsTrigger>
             <TabsTrigger value="admins">Admins</TabsTrigger>
             <TabsTrigger value="devices">My Devices</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="donations">
+            <DonationsPanel callAdmin={callAdmin} />
+          </TabsContent>
 
           <TabsContent value="backups">
             <Card>

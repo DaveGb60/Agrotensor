@@ -289,6 +289,48 @@ export type Database = {
           },
         ]
       }
+      donations: {
+        Row: {
+          amount_minor: number
+          channel: string | null
+          created_at: string
+          currency: string
+          donor_name: string | null
+          email: string | null
+          id: string
+          message: string | null
+          paid_at: string | null
+          reference: string
+          status: string
+        }
+        Insert: {
+          amount_minor?: number
+          channel?: string | null
+          created_at?: string
+          currency?: string
+          donor_name?: string | null
+          email?: string | null
+          id?: string
+          message?: string | null
+          paid_at?: string | null
+          reference: string
+          status?: string
+        }
+        Update: {
+          amount_minor?: number
+          channel?: string | null
+          created_at?: string
+          currency?: string
+          donor_name?: string | null
+          email?: string | null
+          id?: string
+          message?: string | null
+          paid_at?: string | null
+          reference?: string
+          status?: string
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           bucket_key: string
