@@ -1,4 +1,4 @@
-import { Home, Trash2, Cloud, Shield, Coffee } from "lucide-react";
+import { Home, Trash2, Cloud, Shield, Coffee, Newspaper } from "lucide-react";
 import { AIIcon } from "@/components/AIIcon";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 const leadingItems = [
   { label: "Projects", path: "/app", icon: Home },
+  { label: "Feed", path: "/feed", icon: Newspaper },
   { label: "Cloud", path: "/cloud", icon: Cloud },
 ];
 

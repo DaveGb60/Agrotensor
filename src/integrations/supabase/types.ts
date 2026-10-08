@@ -331,6 +331,92 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_job_tokens: {
+        Row: {
+          id: number
+          token: string
+        }
+        Insert: {
+          id?: number
+          token?: string
+        }
+        Update: {
+          id?: number
+          token?: string
+        }
+        Relationships: []
+      }
+      feed_posts: {
+        Row: {
+          area: string
+          body: string
+          created_at: string
+          dislikes: number
+          id: string
+          image_url: string
+          likes: number
+          links: Json
+          published: boolean
+          summary: string
+          title: string
+        }
+        Insert: {
+          area?: string
+          body: string
+          created_at?: string
+          dislikes?: number
+          id?: string
+          image_url: string
+          likes?: number
+          links?: Json
+          published?: boolean
+          summary?: string
+          title: string
+        }
+        Update: {
+          area?: string
+          body?: string
+          created_at?: string
+          dislikes?: number
+          id?: string
+          image_url?: string
+          likes?: number
+          links?: Json
+          published?: boolean
+          summary?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      feed_reactions: {
+        Row: {
+          created_at: string
+          device_id: string
+          post_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          post_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          post_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limits: {
         Row: {
           bucket_key: string
@@ -439,6 +525,10 @@ export type Database = {
           p_user_agent: string
         }
         Returns: string
+      }
+      feed_react: {
+        Args: { p_device: string; p_post: string; p_value: number }
+        Returns: Json
       }
       has_role: {
         Args: {
