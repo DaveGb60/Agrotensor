@@ -20,6 +20,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const AgroAI = lazy(() => import("./pages/AgroAI"));
+const Feed = lazy(() => import("./pages/Feed"));
 const queryClient = new QueryClient();
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/recover" element={<AppLayout><DataRecovery /></AppLayout>} />
               <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
               <Route path="/ai" element={<AppLayout><AgroAI /></AppLayout>} />
+              <Route path="/feed" element={<AppLayout><Feed /></AppLayout>} />
               <Route path="/ai/:conversationId" element={<AppLayout><AgroAI /></AppLayout>} />
               <Route path="/admin-auth" element={<AdminAuth />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />

@@ -1,4 +1,4 @@
-import { Home, Trash2, Cloud, Shield, Heart, Sun, Moon, LifeBuoy } from "lucide-react";
+import { Home, Trash2, Cloud, Shield, Heart, Sun, Moon, LifeBuoy, Newspaper } from "lucide-react";
 import { AIIcon } from "@/components/AIIcon";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 const primaryItems = [
   { label: "Projects", path: "/app", icon: Home },
   { label: "AgroTensor AI", path: "/ai", icon: AIIcon as unknown as typeof Home },
+  { label: "Farm Feed", path: "/feed", icon: Newspaper },
   { label: "Cloud Backup", path: "/cloud", icon: Cloud },
   { label: "Data Recovery", path: "/recover", icon: LifeBuoy },
   { label: "Trash", path: "/trash", icon: Trash2 },
