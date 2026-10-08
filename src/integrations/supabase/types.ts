@@ -331,6 +331,21 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_job_tokens: {
+        Row: {
+          id: number
+          token: string
+        }
+        Insert: {
+          id?: number
+          token?: string
+        }
+        Update: {
+          id?: number
+          token?: string
+        }
+        Relationships: []
+      }
       feed_posts: {
         Row: {
           area: string
