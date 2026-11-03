@@ -71,7 +71,6 @@ const App = () => (
               <Route path="/app" element={<AppLayout><Index /></AppLayout>} />
               <Route path="/trash" element={<AppLayout><Trash /></AppLayout>} />
               <Route path="/cloud" element={<AppLayout><CloudBackup /></AppLayout>} />
-              <Route path="/recover" element={<AppLayout><DataRecovery /></AppLayout>} />
               <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
               <Route path="/ai" element={<AppLayout><AgroAI /></AppLayout>} />
               <Route path="/feed" element={<AppLayout><Feed /></AppLayout>} />

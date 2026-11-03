@@ -32,9 +32,3 @@ getDB().catch((error) => {
   console.error("Failed to initialize database:", error);
 });
 
-scheduleAutoSnapshot(5000);
-if (typeof document !== "undefined") {
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") scheduleAutoSnapshot(0);
-  });
-}
