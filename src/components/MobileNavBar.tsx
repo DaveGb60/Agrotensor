@@ -1,4 +1,4 @@
-import { Home, Trash2, Cloud, Shield, Coffee, Newspaper } from "lucide-react";
+import { Home, Shield, Coffee, Newspaper } from "lucide-react";
 import { AIIcon } from "@/components/AIIcon";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -8,12 +8,10 @@ import { cn } from "@/lib/utils";
 const leadingItems = [
   { label: "Projects", path: "/app", icon: Home },
   { label: "Feed", path: "/feed", icon: Newspaper },
-  { label: "Cloud", path: "/cloud", icon: Cloud },
 ];
 
 const trailingItems = [
   { label: "AI", path: "/ai", icon: AIIcon as unknown as typeof Home },
-  { label: "Trash", path: "/trash", icon: Trash2 },
 ];
 
 /**

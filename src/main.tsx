@@ -8,7 +8,6 @@ import "@fontsource/playfair-display/600.css";
 import "@fontsource/playfair-display/700.css";
 import "./index.css";
 import { startSyncService } from "./lib/syncService";
-import { scheduleAutoSnapshot } from "./lib/dataRecovery";
 import { getDB } from "./lib/db";
 import { registerServiceWorker } from "./lib/registerSW";
 

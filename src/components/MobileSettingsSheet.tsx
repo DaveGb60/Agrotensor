@@ -62,11 +62,12 @@ export function MobileSettingsSheet({ trigger }: MobileSettingsSheetProps) {
           <Button
             variant="ghost"
             className="w-full justify-start gap-3"
-            onClick={() => navigate("/recover")}
+            onClick={() => navigate("/cloud")}
           >
-            <LifeBuoy className="h-4 w-4" />
-            Data recovery
+            <Cloud className="h-4 w-4" />
+            Cloud Backup
           </Button>
+
 
           <Button
             variant="ghost"

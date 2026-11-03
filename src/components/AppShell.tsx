@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { Settings, BarChart3 } from "lucide-react";
+import { Menu, BarChart3 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { FarmInsightsDialog } from "@/components/insights/FarmInsightsDialog";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";

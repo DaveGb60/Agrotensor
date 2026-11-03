@@ -13,7 +13,6 @@ import Index from "./pages/Index";
 const Landing = lazy(() => import("./pages/Landing"));
 const Trash = lazy(() => import("./pages/Trash"));
 const CloudBackup = lazy(() => import("./pages/CloudBackup"));
-const DataRecovery = lazy(() => import("./pages/DataRecovery"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminAuth = lazy(() => import("./pages/AdminAuth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
