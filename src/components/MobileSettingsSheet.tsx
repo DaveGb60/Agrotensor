@@ -29,7 +29,11 @@ export function MobileSettingsSheet({ trigger }: MobileSettingsSheetProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-2xl pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+      <SheetContent
+        side="left"
+        className="inset-y-auto top-0 h-auto max-h-[85svh] w-80 max-w-[86vw] overflow-y-auto rounded-r-2xl pb-[calc(env(safe-area-inset-bottom)+1rem)] data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left"
+      >
+
         <SheetHeader className="text-left">
           <SheetTitle>Settings</SheetTitle>
           <SheetDescription>App preferences on this device</SheetDescription>
