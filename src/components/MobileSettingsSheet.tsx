@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Moon, Sun, LifeBuoy, Info, Shield, FileText, Globe } from "lucide-react";
+import { Moon, Sun, Cloud, Info, Shield, FileText, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
