@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { Settings, BarChart3 } from "lucide-react";
+import { Menu, BarChart3 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { FarmInsightsDialog } from "@/components/insights/FarmInsightsDialog";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -34,10 +34,10 @@ export function AppShell({ children }: AppShellProps) {
                 trigger={
                   <button
                     type="button"
-                    aria-label="Settings"
+                    aria-label="Menu"
                     className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                   >
-                    <Settings className="h-5 w-5" />
+                    <Menu className="h-5 w-5" />
                   </button>
                 }
               />

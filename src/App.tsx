@@ -13,7 +13,6 @@ import Index from "./pages/Index";
 const Landing = lazy(() => import("./pages/Landing"));
 const Trash = lazy(() => import("./pages/Trash"));
 const CloudBackup = lazy(() => import("./pages/CloudBackup"));
-const DataRecovery = lazy(() => import("./pages/DataRecovery"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminAuth = lazy(() => import("./pages/AdminAuth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -72,7 +71,6 @@ const App = () => (
               <Route path="/app" element={<AppLayout><Index /></AppLayout>} />
               <Route path="/trash" element={<AppLayout><Trash /></AppLayout>} />
               <Route path="/cloud" element={<AppLayout><CloudBackup /></AppLayout>} />
-              <Route path="/recover" element={<AppLayout><DataRecovery /></AppLayout>} />
               <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
               <Route path="/ai" element={<AppLayout><AgroAI /></AppLayout>} />
               <Route path="/feed" element={<AppLayout><Feed /></AppLayout>} />

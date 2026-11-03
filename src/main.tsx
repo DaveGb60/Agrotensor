@@ -8,7 +8,6 @@ import "@fontsource/playfair-display/600.css";
 import "@fontsource/playfair-display/700.css";
 import "./index.css";
 import { startSyncService } from "./lib/syncService";
-import { scheduleAutoSnapshot } from "./lib/dataRecovery";
 import { getDB } from "./lib/db";
 import { registerServiceWorker } from "./lib/registerSW";
 
@@ -33,9 +32,3 @@ getDB().catch((error) => {
   console.error("Failed to initialize database:", error);
 });
 
-scheduleAutoSnapshot(5000);
-if (typeof document !== "undefined") {
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") scheduleAutoSnapshot(0);
-  });
-}
