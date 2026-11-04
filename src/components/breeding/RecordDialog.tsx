@@ -321,6 +321,10 @@ export function RecordDialog({
           </div>
         </div>
 
+        {error && (
+          <p className="text-sm text-destructive" role="alert">{error}</p>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button variant="hero" onClick={handleSubmit}>Save Record</Button>
