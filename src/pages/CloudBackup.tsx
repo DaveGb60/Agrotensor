@@ -30,6 +30,7 @@ import {
 import { friendlyError } from '@/lib/errorMessages';
 
 export default function CloudBackup() {
+  usePageTitle('Cloud Backup');
   const [identity, setIdentity] = useState<CloudIdentity | null>(null);
   const [status, setStatus] = useState<CloudStatus | null>(null);
   const [loading, setLoading] = useState(false);

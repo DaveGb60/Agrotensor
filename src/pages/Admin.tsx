@@ -56,6 +56,7 @@ interface ActiveSession {
 }
 
 export default function Admin() {
+  usePageTitle('Admin');
   const navigate = useNavigate();
   const auth = useAdminAuth();
   const [stats, setStats] = useState<Stats | null>(null);

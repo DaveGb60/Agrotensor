@@ -29,6 +29,7 @@ import { useNavigate } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
 
 const Trash = () => {
+  usePageTitle('Trash');
   const [deletedProjects, setDeletedProjects] = useState<FarmProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);

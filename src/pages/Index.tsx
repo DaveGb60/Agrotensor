@@ -66,6 +66,7 @@ import { useToast } from '@/hooks/use-toast';
 import { friendlyError } from '@/lib/errorMessages';
 
 const Index = () => {
+  usePageTitle('My Projects');
   const [projects, setProjects] = useState<FarmProject[]>([]);
   const [selectedProject, setSelectedProject] = useState<FarmProject | null>(null);
   const [records, setRecords] = useState<FarmRecord[]>([]);

@@ -42,6 +42,7 @@ function mergeConvs(a: AIConversation[], b: AIConversation[]) {
 }
 
 export default function AgroAI() {
+  usePageTitle('AgroTensor AI');
   const { conversationId } = useParams();
   const navigate = useNavigate();
   const [convs, setConvs] = useState<AIConversation[]>(() => getLocalConversations());
