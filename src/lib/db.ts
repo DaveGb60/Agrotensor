@@ -700,6 +700,24 @@ export async function recordBirthWithOffspring(
     const m = await db.get('animals').find(motherInternalId);
     await m.update((ani: any) => {
       ani.birthRecords = [...(ani.birthRecords ?? []), birthRecord];
+
+      // Close any open pregnancy that this birth delivers: the first active
+      // 'pregnant' record started on or before the birth date becomes 'calved'.
+      const pregnancies = [...(ani.pregnancyHistory ?? [])] as PregnancyRecord[];
+      const openIdx = pregnancies
+        .map((p, idx) => ({ p, idx }))
+        .filter(({ p }) => p.status === 'pregnant' && (!p.startDate || p.startDate <= birthData.birthDate))
+        .sort((x, y) => (y.p.startDate || '').localeCompare(x.p.startDate || ''))
+        .map(({ idx }) => idx)[0];
+      if (openIdx !== undefined) {
+        pregnancies[openIdx] = {
+          ...pregnancies[openIdx],
+          status: 'calved',
+          actualDeliveryDate: birthData.birthDate,
+        };
+        ani.pregnancyHistory = pregnancies;
+      }
+
       ani.updatedAtIso = new Date().toISOString();
     });
     return toAnimalPlain(m as any);
