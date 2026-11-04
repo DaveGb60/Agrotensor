@@ -56,6 +56,7 @@ export function RecordDialog({
     if (open) {
       setFormData({});
       setOffspringRows([{ animalId: '', sex: 'female' }]);
+      setError(null);
     }
   }, [open, type]);
 
@@ -67,7 +68,11 @@ export function RecordDialog({
     if (type === 'birth' && onSubmitBirth) {
       const fatherId = (formData.fatherId as string) || defaultFatherId;
       const validOffspring = offspringRows.filter((o) => o.animalId.trim());
-      if (validOffspring.length === 0) return;
+      if (validOffspring.length === 0) {
+        setError('Add at least one offspring tag so this birth is linked to a new animal. Use “Add” to list each newborn.');
+        return;
+      }
+      setError(null);
       onSubmitBirth(
         {
           birthDate: (formData.birthDate as string) || getDateInput(),
@@ -80,6 +85,12 @@ export function RecordDialog({
       return;
     }
 
+    if (type === 'mating' && !formData.mateId) {
+      setError('Choose a mate before saving this mating record.');
+      return;
+    }
+
+    setError(null);
     const base = { id: generateId(), isLocked: false, animalId: animal.id };
 
     switch (type) {
