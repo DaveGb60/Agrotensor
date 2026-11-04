@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { Cloud, CloudUpload, CloudDownload, Copy, KeyRound, LogOut, Loader2, ShieldCheck, Fingerprint, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +30,7 @@ import {
 import { friendlyError } from '@/lib/errorMessages';
 
 export default function CloudBackup() {
+  usePageTitle('Cloud Backup');
   const [identity, setIdentity] = useState<CloudIdentity | null>(null);
   const [status, setStatus] = useState<CloudStatus | null>(null);
   const [loading, setLoading] = useState(false);

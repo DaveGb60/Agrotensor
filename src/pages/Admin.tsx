@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,7 @@ interface ActiveSession {
 }
 
 export default function Admin() {
+  usePageTitle('Admin');
   const navigate = useNavigate();
   const auth = useAdminAuth();
   const [stats, setStats] = useState<Stats | null>(null);

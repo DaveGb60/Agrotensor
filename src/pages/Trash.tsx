@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,7 @@ import { useNavigate } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
 
 const Trash = () => {
+  usePageTitle('Trash');
   const [deletedProjects, setDeletedProjects] = useState<FarmProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { useNavigate, useParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { ImagePlus, Loader2, MoreVertical, Plus, RotateCw, Search, Send, X, Sprout, AlertCircle, UserCog } from 'lucide-react';
@@ -41,6 +42,7 @@ function mergeConvs(a: AIConversation[], b: AIConversation[]) {
 }
 
 export default function AgroAI() {
+  usePageTitle('AgroTensor AI');
   const { conversationId } = useParams();
   const navigate = useNavigate();
   const [convs, setConvs] = useState<AIConversation[]>(() => getLocalConversations());
