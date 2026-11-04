@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { useNavigate, useParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { ImagePlus, Loader2, MoreVertical, Plus, RotateCw, Search, Send, X, Sprout, AlertCircle, UserCog } from 'lucide-react';
