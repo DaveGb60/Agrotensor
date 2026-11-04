@@ -578,6 +578,22 @@ export async function deleteAnimal(id: string): Promise<void> {
   }
   await db.write(async () => {
     const a = await db.get('animals').find(id);
+    const projectId = (a as any).projectId as string | undefined;
+
+    // Clear family links on children so no record points at a deleted animal.
+    if (projectId) {
+      const children = await db.get('animals').query(Q.where('project_id', projectId)).fetch();
+      for (const child of children) {
+        if (child.id === id) continue;
+        if ((child as any).motherId !== id && (child as any).fatherId !== id) continue;
+        await child.update((c: any) => {
+          if (c.motherId === id) c.motherId = null;
+          if (c.fatherId === id) c.fatherId = null;
+          c.updatedAtIso = new Date().toISOString();
+        });
+      }
+    }
+
     await a.destroyPermanently();
   });
 }
