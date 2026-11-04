@@ -47,6 +47,7 @@ export function RecordDialog({
 }: RecordDialogProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [offspringRows, setOffspringRows] = useState<OffspringInput[]>([{ animalId: '', sex: 'female' as AnimalSex }]);
+  const [error, setError] = useState<string | null>(null);
 
   const lastMating = animal.matingHistory[animal.matingHistory.length - 1];
   const defaultFatherId = lastMating?.mateId;
