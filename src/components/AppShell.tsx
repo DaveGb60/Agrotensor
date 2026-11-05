@@ -1,12 +1,13 @@
 import { ReactNode, useState } from "react";
-import { Menu, BarChart3 } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Menu, BarChart3, ListTodo } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
 import { FarmInsightsDialog } from "@/components/insights/FarmInsightsDialog";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileNavBar } from "@/components/MobileNavBar";
 import { MobileSettingsSheet } from "@/components/MobileSettingsSheet";
 import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
+import { Button } from "@/components/ui/button";
 
 
 interface AppShellProps {
@@ -47,6 +48,12 @@ export function AppShell({ children }: AppShellProps) {
                   Toggle navigation
                 </span>
               </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8 md:w-auto md:px-2" asChild>
+                <NavLink to="/tasks" aria-label="Tasks" title="Tasks" className="gap-1.5">
+                  <ListTodo className="h-4 w-4" />
+                  <span className="hidden text-xs font-medium sm:inline">Tasks</span>
+                </NavLink>
+              </Button>
             </div>
 
             <div className="ml-auto flex items-center gap-3">

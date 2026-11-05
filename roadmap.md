@@ -1,0 +1,3 @@
+- [ ] Add responsive offline task board with due dates, priorities, and status lanes.
+- [ ] Add top-ribbon shortcut and in-app route.
+- [ ] Verify task creation, scheduling, status movement, persistence, and responsive layout.

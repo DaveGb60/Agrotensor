@@ -1,0 +1,1 @@
+- Keep lightweight, device-local planning features in a dedicated local-storage key rather than extending the farm-record database, so they remain offline-first without risking farm data migrations.
