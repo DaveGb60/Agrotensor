@@ -331,6 +331,36 @@ export type Database = {
         }
         Relationships: []
       }
+      farm_insight_history: {
+        Row: {
+          answer: string
+          created_at: string
+          device_id: string
+          id: string
+          project_id: string
+          project_title: string
+          question: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          device_id: string
+          id?: string
+          project_id: string
+          project_title?: string
+          question: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          device_id?: string
+          id?: string
+          project_id?: string
+          project_title?: string
+          question?: string
+        }
+        Relationships: []
+      }
       feed_job_tokens: {
         Row: {
           id: number

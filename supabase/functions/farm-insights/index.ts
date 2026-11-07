@@ -2,6 +2,7 @@
 // Lovable AI Gateway (Gemini). The client sends a compact project summary; the
 // key and prompts stay server-side.
 import { streamText } from 'npm:ai';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { createLovableAiGatewayProvider, getLovableAiGatewayResponseHeaders } from '../_shared/gateway-helpers.ts';
 import {
   corsHeadersFor, isAllowedOrigin, serviceClient, trustedClientIp, allowRequest, logAndGenericError, withinSizeLimit,
@@ -33,12 +34,43 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   if (!isAllowedOrigin(req.headers.get('origin'))) return json({ error: 'Origin not allowed' }, 403);
 
-  let body: { question?: unknown; project?: unknown; history?: unknown };
+  let body: { action?: unknown; deviceId?: unknown; id?: unknown; requestId?: unknown; projectId?: unknown; projectTitle?: unknown; question?: unknown; project?: unknown; history?: unknown };
   try { body = await req.json(); } catch { return json({ error: 'Invalid request' }, 400); }
   if (!withinSizeLimit(body, 400 * 1024)) return json({ error: 'This project is too large to analyse at once.' }, 413);
 
+  const deviceId = typeof body.deviceId === 'string' ? body.deviceId.trim() : '';
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(deviceId)) {
+    return json({ error: 'Invalid device identity.' }, 400);
+  }
+
+  if (body.action === 'history-list' || body.action === 'history-get') {
+    const db = serviceClient();
+    if (body.action === 'history-list') {
+      const { data, error } = await db.from('farm_insight_history')
+        .select('id, project_id, project_title, question, created_at')
+        .eq('device_id', deviceId).order('created_at', { ascending: false }).limit(50);
+      if (error) return json({ error: logAndGenericError('farm-insights:history-list', error) }, 500);
+      return json({ items: data ?? [] }, 200);
+    }
+    const id = typeof body.id === 'string' ? body.id : '';
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return json({ error: 'Invalid insight reference.' }, 400);
+    }
+    const { data, error } = await db.from('farm_insight_history')
+      .select('id, project_id, project_title, question, answer, created_at')
+      .eq('device_id', deviceId).eq('id', id).maybeSingle();
+    if (error) return json({ error: logAndGenericError('farm-insights:history-get', error) }, 500);
+    if (!data) return json({ error: 'That insight is no longer available.' }, 404);
+    return json({ item: data }, 200);
+  }
+
   const question = typeof body.question === 'string' ? body.question.trim().slice(0, 2000) : '';
-  if (!question || !body.project) return json({ error: 'Please choose a project and type a question.' }, 400);
+  const projectId = typeof body.projectId === 'string' ? body.projectId.trim().slice(0, 120) : '';
+  const projectTitle = typeof body.projectTitle === 'string' ? body.projectTitle.trim().slice(0, 200) : '';
+  const requestId = typeof body.requestId === 'string' ? body.requestId : '';
+  if (!question || !body.project || !projectId || !projectTitle || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) {
+    return json({ error: 'Please choose a project and type a question.' }, 400);
+  }
 
   const allowed = await allowRequest(serviceClient(), { key: `insights:${trustedClientIp(req)}`, limit: 30, windowSeconds: 600 });
   if (!allowed) return json({ error: 'Too many questions. Please wait a few minutes.' }, 429);
@@ -69,11 +101,17 @@ Deno.serve(async (req) => {
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
+        let answer = '';
+        let completed = false;
         try {
           for await (const part of result.fullStream) {
-            if (part.type === 'text-delta') controller.enqueue(encoder.encode(part.text));
+            if (part.type === 'text-delta') {
+              answer += part.text;
+              controller.enqueue(encoder.encode(part.text));
+            }
             else if (part.type === 'error') throw part.error;
           }
+          completed = true;
         } catch (err) {
           const status = (err as { statusCode?: number })?.statusCode;
           logAndGenericError('farm-insights:stream', err);
@@ -82,6 +120,18 @@ Deno.serve(async (req) => {
             : 'The analysis stopped unexpectedly. Please try again.';
           controller.enqueue(encoder.encode(`\n\n[[ERROR:${msg}]]`));
         } finally {
+          if (completed && !req.signal.aborted && answer.trim()) {
+            const db = serviceClient();
+            const { error } = await db.from('farm_insight_history').insert({
+              id: requestId,
+              device_id: deviceId,
+              project_id: projectId,
+              project_title: projectTitle,
+              question,
+              answer,
+            });
+            if (error) logAndGenericError('farm-insights:history-save', error);
+          }
           controller.close();
         }
       },
