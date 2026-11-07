@@ -1,3 +1,6 @@
 - [ ] Add responsive offline task board with due dates, priorities, and status lanes.
 - [ ] Add top-ribbon shortcut and in-app route.
 - [ ] Verify task creation, scheduling, status movement, persistence, and responsive layout.
+- [ ] Add Farm Insights history stored online under the existing AgroTensor AI device identity.
+- [ ] Cache only the latest viewed/generated insight locally and expire it after 48 hours.
+- [ ] Verify history access, cache expiry, and streaming persistence.

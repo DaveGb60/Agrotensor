@@ -1,1 +1,2 @@
 - Keep lightweight, device-local planning features in a dedicated local-storage key rather than extending the farm-record database, so they remain offline-first without risking farm data migrations.
+- Keep Farm Insights history online and scoped through the existing AgroTensor AI device identity; only the latest insight may be cached locally, with a strict 48-hour expiry.
